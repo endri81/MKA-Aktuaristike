@@ -1,0 +1,54 @@
+% ============================================================
+%  Java 2 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w2zgjMed]{Zgjidhja: Parashiko (mesatarja vs mediana)}
+<<w2s1-med>>=
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+c(mean = mean(cl$amount_eur), median = median(cl$amount_eur))
+mean(cl$amount_eur) / median(cl$amount_eur)
+@
+  \small Mesatarja është rreth 3 herë më e madhe se mediana: bishti i rëndë (5\% Pareto) e tërheq lart.
+  \vfill\kthehu{w2pyetjeMed}
+\end{frame}
+
+\begin{frame}[label=w2zgjUsh1]{Zgjidhja: Radha jote! (pa dëmin e madh)}
+  \begin{enumerate}
+    \item $\bar x=(400+600+800+1200)/4=750$; \quad mediana $=(600+800)/2=700$.
+    \item Mesatarja ra nga 1\,600 në 750 (më shumë se gjysma); mediana nga 800 në 700.
+          Mediana është \textbf{e qëndrueshme} ndaj vlerave ekstreme; mesatarja jo.
+  \end{enumerate}
+  \vfill\kthehu{w2ush1}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjEff]{Zgjidhja: norma efektive}
+  \textbf{B)} Pak më shumë se 12\%: interesi mujor kapitalizohet dhe fiton interes.
+<<w2s1-eff>>=
+(1 + 0.12 / 12)^12 - 1
+@
+  \vfill\kthehu{w2pyetjeEff}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjTot]{Zgjidhja: Parashiko (kredia e vogël)}
+<<w2s1-tot>>=
+P_small <- 300000 / ((1 - 1.1^-3) / 0.1)
+c(total_paid = 3 * P_small, interest = 3 * P_small - 300000)
+@
+  \begin{itemize}
+    \item Interesi $\approx 61\,903$ lekë $<90\,000$ lekë.
+    \item Pse? Çdo këst kthen edhe principal: borxhi bie, ndaj interesi i viteve 2 dhe 3 llogaritet mbi më pak.
+  \end{itemize}
+  \vfill\kthehu{w2pyetjeTot}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjNdrysho1]{Zgjidhja: Ndrysho parametrin (15 vjet)}
+<<w2s1-n15>>=
+library(tvm)
+P10 <- pmt(amt = 5000000, maturity = 120, rate = 0.005)
+P15 <- pmt(amt = 5000000, maturity = 180, rate = 0.005)
+round(rbind(instalment = c(y10 = P10, y15 = P15),
+            interest   = c(120 * P10 - 5e6, 180 * P15 - 5e6)))
+@
+  \small Kësti bie, por interesi total \textbf{rritet}: borxhi mbetet më gjatë.
+  \vfill\kthehu{w2ndrysho1}
+\end{frame}

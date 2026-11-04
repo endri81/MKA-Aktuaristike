@@ -175,7 +175,8 @@
       \end{itemize}
     \item<4-> \textbf{Frekuentimi}: seminare 75\%, detyra e kursit 100\%.
   \end{itemize}
-  \onslide<5->{\small\textcolor{gray}{Peshat e secilit komponent do t'ju njoftohen zyrtarisht nga titullari.}}
+  \onslide<5->{
+  \begin{Keshille}Nota: 10\% aktivizimi në seminare + 10\% kolegiumi + 10\% detyra e kursit + 70\% provimi përfundimtar.\end{Keshille}}
 \end{frame}
 
 \begin{frame}{Literatura}

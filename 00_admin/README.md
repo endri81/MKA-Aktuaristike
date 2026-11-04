@@ -11,7 +11,7 @@
 - Detyra e kursit: një detyrë për jetën (3 orë) + një për jo-jetën (2 orë), javët 10–12
 - Provimi përfundimtar: me shkrim, 2.5 orë · 15% pyetje teorike, 85% ushtrime
 - Frekuentimi: seminare 75%, detyrë kursi 100%
-- **Peshat**: dy dokumentet e programit japin pesha të ndryshme (10/10/10/70 vs 80/20). Duhet konfirmuar cilat zbatohen.
+- **Peshat (të vendosura më 4 nëntor 2026)**: 10% aktivizimi në seminare + 10% kolegiumi + 10% detyra e kursit + 70% provimi përfundimtar. (Dokumenti tjetër jepte 80/20 pa detyrën e kursit; u zgjodh varianti që përfshin detyrën e kursit, e cila ka 1 ECTS.)
 
 ## Literatura bazë
 

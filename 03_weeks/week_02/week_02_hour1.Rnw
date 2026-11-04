@@ -1,0 +1,536 @@
+% ============================================================
+%  Java 2 · Ora 1 — Motivimi
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w2h1-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 2) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Dy pyetje}
+% ------------------------------------------------------------
+
+\begin{frame}{Dy pyetje në një zyrë në Tiranë}
+  \begin{itemize}
+    \item<1-> Departamenti i dëmeve pyet:
+  \end{itemize}
+  \onslide<2->{
+  \begin{Shembull}[(pyetja 1: pasiguria)]
+    ``Dëmet tona nuk janë të gjitha njësoj. Si shpërndahen shumat e tyre?
+    Sa është një dëm `tipik' dhe sa i madh mund të jetë një dëm i rrallë?''
+  \end{Shembull}}
+  \begin{itemize}
+    \item<3-> Një klient pyet:
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja 2: koha)]
+    ``Dua një kredi prej \textbf{5\,000\,000 lekësh} për \textbf{10 vjet} me \textbf{6\%} në vit.
+    Sa është kësti mujor?''
+  \end{Shembull}}
+\end{frame}
+
+\begin{frame}{Dy shtylla të çdo llogaritjeje aktuariale}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=3.6cm,
+                minimum height=1.3cm,align=center,font=\small}]
+    \node[b] (p) at (0,1.2) {\textbf{Pasiguria}\\shpërndarjet, \Rkey{stats}};
+    \node[b] (t) at (0,-1.2) {\textbf{Koha}\\interesi, \Rkey{tvm}};
+    \node[b,fill=accent!15,draw=accent,minimum width=3.2cm] (c) at (6,0)
+         {\textbf{Çmimi, rezerva}\\vlera aktuale e pritshme};
+    \draw[->,thick,uptmid] (p.east) -- (c.west);
+    \draw[->,thick,uptmid] (t.east) -- (c.west);
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> Java 1: $A^1_{x:\overline{n}|}=\sum v^{k+1}\cdot\Pr(\dots)$ i përdori \textbf{të dyja}.
+    \item<3-> Java 2: secilën shtyllë veç e veç, më thellë. \LO{K1} \LO{S2}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pse e para është pasiguria?}
+  \begin{itemize}
+    \item<1-> Kompania nuk e di sa do të jetë dëmi i ardhshëm.
+    \item<2-> Por mund të dijë \textbf{shpërndarjen}: cilat shuma janë të shpeshta, cilat të rralla.
+    \item<3-> Nga shpërndarja: prima, rezerva, risigurimi, kapitali (Solvency II).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Një mesatare e vetme nuk mjafton: dy portofole me të njëjtën mesatare mund të kenë rrezik shumë të ndryshëm.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Pse e dyta është koha?}
+  \begin{itemize}
+    \item<1-> Kredi, anuitete, pensione: pagesa të \textbf{sigurta}, por në kohë të ndryshme.
+    \item<2-> 1 lek sot $\neq$ 1 lek pas 10 vjetësh.
+    \item<3-> Siguruesi investon primat: kthimi i investimit hyn në çmim.
+    \item<4-> IFRS 17: detyrimet raportohen të \textbf{aktualizuara}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Gjeni në çifte:
+    \begin{enumerate}
+      \item dy vende në një kompani sigurimi ku përdoret një \textbf{shpërndarje};
+      \item dy vende ku përdoret \textbf{interesi}.
+    \end{enumerate}
+  \end{Ushtrim}
+  \pause
+  \small Shembuj: madhësia e dëmeve, numri i dëmeve; prima e jetës, rezervat matematike, kreditë e stafit, investimet.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Objektivat}
+% ------------------------------------------------------------
+
+\begin{frame}{Objektivat e ditës}
+  Në fund të ditës do të jesh në gjendje:
+  \begin{enumerate}
+    \item<1-> të përshkruash të dhëna dëmesh me statistika dhe grafikë; \LO{K1}
+    \item<2-> të përdorësh familjen \texttt{d/p/q/r} të librarisë \Rkey{stats}; \LO{K1}
+    \item<3-> të vlerësosh parametrat me metodën e momenteve dhe me përgjasinë maksimale; \LO{K1}
+    \item<4-> të zgjedhësh një shpërndarje me \Rkey{fitdistrplus}; \LO{S2}
+    \item<5-> të llogaritësh këste, tabela amortizimi, NPV dhe IRR me \Rkey{tvm}. \LO{S2}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Objektivat e kësaj ore}
+  \begin{enumerate}
+    \item<1-> Të kuptosh pse pasiguria dhe koha janë dy shtyllat.
+    \item<2-> Të rifreskosh: ndryshorja e rastit, dendësia, funksioni i shpërndarjes, momentet, kuantilet.
+    \item<3-> Të rifreskosh: interesi i thjeshtë dhe i përbërë, norma mujore dhe vjetore.
+    \item<4-> Të llogaritësh pa ndihmën e PC një mesatare, një variancë dhe një këst.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Ku jemi në kurs?}
+  \centering\small
+  \begin{tikzpicture}[
+      wk/.style={draw=uptmid,rounded corners=2pt,minimum width=2.15cm,minimum height=0.95cm,
+                 align=center,font=\scriptsize},
+      done/.style={wk,fill=okgreen!12,draw=okgreen},
+      now/.style={wk,fill=accent!20,draw=accent,thick}]
+    \node[done] at (0,0)    {\textbf{J1}\\Bazat e R};
+    \node[now]  at (2.3,0)  {\textbf{J2}\\stats, TVM};
+    \node[wk]   at (4.6,0)  {\textbf{J3}\\Jo-jetë: actuar};
+    \node[wk]   at (6.9,0)  {\textbf{J4}\\Rezervat, kredib.};
+    \node[wk]   at (9.2,0)  {\textbf{J5}\\lifecontingencies};
+    \node[wk]   at (11.5,0) {\textbf{J6}\\Tabela aktuariale};
+    \node[wk]   at (0,-1.3)    {\textbf{J7}\\Sigurime, anuitete};
+    \node[wk]   at (2.3,-1.3)  {\textbf{J8}\\Financë, put--call};
+    \node[wk]   at (4.6,-1.3)  {\textbf{J9}\\Opsionet};
+    \node[wk]   at (6.9,-1.3)  {\textbf{J10}\\Black--Scholes};
+    \node[wk]   at (9.2,-1.3)  {\textbf{J11}\\Cox--Ross--Rubinstein};
+    \node[wk]   at (11.5,-1.3) {\textbf{J12}\\Përsëritje};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Shpërndarjet e sotme janë baza e Javës 3 (\Rkey{actuar}); interesi është baza e Javëve 5--7 dhe 8--11.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim: probabiliteti}
+% ------------------------------------------------------------
+
+\begin{frame}{Ndryshorja e rastit}
+  \begin{Definicion}[(ndryshorja e rastit, \emph{random variable})]
+    Një numër, vlera e të cilit varet nga rasti. E shënojmë me shkronjë të madhe: $X$, $N$.
+  \end{Definicion}
+  \pause
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{Diskrete}
+      \begin{itemize}
+        \item $N$ = numri i dëmeve të një police në vit
+        \item vlera: $0, 1, 2, \dots$
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{E vazhdueshme}
+      \begin{itemize}
+        \item $X$ = shuma e një dëmi (EUR)
+        \item vlera: çdo numër $>0$
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Dendësia dhe funksioni i shpërndarjes}
+  \begin{Definicion}
+    \begin{itemize}
+      \item Funksioni i shpërndarjes (\emph{CDF}): $F(x)=\Pr(X\le x)$.
+      \item Dendësia (\emph{density}): $f(x)=F'(x)$, pra $\Pr(a<X\le b)=\int_a^b f(x)\,dx$.
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $F$ rritet nga 0 në 1.
+    \item $f(x)$ \textbf{nuk} është probabilitet: mund të jetë $>1$. Probabilitet është \textbf{sipërfaqja}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Figura: sipërfaqja nën dendësi}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=0.78\textwidth,height=0.56\textheight,
+      xlabel={Shuma e dëmit $x$ (EUR)},ylabel={$f(x)$},xmin=0,xmax=6000,ymin=0,
+      domain=1:6000,samples=200,grid=major,grid style={gray!20},
+      scaled y ticks=false,yticklabel style={/pgf/number format/fixed,/pgf/number format/precision=5},
+      /pgf/number format/1000 sep={\,}]
+      \addplot[draw=none,fill=accent!35,domain=1:1000]
+        {exp(-(ln(x)-7)^2/(2*0.81))/(x*0.9*sqrt(2*pi))} \closedcycle;
+      \addplot[uptmid,very thick]
+        {exp(-(ln(x)-7)^2/(2*0.81))/(x*0.9*sqrt(2*pi))};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small Lognormale($\mu=7,\sigma=0.9$). Sipërfaqja portokalli $=\Pr(X\le 1000)=F(1000)\approx\Sexpr{round(plnorm(1000, 7, 0.9), 2)}$.
+\end{frame}
+
+\begin{frame}{Momentet}
+  \begin{Definicion}[(pritja dhe varianca)]
+    \[
+      E[X]=\int_0^\infty x\,f(x)\,dx \qquad
+      \mathrm{Var}(X)=E\big[(X-E[X])^2\big] \qquad
+      \mathrm{sd}(X)=\sqrt{\mathrm{Var}(X)}
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $E[X]$: dëmi \textbf{mesatar} afatgjatë. Baza e primës.
+    \item $\mathrm{sd}(X)$: sa luhaten dëmet rreth mesatares. Baza e rrezikut.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Me të dhëna: mesatarja e mostrës $\bar x$ vlerëson $E[X]$; $s^2$ (pjesëtim me $n-1$) vlerëson $\mathrm{Var}(X)$.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Mesatarja apo mediana?}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=0.74\textwidth,height=0.5\textheight,
+      xlabel={$x$ (EUR)},ylabel={$f(x)$},xmin=0,xmax=6000,ymin=0,ymax=0.00062,
+      domain=1:6000,samples=200,grid=major,grid style={gray!20},
+      scaled y ticks=false,yticklabels={},/pgf/number format/1000 sep={\,}]
+      \addplot[uptmid,very thick]{exp(-(ln(x)-7)^2/(2*0.81))/(x*0.9*sqrt(2*pi))};
+      \addplot[okgreen,thick,dashed] coordinates {(1096.6,0) (1096.6,0.0006)};
+      \addplot[accent,thick,dashed] coordinates {(1644.2,0) (1644.2,0.0006)};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small \textcolor{okgreen}{Jeshile}: mediana $e^{\mu}\approx 1\,097$. \textcolor{accent}{Portokalli}: mesatarja $e^{\mu+\sigma^2/2}\approx 1\,644$.\\ Shpërndarje e anuar djathtas: mesatarja $>$ mediana.
+\end{frame}
+
+\begin{frame}[label=w2pyetjeMed]{Parashiko!}
+  \begin{Parashiko}
+    Në të dhënat \texttt{individual\_claims\_synthetic.csv} (3\,000 dëme):
+    \begin{enumerate}
+      \item Mesatarja do të jetë më e madhe apo më e vogël se mediana?
+      \item Përafërsisht sa herë më e madhe? Shkruaj një numër.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjMed}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Kuantilet}
+  \begin{Definicion}[(kuantili i rendit $p$)]
+    Numri $q_p$ i tillë që $\Pr(X\le q_p)=p$, pra $q_p=F^{-1}(p)$.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $q_{0.5}$ = mediana.
+    \item $q_{0.995}$: dëmi që tejkalohet vetëm në 0.5\% të rasteve.
+    \item Në Solvency II: kapitali llogaritet në nivelin 99.5\% (\emph{Value-at-Risk}).
+  \end{itemize}
+  \pause
+  \begin{Gabim}Mos ngatërro $q_p$ (kuantil) me $q_x$ (probabilitet vdekjeje) të Javës 1.\end{Gabim}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: 5 dëme}
+  \centering
+  \begin{tabular}{@{}cccccc@{}}
+    \toprule
+    Dëmi & 1 & 2 & 3 & 4 & 5 \\ \midrule
+    $x_i$ (EUR) & 400 & 600 & 800 & 1\,200 & 5\,000 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \begin{enumerate}
+    \item<2-> Mesatarja: $\bar x = 8\,000/5 = 1\,600$.
+    \item<3-> Mediana: vlera e mesit pas renditjes $=800$.
+    \item<4-> Devijimet: $-1200, -1000, -800, -400, +3400$.
+    \item<5-> $s^2=\dfrac{1.44+1+0.64+0.16+11.56}{4}\times10^6=3.7\times10^6$, \quad $s\approx 1\,923.5$.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w2ush1]{Radha jote!}
+  \begin{Ushtrim}[(2 minuta, pa ndihmën e PC)]
+    Hiq dëmin e madh (5\,000 €). Me 4 dëmet e mbetura:
+    \begin{enumerate}
+      \item Llogarit mesataren dhe medianën.
+      \item Cila prej tyre ndryshoi më shumë? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjUsh1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{E njëjta në R}
+<<w2h1-desc>>=
+x <- c(400, 600, 800, 1200, 5000)   # five claim amounts (EUR)
+mean(x)
+median(x)
+var(x)                              # sample variance: divides by n - 1
+sd(x)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> R përputhet me llogaritjen pa ndihmën e PC. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Një dëm i vetëm (5\,000 €) e ngre mesataren dhe e dyfishon devijimin standard.
+    \item<3-> Dëmet e mëdha janë të rralla, por kushtojnë shumë: duhet një \textbf{model} për bishtin.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kjo është arsyeja pse sot përshtatim shpërndarje, jo vetëm llogarisim mesatare.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim: interesi}
+% ------------------------------------------------------------
+
+\begin{frame}{Interesi i thjeshtë dhe i përbërë}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{I thjeshtë}
+      \[ S_t = S_0\,(1+i\,t) \]
+    \column{0.48\textwidth}
+      \textbf{I përbërë}
+      \[ S_t = S_0\,(1+i)^t \]
+  \end{columns}
+  \vspace{6pt}
+  \pause
+  \centering\small
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    1\,000\,000 lekë me 5\% & Viti 1 & Viti 2 & Viti 3 \\ \midrule
+    I thjeshtë & 1\,050\,000 & 1\,100\,000 & 1\,150\,000 \\
+    I përbërë  & 1\,050\,000 & 1\,102\,500 & 1\,157\,625 \\
+    \bottomrule
+  \end{tabular}
+  \pause
+  \begin{Keshille}Në aktuaristikë përdorim gjithmonë interesin e \textbf{përbërë}: interesi fiton interes.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Vlera e ardhshme dhe vlera sot}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick,uptblue] (0,0) -- (10.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/0,3/1,6/2,9/3}{
+      \draw[thick,uptblue] (\t,0.12) -- (\t,-0.12);
+      \node[below=4pt,font=\small] at (\t,0) {\lab};
+    }
+    \node[above,font=\small,align=center] at (0,0.3) {$S_0$};
+    \node[above,font=\small,align=center] at (9,0.3) {$S_3$};
+    \draw[->,thick,okgreen] (0.3,0.9) to[bend left=20] node[above,font=\scriptsize]{$\times(1+i)^3$ (përbërja)} (8.7,0.9);
+    \pause
+    \draw[->,thick,accent] (8.7,-0.9) to[bend left=20] node[below,font=\scriptsize]{$\times v^3=(1+i)^{-3}$ (aktualizimi)} (0.3,-0.9);
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Përbërja shkon përpara në kohë; aktualizimi shkon prapa. Janë veprime të anasjellta.
+\end{frame}
+
+\begin{frame}{Norma vjetore dhe norma mujore}
+  \begin{itemize}
+    \item<1-> Banka shpall: ``6\% në vit, me këste mujore''.
+    \item<2-> Kjo është normë \termi{nominale}{nominal rate} $i^{(12)}=6\%$.
+    \item<3-> Norma mujore: $j=6\%/12=0.5\%$.
+    \item<4-> Norma vjetore \termi{efektive}{effective rate}: $(1.005)^{12}-1=\Sexpr{round(100 * (1.005^12 - 1), 4)}\%$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}Me këste mujore, përdor normën \textbf{mujore} dhe numrin e \textbf{muajve}. Jo 6\% me 120 periudha.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeEff]{Pyetje e shpejtë}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Një bankë jep 12\% nominale në vit, me kapitalizim mujor. Norma efektive vjetore është:
+    \begin{enumerate}
+      \item[A)] saktësisht 12\%
+      \item[B)] pak më shumë se 12\%
+      \item[C)] pak më pak se 12\%
+      \item[D)] 1\% në vit
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjEff}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Kredia: vija kohore}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick,uptblue] (0,0) -- (11,0) node[right,font=\small]{muaji};
+    \foreach \t/\lab in {0/0,1.3/1,2.6/2,3.9/3}{
+      \draw[thick,uptblue] (\t,0.12) -- (\t,-0.12);
+      \node[below=4pt,font=\small] at (\t,0) {\lab};
+    }
+    \node[font=\small] at (6.2,-0.35) {$\cdots$};
+    \draw[thick,uptblue] (9.8,0.12) -- (9.8,-0.12); \node[below=4pt,font=\small] at (9.8,0) {120};
+    \draw[->,very thick,okgreen] (0,-1.5) -- (0,-0.2);
+    \node[below,font=\small,okgreen] at (0,-1.5) {5\,000\,000 lekë};
+    \pause
+    \foreach \t in {1.3,2.6,3.9,9.8} \draw[->,thick,accent] (\t,0.2) -- (\t,1.2);
+    \node[above,font=\small,accent] at (5.5,1.3) {120 këste të barabarta $P$};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \onslide<2->{\small Parimi i ekuivalencës (si te prima në Javën 1): vlera sot e kësteve = shuma e kredisë.}
+\end{frame}
+
+\begin{frame}{Formula e këstit}
+  \begin{align*}
+    L &= P\,v + P\,v^2+\dots+P\,v^n = P\,a_{\overline{n}|} \\
+    \onslide<2->{a_{\overline{n}|} &= \frac{1-v^n}{j} \qquad (\text{shuma e një vargu gjeometrik})\\}
+    \onslide<3->{P &= \frac{L}{a_{\overline{n}|}} = \frac{L\,j}{1-(1+j)^{-n}}}
+  \end{align*}
+  \onslide<4->{
+  \begin{itemize}
+    \item $L$: shuma e kredisë; $j$: norma për periudhë; $n$: numri i periudhave.
+    \item Nxjerrjen e plotë e bëjmë në Orën 4.
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: kredi e vogël}
+  \begin{Shembull}
+    Kredi 300\,000 lekë, 3 vjet, 10\% në vit, këste \textbf{vjetore}.
+  \end{Shembull}
+  \begin{enumerate}
+    \item<2-> $v=1/1.1$, \quad $v^3=0.751315$.
+    \item<3-> $a_{\overline{3}|}=(1-0.751315)/0.1=2.486852$.
+    \item<4-> $P=300\,000/2.486852\approx$ \Sexpr{fmt(300000 / ((1 - 1.1^-3) / 0.1))} lekë në vit.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeTot]{Parashiko!}
+  \begin{Parashiko}
+    Me kredinë e vogël (300\,000 lekë, 3 vjet, 10\%):
+    \begin{enumerate}
+      \item Sa paguan klienti gjithsej në 3 vjet?
+      \item Sa prej tyre është interes?
+      \item A është interesi më i vogël apo më i madh se $3\times10\%\times300\,000$? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjTot}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Kredia e klientit në R}
+<<w2h1-pmt>>=
+library(tvm)
+P <- pmt(amt = 5000000, maturity = 120, rate = 0.06 / 12)   # monthly instalment
+P
+120 * P - 5000000                                          # total interest (ALL)
+@
+  \pause
+  \small \texttt{rate} është norma \textbf{për periudhë} (mujore), \texttt{maturity} numri i \textbf{periudhave}.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kësti mujor: $\approx$ \Sexpr{fmt(P)} lekë.
+    \item<2-> Në 10 vjet klienti paguan $\approx$ \Sexpr{fmt(120 * P - 5000000, 0)} lekë interes:
+          rreth \Sexpr{round(100 * (120 * P - 5000000) / 5000000)}\% e shumës së huazuar.
+    \item<3-> Përgjigja e pyetjes 2 të orës. Pyetja 1 kërkon gjithë ditën.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Të dhëna \textbf{ilustruese}: normat reale të bankave ndryshojnë dhe kanë edhe komisione (Ora 5: \texttt{cft}).\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w2ndrysho1]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    \begin{enumerate}
+      \item Ndrysho afatin nga 10 në \textbf{15} vjet (\texttt{maturity = 180}).
+      \item Parashiko: kësti zvogëlohet. Po interesi total?
+      \item Ekzekuto dhe krahaso.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjNdrysho1}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Mjedisi i punës}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Paketat e javës}
+<<w2h1-install, eval=FALSE>>=
+install.packages(c("tvm", "fitdistrplus"))   # once per computer
+@
+<<w2h1-versions, message=FALSE>>=
+library(fitdistrplus)
+c(tvm = as.character(packageVersion("tvm")),
+  fitdistrplus = as.character(packageVersion("fitdistrplus")))
+@
+  \pause
+  \small \Rkey{stats} nuk instalohet: vjen me R dhe është gjithmonë i ngarkuar.
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: funksione me të njëjtin emër}
+  \begin{Gabim}
+    \Rkey{fitdistrplus} ngarkon paketën \Rkey{MASS}, e cila ka një funksion \texttt{select()}.
+    Nëse përdor edhe \Rkey{dplyr}, \texttt{select()} mund të thërrasë funksionin e gabuar.
+  \end{Gabim}
+  \pause
+  \begin{Keshille}
+    Zgjidhja: shkruaj paketën qartë, p.sh.\ \texttt{dplyr::select()}.
+    R paralajmëron me mesazhin \texttt{The following object is masked}.
+  \end{Keshille}
+\end{frame}
+
+\begin{frame}{Struktura e projektit}
+  \centering
+  \begin{tikzpicture}[grow via three points={one child at (0.5,-0.6) and two children at (0.5,-0.6) and (0.5,-1.2)},
+      edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)},
+      every node/.style={anchor=west,font=\small\ttfamily}]
+    \node {MKA-Aktuaristike/}
+      child {node {02\_data/ \textrm{\textcolor{gray}{(CSV-të e kursit)}}}}
+      child {node {03\_weeks/week\_02/ \textrm{\textcolor{gray}{(skriptet e sotme)}}}}
+      child {node {04\_slides\_pdf/ \textrm{\textcolor{gray}{(slide-et)}}}};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Lexim i të dhënave: \texttt{read.csv("../../02\_data/individual\_claims\_synthetic.csv")}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse $f(x)$ mund të jetë më i madh se 1, por $F(x)$ jo?
+    \item Për një shpërndarje të anuar djathtas, cila është më e madhe: mesatarja apo mediana?
+    \item Me 6\% nominale dhe këste mujore, cilën normë i jep funksionit \texttt{pmt()}?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $f$ është dendësi, $F$ probabilitet; (2) mesatarja; (3) \texttt{0.06 / 12}.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Dy shtylla: pasiguria (shpërndarjet) dhe koha (interesi).
+    \item $F(x)=\Pr(X\le x)$; probabiliteti = sipërfaqja nën $f$.
+    \item Dëmet janë të anuara: mesatarja $>$ mediana; dëmet e mëdha kanë peshë.
+    \item Kësti i kredisë: $P=L\,j/(1-(1+j)^{-n})$; në R: \texttt{tvm::pmt()}.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Shpërndarjet në detaje: familja \texttt{d/p/q/r}, lognormalja, metoda e momenteve, përgjasia maksimale.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT, 2025--2026.
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika
+          Matematike me ilustrime në gjuhën R}, Kotti, 2021 (ndryshoret e rastit, momentet).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item Dokumentacioni i paketës \Rkey{tvm} (versioni \Sexpr{as.character(packageVersion("tvm"))}): \texttt{?pmt}.
+    \item README i të dhënave: \texttt{individual\_claims\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
