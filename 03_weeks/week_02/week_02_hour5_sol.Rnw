@@ -1,0 +1,54 @@
+% ============================================================
+%  Java 2 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w2zgjMean]{Zgjidhja: Parashiko (mesatarja e modelit)}
+<<w2s5-mean>>=
+xb <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))$amount_eur
+xb <- xb[xb <= 20000]
+lb <- log(xb); mu <- mean(lb); s <- sqrt(mean((lb - mu)^2))
+round(c(model_mean = exp(mu + s^2 / 2), sample_mean = mean(xb),
+        truth = exp(7 + 0.9^2 / 2)), 1)
+@
+  \small Modeli, mostra dhe e vërteta janë brenda $\approx 2\%$ nga njëra-tjetra.
+  \vfill\kthehu{w2pyetjeMean}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjUsh5a]{Zgjidhja: Radha jote! (treguesi i shpërndarjes)}
+<<w2s5-disp>>=
+mp  <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+lam <- sum(mp$n_claims) / sum(mp$exposure); mu <- lam * mp$exposure
+sum((mp$n_claims - mu)^2 / mu) / (nrow(mp) - 1)
+@
+  \small $\hat\phi\approx1.01$: pothuajse Poisson. Teprica e vogël vjen nga ndryshimi i $\lambda$ midis policave
+  (mosha, rajoni, karburanti): kjo është arsyeja për GLM në Javën 3.
+  \vfill\kthehu{w2ush5a}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjNdrysho5]{Zgjidhja: Ndrysho parametrin (komisioni)}
+<<w2s5-fee>>=
+library(tvm)
+eff <- function(L, n, j, fee) {
+  P <- pmt(amt = L + fee, maturity = n, rate = j)
+  js <- uniroot(function(r) P * (1 - (1 + r)^-n) / r - L, c(1e-4, 0.05), tol = 1e-12)$root
+  (1 + js)^12 - 1
+}
+round(100 * c(fee1_120m = eff(5e6, 120, 0.005, 5e4), fee2_120m = eff(5e6, 120, 0.005, 1e5),
+              fee1_36m = eff(5e6, 36, 0.005, 5e4)), 3)
+@
+  \small Në 36 muaj komisioni ``shpërndahet'' mbi më pak periudha: ndikimi në normë është më i madh.
+  \vfill\kthehu{w2ndrysho5}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjGab5]{Zgjidhja: Gjej gabimin (\texttt{npv})}
+  \begin{itemize}
+    \item \texttt{npv()} trajton fluksin e parë në kohën $t=0$ (\texttt{ts = 0, 1, 2}).
+    \item Pagesat në \textbf{fund} të viteve: shto 0 në fillim, ose jep \texttt{ts = 1:3}.
+  \end{itemize}
+<<w2s5-npv>>=
+library(tvm)
+c(wrong = npv(0.08, c(4e5, 4e5, 4e5)), right = npv(0.08, c(0, 4e5, 4e5, 4e5)),
+  right_ts = npv(0.08, c(4e5, 4e5, 4e5), ts = 1:3))
+@
+  \vfill\kthehu{w2gjejGab5}
+\end{frame}

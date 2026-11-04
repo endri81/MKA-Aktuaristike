@@ -1,0 +1,411 @@
+% ============================================================
+%  Java 2 · Ora 5 — Laborator R II: fitdistrplus, testet, tvm
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · \texttt{fitdistrplus}, testet, \texttt{tvm}}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w2h5-setup, include=FALSE>>=
+library(ggplot2)
+suppressMessages(library(fitdistrplus))
+library(tvm)
+th <- theme_minimal(base_size = 13)
+x5 <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))$amount_eur
+@
+
+% ------------------------------------------------------------
+\subsection{\texttt{fitdistrplus}}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse një paketë, kur e bëmë vetë?}
+  \begin{itemize}
+    \item<1-> Ora 3: \texttt{optim()} + $-\ell$, për çdo shpërndarje veç e veç.
+    \item<2-> \Rkey{fitdistrplus}: e njëjta gjë, me \textbf{një} komandë, plus:
+      \begin{itemize}
+        \item gabimet standarde dhe AIC/BIC;
+        \item testet KS, Cramér--von Mises, Anderson--Darling;
+        \item grafikët krahasues për disa modele njëherësh.
+      \end{itemize}
+    \item<3-> Rregulli i kursit: \textbf{kuptoje me dorën tënde, pastaj përdor paketën}. \LO{S2}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Të dhënat: trupi i dëmeve (sintetike)}
+<<w2h5-data>>=
+x_body <- x5[x5 <= 20000]          # body of the claim distribution (EUR)
+xk <- x_body / 1000                # the same claims in thousand EUR
+length(xk)
+summary(xk)
+@
+  \pause
+  \small Pse në mijë euro? Do ta shohim pas tre slide-sh.
+\end{frame}
+
+\begin{frame}[fragile]{Grafiku Cullen--Frey: \texttt{descdist()}}
+<<w2h5-descdist, fig.width=6, fig.height=4.2, out.width='0.48\\textwidth', results='hide'>>=
+descdist(xk, boot = 200)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Boshti $x$: asimetria në katror. Boshti $y$: kurtoza.
+    \item<2-> Çdo shpërndarje ka një pikë ose një vijë në këtë plan.
+    \item<3-> Pika e të dhënave (dhe pikat bootstrap) bie afër vijës \textbf{lognormale}.
+    \item<4-> Është vetëm orientim: zgjedhja përfundimtare bëhet me AIC dhe grafikë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{fitdist()}: lognormalja}
+<<w2h5-fitln>>=
+fit_ln <- fitdist(x_body, "lnorm")       # maximum likelihood by default
+summary(fit_ln)
+@
+\end{frame}
+
+\begin{frame}{Vlerësimi vs e vërteta}
+  \centering
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    & \texttt{fitdist} & Ora 3 (\texttt{optim}) & E vërteta \\ \midrule
+    $\hat\mu$ & \Sexpr{format(round(fit_ln$estimate[["meanlog"]], 4), nsmall = 4)} & 6.9837 & 7 \\
+    $\hat\sigma$ & \Sexpr{format(round(fit_ln$estimate[["sdlog"]], 4), nsmall = 4)} & 0.8978 & 0.9 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> E njëjta MLE: paketa bën atë që bëmë ne. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> Gabimi standard i $\hat\mu$ ($\approx0.017$) është i njëjtë me atë nga Hessiani i Orës 3.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: gama në euro}
+<<w2h5-gammafail, error=TRUE>>=
+fit_g <- fitdist(x_body, "gamma")
+@
+  \pause
+  \begin{Gabim}
+    Me vlera të mëdha (mijëra €), parametri \texttt{rate} është $\approx0.0009$: optimizuesi
+    ``humbet''. Zgjidhja: \textbf{ndrysho shkallën} e të dhënave.
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Zgjidhja: punojmë në mijë euro}
+<<w2h5-fitk>>=
+fit_ln <- fitdist(xk, "lnorm")
+fit_g  <- fitdist(xk, "gamma")
+fit_w  <- fitdist(xk, "weibull")
+rbind(gamma = fit_g$estimate, weibull = fit_w$estimate)
+@
+  \pause
+  \small Shkalla ndikon vetëm te parametri i shkallës: $\hat\mu$ e lognormales zvogëlohet me $\log 1000$, $\hat\sigma$ mbetet e njëjtë.
+\end{frame}
+
+\begin{frame}[fragile]{Krahasimi: \texttt{gofstat()}}
+<<w2h5-gof>>=
+gofstat(list(fit_ln, fit_g, fit_w), fitnames = c("lnorm", "gamma", "weibull"))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \textbf{AIC} $=2k-2\ell$: më i vogli fiton. Lognormalja ka AIC shumë më të vogël.
+    \item<2-> Të tria kanë $k=2$, ndaj AIC renditet njësoj si log-përgjasia.
+    \item<3-> Statistika KS, CvM, AD: sa larg janë CDF-ja e modelit dhe ECDF-ja. Më e vogla fiton.
+    \item<4-> AD i jep më shumë peshë bishtave: shumë i dobishëm për dëmet.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Krahasimi me AIC ka kuptim vetëm mbi \textbf{të njëjtat} të dhëna (këtu: \texttt{xk}).\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Grafikët krahasues: QQ}
+<<w2h5-qqcomp, fig.width=6, fig.height=3.6, out.width='0.56\\textwidth'>>=
+qqcomp(list(fit_ln, fit_g, fit_w), legendtext = c("lnorm", "gamma", "weibull"),
+       fitpch = 16, fitcol = c("#2C5AA0", "#D97706", "grey50"))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Lognormalja (blu) ndjek diagonalen deri në dëmet më të mëdha të trupit.
+    \item<2-> Gama dhe Weibull \textbf{nënvlerësojnë} dëmet e mëdha: pikat dalin mbi vijë.
+    \item<3-> Pasojë: me gamë, kompania do të nënvlerësonte rrezikun e dëmeve 10\,000--20\,000 €.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Dendësitë mbi histogram}
+<<w2h5-denscomp, fig.width=6, fig.height=3.6, out.width='0.56\\textwidth'>>=
+denscomp(list(fit_ln, fit_g, fit_w), legendtext = c("lnorm", "gamma", "weibull"),
+         xlim = c(0, 10), fitcol = c("#2C5AA0", "#D97706", "grey50"))
+@
+\end{frame}
+
+\begin{frame}[label=w2pyetjeMean]{Parashiko!}
+  \begin{Parashiko}
+    Me modelin e zgjedhur (lognormale), mesatarja e vlerësuar e dëmit të trupit është
+    $e^{\hat\mu+\hat\sigma^2/2}$.
+    \begin{enumerate}
+      \item Do të jetë më e madhe apo më e vogël se mesatarja e mostrës së trupit?
+      \item Sa larg nga e vërteta $e^{7.405}\approx1\,644$ €?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjMean}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Testet në \texttt{stats}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Testi Kolmogorov--Smirnov}
+<<w2h5-ks, warning=FALSE>>=
+lb <- log(x_body)
+ks.test(lb, "pnorm", mean = mean(lb), sd = sd(lb))
+@
+  \pause
+  \small $H_0$: $\log x$ ndjek normalen me këta parametra. $p$ i madh $\Rightarrow$ nuk e hedhim poshtë.
+\end{frame}
+
+\begin{frame}{Kujdes me $p$-vlerën e KS\Zgj}
+  \begin{Gabim}
+    \texttt{ks.test()} supozon se parametrat janë të njohur \textbf{para} të dhënave.
+    Këtu i vlerësuam nga të njëjtat të dhëna $\Rightarrow$ $p$-vlera është tepër optimiste.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Për normalen me parametra të vlerësuar: testi Lilliefors.
+    \item Rruga e përgjithshme: bootstrap parametrik (simulo nga modeli, rivlerëso, rillogarit $D$).
+    \item Në praktikë: AIC + grafikët QQ janë më të besueshëm se një $p$-vlerë e vetme.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Frekuenca: Poisson për portofolin auto (sintetik)}
+<<w2h5-pois>>=
+mp  <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+lam <- sum(mp$n_claims) / sum(mp$exposure)            # claims per policy-year
+mu  <- lam * mp$exposure                              # expected claims per policy
+obs <- table(factor(pmin(mp$n_claims, 2), levels = 0:2))   # 0, 1, 2+
+exp_ <- c(sum(dpois(0, mu)), sum(dpois(1, mu)), sum(ppois(1, mu, lower.tail = FALSE)))
+rbind(observed = as.numeric(obs), expected = round(exp_, 1))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Testi $\chi^2$ i përshtatjes}
+<<w2h5-chisq>>=
+X2 <- sum((obs - exp_)^2 / exp_)
+df <- 3 - 1 - 1                      # 3 classes, minus 1, minus 1 estimated parameter
+c(X2 = X2, df = df, p_value = pchisq(X2, df, lower.tail = FALSE))
+@
+  \pause
+  \begin{itemize}
+    \item Përshtatje shumë e mirë: Poisson me ekspozim e shpjegon numrin e dëmeve.
+    \item Pse e llogaritëm vetë dhe jo me \texttt{chisq.test()}? Ai nuk e zbret parametrin e vlerësuar nga \texttt{df}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: ekspozimi}
+  \begin{Gabim}
+    Pritjet si \texttt{n * dpois(k, mean(n\_claims))} injorojnë që policat kanë ekspozim të ndryshëm
+    (nga 0.1 deri në 1 vit).
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item E saktë: çdo policë $i$ ka $N_i\sim$ Poisson$(\lambda e_i)$.
+    \item Pritja për klasën $k$: $\sum_i \Pr(N_i=k)$.
+    \item E njëjta ide del në GLM: \texttt{offset(log(exposure))} (Java 3).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2ush5a]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta)]
+    Te Poisson: $E[N]=\mathrm{Var}(N)$. Kontrolloje me treguesin e shpërndarjes
+    \[
+      \hat\phi=\frac{1}{n-1}\sum_i\frac{(N_i-\hat\lambda e_i)^2}{\hat\lambda e_i}
+    \]
+    \begin{enumerate}
+      \item Llogarit $\hat\phi$ në R.
+      \item $\hat\phi\approx1$, $>1$ apo $<1$? Çfarë do të thotë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjUsh5a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{\texttt{tvm}}
+% ------------------------------------------------------------
+
+\begin{frame}{Paketa \texttt{tvm}: funksionet kryesore}
+  \centering\small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Funksioni & Çfarë bën \\ \midrule
+    \texttt{pmt(amt, maturity, rate)} & kësti i barabartë \\
+    \texttt{rate(amt, maturity, pmt)} & norma nga kësti \\
+    \texttt{loan(rate, maturity, amt, type)} & kredia si objekt (\texttt{"french"}, \dots) \\
+    \texttt{rem(cf, amt, r)} & borxhi i mbetur pas çdo kësti \\
+    \texttt{cft(amt, maturity, rate, up\_fee)} & kostoja totale (me komision) \\
+    \texttt{npv(i, cf)}, \texttt{irr(cf)} & NPV dhe IRR \\
+    \texttt{xnpv}, \texttt{xirr} & me data reale\\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{6pt}
+  \pause
+  \small Versioni: \Sexpr{as.character(packageVersion("tvm"))}. Çdo rezultat e kontrollojmë me formulat e Orës 4.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{pmt()} dhe \texttt{rate()}}
+<<w2h5-pmt>>=
+P <- pmt(amt = 5e6, maturity = 120, rate = 0.005)
+P
+rate(amt = 5e6, maturity = 120, pmt = P)               # default tolerance
+rate(amt = 5e6, maturity = 120, pmt = P, tol = 1e-12)  # tight tolerance
+@
+  \pause
+  \begin{Gabim}\texttt{rate()} ka tolerancë standarde \texttt{1e-4}: rezultati i parë është i \textbf{përafërt}.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Tabela e amortizimit me \texttt{loan()} dhe \texttt{rem()}}
+<<w2h5-loan>>=
+l  <- loan(rate = 0.1, maturity = 3, amt = 300000, type = "french")
+B  <- rem(l$cf, amt = 300000, r = 0.1)          # balance after each payment
+Bp <- c(300000, head(B, -1))                     # balance before each payment
+round(data.frame(k = 1:3, payment = l$cf, interest = 0.1 * Bp,
+                 principal = l$cf - 0.1 * Bp, balance = B), 2)
+@
+  \pause
+  \small E njëjta tabelë si në Orën 4. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Kredia e klientit: muaj pas muaji}
+<<w2h5-loanplot, fig.width=6.4, fig.height=2.4, out.width='0.7\\textwidth'>>=
+L <- loan(rate = 0.005, maturity = 120, amt = 5e6, type = "french")
+Bm <- c(5e6, head(rem(L$cf, 5e6, 0.005), -1))
+am <- data.frame(month = rep(1:120, 2), part = rep(c("interest", "principal"), each = 120),
+                 value = c(0.005 * Bm, L$cf - 0.005 * Bm))
+ggplot(am, aes(month, value, fill = part)) + geom_area() +
+  scale_fill_manual(values = c("#D97706", "#2C5AA0")) + labs(y = "ALL", fill = NULL) + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kësti mbetet 55\,510 lekë; përbërja ndryshon çdo muaj.
+    \item<2-> Në muajin e parë: 25\,000 lekë interes ($0.5\%\times5\,000\,000$), 30\,510 principal.
+    \item<3-> Në fund: pothuajse gjithë kësti është principal.
+    \item<4-> Kredia e shlyer para afatit: klienti kursen kryesisht interesin e viteve të fundit, i cili është i vogël.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Komisioni: \texttt{cft()}}
+<<w2h5-cft>>=
+fee <- 50000                                     # 1% fee in ALL, financed in the loan
+cft(amt = 5e6, maturity = 120, rate = 0.005, up_fee = fee)   # default tol
+P_fee <- pmt(amt = 5e6 + fee, maturity = 120, rate = 0.005)
+j_star <- uniroot(function(j) P_fee * (1 - (1 + j)^-120) / j - 5e6,
+                  c(0.001, 0.02), tol = 1e-12)$root
+c(j_star = j_star, annual_effective = (1 + j_star)^12 - 1)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{up\_fee} është \textbf{shumë në lekë}, jo përqindje: 1\% $=$ 50\,000 lekë.
+    \item<2-> Komisioni rrit normën mujore nga 0.500\% në $\approx$ \Sexpr{format(round(100 * j_star, 3), nsmall = 3)}\%.
+    \item<3-> Norma efektive vjetore: nga 6.17\% në $\approx$ \Sexpr{format(round(100 * ((1 + j_star)^12 - 1), 2), nsmall = 2)}\%.
+    \item<4-> \texttt{cft()} përdor \texttt{rate()} me tolerancën standarde: kontrolloje me \texttt{uniroot()}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2ndrysho5]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    \begin{enumerate}
+      \item Rrite komisionin në 2\% (100\,000 lekë). Sa bëhet norma efektive vjetore?
+      \item Po me 1\% komision, por kredi vetëm 3 vjet (36 muaj)? Pse ndikimi është më i madh?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjNdrysho5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{NPV dhe IRR me \texttt{tvm}}
+<<w2h5-npv>>=
+cf <- c(-1e6, 4e5, 4e5, 4e5)        # t = 0, 1, 2, 3
+npv(0.08, cf)
+irr(cf)
+@
+  \pause
+  \small Njësoj si me formulat dhe \texttt{uniroot()} në Orën 4: 30\,839 lekë dhe 9.70\%. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=w2gjejGab5]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily
+    \# value today of 400 000 at the END of years 1, 2, 3\\
+    npv(0.08, c(400000, 400000, 400000))\\[2pt]
+    \#\# [1] 1113306
+  \end{Gabim}
+  \normalfont Rezultati duhet të ishte $400\,000\,a_{\overline{3}|}=1\,030\,839$. Ku është gabimi?
+  \vspace{4pt}
+
+  \shkoTe{w2zgjGab5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Me data reale: \texttt{xirr()}\Zgj}
+<<w2h5-xirr>>=
+d <- as.Date(c("2026-01-01", "2026-12-31", "2027-12-31", "2028-12-31"))
+xirr(cf, d)          # cash flows on actual dates (day count / 365)
+@
+  \pause
+  \small Pak ndryshe nga \texttt{irr()}: periudhat nuk janë saktësisht 1 vit (viti 2028 është i brishtë).
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{I gjithë laboratori në 10 rreshta}
+<<w2h5-all, eval=FALSE>>=
+library(fitdistrplus); library(tvm)
+xk  <- read.csv("../../02_data/individual_claims_synthetic.csv")$amount_eur
+xk  <- xk[xk <= 20000] / 1000                     # body, thousand EUR
+fits <- lapply(c("lnorm", "gamma", "weibull"), function(d) fitdist(xk, d))
+gofstat(fits, fitnames = c("lnorm", "gamma", "weibull"))
+qqcomp(fits, legendtext = c("lnorm", "gamma", "weibull"))
+pmt(amt = 5e6, maturity = 120, rate = 0.005)      # monthly instalment
+npv(0.08, c(-1e6, 4e5, 4e5, 4e5)); irr(c(-1e6, 4e5, 4e5, 4e5))
+@
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse \texttt{fitdist(x, "gamma")} dështoi në euro dhe punoi në mijë euro?
+    \item Cili kriter përdorim për të zgjedhur midis tre modeleve me 2 parametra?
+    \item Pse \texttt{npv(0.08, c(4e5, 4e5, 4e5))} jep vlerë më të madhe se $400\,000\,a_{\overline{3}|}$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) shkalla numerike e parametrit \texttt{rate}; (2) AIC (dhe grafiku QQ); (3) flukset trajtohen si $t=0,1,2$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{descdist} $\rightarrow$ \texttt{fitdist} $\rightarrow$ \texttt{gofstat} $\rightarrow$ \texttt{qqcomp}: rruga standarde.
+    \item Lognormalja fiton (AIC, AD, QQ); gama dhe Weibull nënvlerësojnë dëmet e mëdha.
+    \item Poisson me ekspozim: $\chi^2$ shumë i vogël, $\hat\phi\approx1$.
+    \item \texttt{tvm}: kontrollo tolerancën (\texttt{rate}, \texttt{cft}) dhe kohët e flukseve (\texttt{npv}).
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: zgjedhja e modelit të dëmeve, frekuenca auto, tri oferta krediti dhe një fond pensioni.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item M.~L.~Delignette-Muller, C.~Dutang, ``fitdistrplus: An R Package for Fitting Distributions'',
+          \emph{Journal of Statistical Software}, 64(4), 2015.
+    \item Dokumentacioni i paketës \Rkey{tvm} (versioni \Sexpr{as.character(packageVersion("tvm"))}).
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur): përzgjedhja e modeleve.
+    \item README i të dhënave: \texttt{individual\_claims\_synthetic.csv}, \texttt{motor\_portfolio\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
