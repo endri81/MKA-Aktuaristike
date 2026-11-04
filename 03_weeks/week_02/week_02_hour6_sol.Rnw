@@ -1,0 +1,50 @@
+% ============================================================
+%  Java 2 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w2zgjAlpha]{Zgjidhja: Parashiko (variancë e pafundme)}
+  \begin{itemize}
+    \item Për Pareto: $E[X^2]<\infty$ vetëm kur $\alpha>2$. Me $\alpha=1.8$ varianca është \textbf{e pafundme}.
+    \item Devijimi standard i mostrës nuk stabilizohet: çdo dëm i ri ekstrem mund ta rrisë fort.
+  \end{itemize}
+<<w2s6-alpha>>=
+set.seed(2026)
+xp <- 20000 * runif(1e6)^(-1 / 1.8)            # Pareto(alpha = 1.8) above 20000
+round(sapply(c(1e3, 1e4, 1e5, 1e6), function(n) sd(xp[1:n])))
+@
+  \vfill\kthehu{w2pyetjeAlpha}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjUsh6a]{Zgjidhja: Radha jote! (Tirana)}
+<<w2s6-tir>>=
+mp  <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+tir <- mp$region == "Tirane"
+pp  <- function(i) sum(mp$claim_amount_eur[i]) / sum(mp$exposure[i])
+round(c(tirana = pp(tir), others = pp(!tir), ratio = pp(tir) / pp(!tir)), 3)
+@
+  \small Këtu raporti del afër $e^{0.25}\approx1.28$. Por është pjesërisht rastësi: prima përfshin edhe ashpërsinë
+  (e zhurmshme) dhe përbërjen e portofolit (mosha, karburanti). Ora 6 e Javës 1 dha 1.12 vetëm për frekuencën.
+  \vfill\kthehu{w2ush6a}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjNdrysho6]{Zgjidhja: Ndrysho parametrin (10 vjet)}
+<<w2s6-off10>>=
+offers(120)
+@
+  \small Në 10 vjet, komisioni në fillim ``shpërndahet'' mbi 120 këste: oferta 2 bëhet më e lira.
+  Për kredi të gjatë, norma ka më shumë peshë se komisioni.
+  \vfill\kthehu{w2ndrysho6}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjGab6]{Zgjidhja: Gjej gabimin (pensioni)}
+  \begin{itemize}
+    \item Studenti përdori $a_{\overline{20}|}$ (pagesa në \textbf{fund}); pensioni paguhet në \textbf{fillim}: $\ddot a_{\overline{20}|}$.
+    \item $\ddot a_{\overline{n}|}=(1+i)\,a_{\overline{n}|}$, pra raporti është 1.04.
+  \end{itemize}
+<<w2s6-gab>>=
+wrong <- 600000 * (1 - 1.04^-20) / 0.04
+right <- 600000 * (1 - 1.04^-20) / (0.04 / 1.04)
+round(c(wrong = wrong, right = right, ratio = right / wrong), 4)
+@
+  \vfill\kthehu{w2gjejGab6}
+\end{frame}

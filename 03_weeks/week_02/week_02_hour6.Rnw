@@ -1,0 +1,388 @@
+% ============================================================
+%  Java 2 · Ora 6 — Rast studimi (Zgjerim)
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi\Zgj}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w2h6-setup, include=FALSE>>=
+library(ggplot2)
+library(tvm)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Rasti}
+% ------------------------------------------------------------
+
+\begin{frame}{Katër pyetje nga bordi}
+  \begin{enumerate}
+    \item<1-> \textbf{Dëmet}: cili model përshkruan \emph{gjithë} shpërndarjen, përfshirë dëmet e mëdha?
+          Sa është dëmi ``1 në 200'' (99.5\%)?
+    \item<2-> \textbf{Auto}: sa është prima e pastër për policë në vit? A ndryshon për Tiranën?
+    \item<3-> \textbf{Kreditë e stafit}: tri banka japin oferta. Cila është më e lirë?
+    \item<4-> \textbf{Pensionet}: si ndryshon rezerva e një pensioni kur ndryshon norma e interesit?
+  \end{enumerate}
+  \onslide<5->{
+  \begin{Keshille}Vetëm mjetet e Orëve 1--5. Asnjë paketë e re.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Të dhënat dhe supozimet}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Pyetja & Të dhënat & Lloji \\ \midrule
+    A & \texttt{individual\_claims\_synthetic.csv} (3\,000 dëme) & sintetike \\
+    B & \texttt{motor\_portfolio\_synthetic.csv} (10\,000 polica) & sintetike \\
+    C & tri oferta krediti & ilustruese \\
+    D & pension 600\,000 lekë/vit, 20 vjet & ilustruese \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{6pt}
+  \pause
+  \small Për A dhe B e dimë të vërtetën; për C dhe D, numrat janë të ndërtuar për mësim, jo oferta reale.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{A: trupi dhe bishti}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja: një model ``i ngjitur'' (\emph{spliced})}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick,uptblue] (0,0) -- (11,0) node[right,font=\small]{$x$};
+    \draw[thick,accent,dashed] (6,-0.2) -- (6,2.2) node[above,font=\small]{$u=20\,000$};
+    \draw[very thick,uptmid] plot[smooth] coordinates {(0.2,0.1) (1,1.8) (2,1.4) (3.5,0.7) (5,0.35) (6,0.25)};
+    \draw[very thick,okgreen] plot[smooth] coordinates {(6,0.25) (7,0.17) (8.5,0.11) (10.5,0.07)};
+    \node[uptmid,font=\small] at (2.6,2.0) {trupi: lognormale};
+    \node[okgreen,font=\small] at (8.6,0.8) {bishti: Pareto};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \begin{itemize}
+    \item<2-> Nën $u$: lognormale (Ora 3, 5). Mbi $u$: Pareto, me bisht shumë të rëndë.
+    \item<3-> Pesha: $p=\Pr(X>u)$, e vlerësuar nga pjesa e dëmeve mbi $u$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pareto mbi pragun $u$}
+  \begin{Definicion}[(Pareto me prag $u$)]
+    \[
+      \Pr(X>x\mid X>u)=\Big(\frac{u}{x}\Big)^{\alpha},\qquad x\ge u
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item MLE: $\hat\alpha=\dfrac{n}{\sum_i\log(x_i/u)}$ \quad (sepse $\log(X/u)\sim$ Eksponenciale($\alpha$)).
+    \item $E[X\mid X>u]=\dfrac{\alpha\,u}{\alpha-1}$ vetëm për $\alpha>1$.
+    \item \textbf{Kujdes}: për $\alpha\le2$ varianca është \textbf{e pafundme}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi i bishtit}
+<<w2h6-tail>>=
+x <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))$amount_eur
+u <- 20000
+x_tail <- x[x > u]
+alpha_hat <- length(x_tail) / sum(log(x_tail / u))       # Pareto MLE
+round(c(n_tail = length(x_tail), alpha_hat = alpha_hat,
+        se = alpha_hat / sqrt(length(x_tail)), truth = 1.8), 3)
+@
+  \pause
+  \small $\hat\alpha$ është $\approx1.3$ gabime standarde mbi të vërtetën: me vetëm 152 dëme, bishti mbetet i pasigurt.
+\end{frame}
+
+\begin{frame}[fragile]{Diagnoza e bishtit}
+<<w2h6-tailqq, fig.width=6, fig.height=2.4, out.width='0.6\\textwidth'>>=
+e <- sort(log(x_tail / u))                        # should be Exponential(alpha)
+ggplot(data.frame(t = qexp(ppoints(length(e)), rate = alpha_hat), d = e),
+       aes(t, d)) + geom_point(colour = "#15803D", size = 1) +
+  geom_abline(colour = "#D97706") + labs(x = "Exponential quantile", y = "log(x / u)") + th
+@
+\end{frame}
+
+\begin{frame}{Funksioni i shpërndarjes i modelit të ngjitur}
+  \[
+    F(x)=
+    \begin{cases}
+      (1-p)\,\dfrac{F_{LN}(x)}{F_{LN}(u)}, & x\le u\\[10pt]
+      (1-p)+p\Big[1-\big(u/x\big)^{\alpha}\Big], & x>u
+    \end{cases}
+  \]
+  \pause
+  \begin{itemize}
+    \item Lognormalja ``prehet'' në $u$ dhe rinormalizohet që të japë masë $1-p$.
+    \item Kuantilet: zgjidhim $F(q)=0.995$ me \texttt{uniroot()}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{VaR 99.5\%: tre modele}
+<<w2h6-var>>=
+p <- mean(x > u); lb <- log(x[x <= u]); mu <- mean(lb); s <- sqrt(mean((lb - mu)^2))
+F_spl <- function(q) ifelse(q <= u, (1 - p) * plnorm(q, mu, s) / plnorm(u, mu, s),
+                            (1 - p) + p * (1 - (u / q)^alpha_hat))
+F_tru <- function(q) 0.95 * plnorm(q, 7, 0.9) + 0.05 * ifelse(q > u, 1 - (u / q)^1.8, 0)
+q995  <- function(F) uniroot(function(q) F(q) - 0.995, c(1, 1e8), tol = 1e-8)$root
+la <- log(x); m1 <- mean(la); s1 <- sqrt(mean((la - m1)^2))     # one lognormal for all
+round(c(spliced = q995(F_spl), one_lognormal = qlnorm(0.995, m1, s1),
+        empirical = unname(quantile(x, 0.995)), truth = q995(F_tru)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Një lognormale e vetme për gjithçka: VaR 99.5\% $\approx$ \Sexpr{fmt(qlnorm(0.995, m1, s1))} €.
+          E vërteta: $\approx$ \Sexpr{fmt(q995(F_tru))} €. \textbf{Nënvlerësim i rëndë.}
+    \item<2-> Modeli i ngjitur: $\approx$ \Sexpr{fmt(q995(F_spl))} €: shumë më afër.
+    \item<3-> Pjesa e mbetur e gabimit vjen nga $\hat\alpha$ (152 vrojtime në bisht).
+    \item<4-> Mësimi: kapitali (Solvency II) varet pothuajse tërësisht nga \textbf{bishti}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeAlpha]{Parashiko!}
+  \begin{Parashiko}
+    Bishti i vërtetë ka $\alpha=1.8$.
+    \begin{enumerate}
+      \item A ka dëmi Pareto variancë të fundme?
+      \item Çfarë ndodh me devijimin standard të mostrës kur shtojmë më shumë dëme?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjAlpha}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{B: prima e pastër auto}
+% ------------------------------------------------------------
+
+\begin{frame}{Prima e pastër: frekuenca $\times$ ashpërsia}
+  \begin{Teoreme}[(modeli kolektiv)]
+    Nëse numri i dëmeve $N$ dhe shumat $X_1,X_2,\dots$ janë të pavarura:
+    \[
+      E\Big[\sum_{k=1}^{N}X_k\Big]=E[N]\,E[X]
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item $E[N]$ për një vit-policë: frekuenca $\hat\lambda$ (Ora 5).
+    \item $E[X]$: ashpërsia mesatare e një dëmi.
+    \item Prima e pastër = kostoja e pritshme e dëmeve, pa shpenzime dhe marzh.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Llogaritja (të dhëna sintetike)}
+<<w2h6-pp>>=
+mp  <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+lam <- sum(mp$n_claims) / sum(mp$exposure)            # claims per policy-year
+sev <- sum(mp$claim_amount_eur) / sum(mp$n_claims)    # EUR per claim
+round(c(frequency = lam, severity = sev, pure_premium = lam * sev), 3)
+@
+  \pause
+  \small E vërteta e ashpërsisë: Gamma me mesatare 900 €. Vlerësimi: $\approx$ \Sexpr{fmt(sev)} €.
+\end{frame}
+
+\begin{frame}[fragile]{Sipas rajonit}
+<<w2h6-region, fig.width=6.4, fig.height=2.4, out.width='0.62\\textwidth'>>=
+pp <- tapply(mp$claim_amount_eur, mp$region, sum) / tapply(mp$exposure, mp$region, sum)
+d  <- data.frame(region = names(pp), pp = as.numeric(pp))
+ggplot(d, aes(reorder(region, pp), pp, fill = region == "Tirane")) + geom_col() + coord_flip() +
+  scale_fill_manual(values = c("grey70", "#D97706"), guide = "none") +
+  labs(x = NULL, y = "Pure premium (EUR per policy-year)") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Prima e pastër = kosto e dëmeve / ekspozim: përfshin njëherësh frekuencën dhe ashpërsinë.
+    \item<2-> Renditja e rajoneve është e zhurmshme: disa rajone kanë pak polica dhe pak dëme.
+    \item<3-> Rajoni ndikon te frekuenca (e vërteta: $+0.25$ në log për Tiranën), por edhe mosha dhe karburanti.
+    \item<4-> Për të ndarë efektet: GLM Poisson $\times$ Gamma (Java 3).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2ush6a]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta)]
+    \begin{enumerate}
+      \item Llogarit primën e pastër për \textbf{Tiranën} dhe për \textbf{rajonet e tjera} së bashku.
+      \item Sa është raporti Tiranë / të tjerë?
+      \item Krahasoje me $e^{0.25}\approx1.28$. Pse mund të ndryshojë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjUsh6a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{C: tri oferta krediti}
+% ------------------------------------------------------------
+
+\begin{frame}{Tri oferta për 3\,000\,000 lekë, 5 vjet (ilustruese)}
+  \centering
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Oferta & Norma nominale & Komision në fillim & Komision mujor \\ \midrule
+    1 & 5.5\% & -- & -- \\
+    2 & 5.0\% & 2\% (60\,000 lekë) & -- \\
+    3 & 4.8\% & -- & 1\,000 lekë \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \begin{itemize}
+    \item Komisioni në fillim zbritet nga shuma që merr klienti.
+    \item Cila është më e lirë? Shkruaj parashikimin tënd para se të vazhdojmë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Kostoja efektive: një funksion}
+<<w2h6-eff>>=
+eff_cost <- function(L, n, j, up_fee = 0, per_fee = 0) {
+  P  <- pmt(amt = L, maturity = n, rate = j)                  # instalment on L
+  js <- uniroot(function(r) (P + per_fee) * (1 - (1 + r)^-n) / r - (L - up_fee),
+                c(1e-5, 0.05), tol = 1e-12)$root              # rate the client really pays
+  c(instalment = P + per_fee, total_paid = n * (P + per_fee), eff_annual = (1 + js)^12 - 1)
+}
+offers <- function(n) round(rbind(
+  offer1 = eff_cost(3e6, n, 0.055 / 12),
+  offer2 = eff_cost(3e6, n, 0.050 / 12, up_fee = 60000),
+  offer3 = eff_cost(3e6, n, 0.048 / 12, per_fee = 1000)), 4)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Rezultati: 5 vjet}
+<<w2h6-off5>>=
+offers(60)
+@
+  \pause
+  \begin{itemize}
+    \item Oferta 2 ka normën më të ulët nominale (5.0\%), por koston efektive \textbf{më të lartë}.
+    \item Oferta 1, pa komisione, del më e lira në 5 vjet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Norma nominale nuk mjafton: komisionet ndryshojnë renditjen.
+    \item<2-> Komisioni në fillim (60\,000 lekë) peshon shumë në një kredi të shkurtër.
+    \item<3-> Kriteri i saktë: norma që barazon \textbf{paratë e marra} me vlerën sot të \textbf{pagesave}.
+    \item<4-> E njëjta ide: IRR i klientit (Ora 4).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2ndrysho6]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    \begin{enumerate}
+      \item Ekzekuto \texttt{offers(120)}: afat 10 vjet.
+      \item A ndryshon oferta më e lirë? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjNdrysho6}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{D: fondi i pensionit}
+% ------------------------------------------------------------
+
+\begin{frame}{Pensioni: 600\,000 lekë në vit, 20 vjet}
+  \begin{itemize}
+    \item<1-> Fondi paguan 600\,000 lekë \textbf{në fillim} të çdo viti, për 20 vjet (pagesa të sigurta).
+    \item<2-> Rezerva sot: $600\,000\cdot\ddot a_{\overline{20}|}$.
+    \item<3-> Pyetja e bordit: sa ndryshon rezerva nëse norma bie nga 4\% në 3\%?
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Pagesa të sigurta sot; në Javën 7 i kombinojmë me probabilitetet e mbijetesës (anuitete jete).\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Rezerva sipas normës}
+<<w2h6-pens>>=
+a_due <- function(n, i) (1 - (1 + i)^-n) / (i / (1 + i))
+rates <- c(0.02, 0.03, 0.04, 0.05, 0.06)
+res   <- 600000 * sapply(rates, function(i) a_due(20, i))
+data.frame(rate = rates, reserve_ALL = round(res),
+           change_vs_previous = c(NA, round(100 * diff(res) / res[-5], 2)))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Figura: rezerva si funksion i normës}
+<<w2h6-pensplot, echo=FALSE, fig.width=6, fig.height=2.5, out.width='0.66\\textwidth'>>=
+ii <- seq(0.005, 0.08, by = 0.001)
+ggplot(data.frame(i = ii, R = 600000 * a_due(20, ii) / 1e6), aes(i, R)) +
+  geom_line(colour = "#2C5AA0", linewidth = 1) +
+  geom_point(data = data.frame(i = rates, R = res / 1e6), colour = "#D97706", size = 2) +
+  labs(x = "Interest rate", y = "Reserve (million ALL)") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Çdo pikë përqindjeje te norma ndryshon rezervën me rreth 7--8\%.
+    \item<2-> Kjo është \textbf{rreziku i normës së interesit}: një nga rreziqet kryesore të fondeve të pensioneve.
+    \item<3-> Solvency II e mat këtë me skenarë rritjeje dhe rënieje të kurbës së interesit.
+    \item<4-> Lakimi i kurbës: rënia e normës kushton më shumë se sa kursen rritja e saj.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2gjejGab6]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily
+    reserve <- 600000 * (1 - 1.04\^{}-20) / 0.04\\
+    reserve\\[2pt]
+    \#\# [1] 8154196
+  \end{Gabim}
+  \normalfont
+  \begin{enumerate}
+    \item Pse rezultati ndryshon nga tabela (me 4\%)?
+    \item Sa është raporti midis dy vlerave?
+  \end{enumerate}
+  \shkoTe{w2zgjGab6}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{Raporti për bordin}
+  \begin{enumerate}
+    \item<1-> \textbf{Dëmet}: lognormale për trupin + Pareto për bishtin. VaR 99.5\% $\approx$ \Sexpr{fmt(q995(F_spl))} €;
+          një model i vetëm lognormal do ta nënvlerësonte rreth \Sexpr{round(q995(F_spl) / qlnorm(0.995, m1, s1), 1)} herë.
+    \item<2-> \textbf{Auto}: prima e pastër $\approx$ \Sexpr{fmt(lam * sev, 1)} € për vit-policë; dallimet rajonale kërkojnë GLM.
+    \item<3-> \textbf{Kreditë}: në 5 vjet, oferta pa komisione është më e lira; në 10 vjet renditja ndryshon.
+    \item<4-> \textbf{Pensionet}: $-1$ pikë përqindjeje te norma $\Rightarrow$ rreth $+8\%$ te rezerva.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse VaR 99.5\% i një lognormaleje të vetme është shumë i vogël?
+    \item Si llogaritet prima e pastër nga frekuenca dhe ashpërsia?
+    \item Pse oferta me normën nominale më të ulët mund të jetë më e shtrenjta?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) bishti i saj është shumë më i lehtë se Pareto; (2) $E[N]\cdot E[X]$; (3) komisionet.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item Modeli i ngjitur: lognormale (trupi) + Pareto (bishti); $\hat\alpha=n/\sum\log(x_i/u)$.
+    \item Kapitali varet nga bishti; një model i vetëm mund të gabojë shumë.
+    \item Prima e pastër $=\hat\lambda\times\hat{E}[X]$.
+    \item Kostoja efektive e kredisë: IRR i flukseve të klientit.
+    \item Rezerva e pensionit: e ndjeshme ndaj normës; rreziku i interesit.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuizi, gabimet e zakonshme, fletë-kujtesa, detyra e shtëpisë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (shpërndarjet e humbjeve; bishtat e rëndë).
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur): modeli kolektiv, prima e pastër.
+    \item Dokumentacioni i paketës \Rkey{tvm}: \texttt{?pmt}.
+    \item README i të dhënave: \texttt{individual\_claims\_synthetic.csv}, \texttt{motor\_portfolio\_synthetic.csv} (sintetike, parametrat e vërtetë).
+    \item Ofertat e kredive dhe pensioni: \textbf{ilustruese}.
+  \end{itemize}
+\end{frame}
