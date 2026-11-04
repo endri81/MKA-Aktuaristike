@@ -1,0 +1,513 @@
+% ============================================================
+%  Java 2 · Ora 2 — Teoria I: shpërndarjet dhe vlerësimi
+% ============================================================
+\section{Teoria I}
+
+\begin{frame}{Ora 2 · Shpërndarjet dhe vlerësimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w2h2-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Statistika përshkruese}
+% ------------------------------------------------------------
+
+\begin{frame}{Masat e pozicionit}
+  \begin{Definicion}
+    \begin{itemize}
+      \item Mesatarja: $\bar x=\frac1n\sum_{i=1}^n x_i$.
+      \item Mediana: vlera e mesit pas renditjes.
+      \item Kuantili empirik $\hat q_p$: vlera nën të cilën ndodhet pjesa $p$ e të dhënave.
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \small Mesatarja përdor çdo vlerë (edhe ekstremet); mediana dhe kuantilet varen vetëm nga renditja.
+\end{frame}
+
+\begin{frame}{Masat e shpërndarjes}
+  \begin{Definicion}
+    \begin{itemize}
+      \item Varianca e mostrës: $s^2=\frac{1}{n-1}\sum (x_i-\bar x)^2$; \; devijimi standard $s=\sqrt{s^2}$.
+      \item Gjerësia ndërkuartilore (\emph{IQR}): $\hat q_{0.75}-\hat q_{0.25}$.
+      \item Koeficienti i variacionit (\emph{CV}): $s/\bar x$ (pa njësi).
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item CV lejon krahasimin e portofoleve me njësi ose shkallë të ndryshme.
+    \item Pse $n-1$? Që $s^2$ të jetë vlerësues i pazhvendosur i $\mathrm{Var}(X)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Asimetria (\emph{skewness})}
+  \[
+    \hat\gamma_1=\frac{\frac1n\sum (x_i-\bar x)^3}{\Big(\frac1n\sum (x_i-\bar x)^2\Big)^{3/2}}
+  \]
+  \pause
+  \begin{itemize}
+    \item $\hat\gamma_1>0$: bisht i gjatë djathtas (dëmet).
+    \item $\hat\gamma_1\approx0$: simetrike (p.sh.\ normalja).
+  \end{itemize}
+  \pause
+  \begin{Keshille}Në R bazë nuk ka funksion \texttt{skewness()}. E shkruajmë vetë: tri rreshta.\end{Keshille}
+\end{frame}
+
+\begin{frame}[fragile]{Dëmet: përshkrimi në R (sintetike)}
+<<w2h2-desc>>=
+x <- cl$amount_eur
+round(c(n = length(x), mean = mean(x), median = median(x), sd = sd(x),
+        IQR = IQR(x), CV = sd(x) / mean(x)), 2)
+skew <- function(x) mean((x - mean(x))^3) / mean((x - mean(x))^2)^1.5
+skew(x)
+quantile(x, c(0.25, 0.5, 0.75, 0.95, 0.995))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> CV $>$ 2: luhatje shumë e madhe krahasuar me mesataren.
+    \item<2-> Asimetria shumë e madhe: disa dëme ekstreme dominojnë.
+    \item<3-> $\hat q_{0.995}$ është shumë herë më i madh se mediana: ky është ``dëmi 1 në 200''.
+    \item<4-> Asnjë shpërndarje simetrike (si normalja) nuk i përshtatet këtyre të dhënave.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeRob]{Pyetje e shpejtë}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Shtojmë në të dhëna një dëm të vetëm prej 5\,000\,000 €. Cila masë ndryshon \textbf{më pak}?
+    \begin{enumerate}
+      \item[A)] mesatarja
+      \item[B)] devijimi standard
+      \item[C)] mediana
+      \item[D)] asimetria
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjRob}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Familja \texttt{d/p/q/r}}
+% ------------------------------------------------------------
+
+\begin{frame}{Katër funksione për çdo shpërndarje}
+  \centering\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Parashtesa & Kuptimi & Shembull (normalja) \\ \midrule
+    \texttt{d} & dendësia $f(x)$ (ose $\Pr(N=k)$) & \texttt{dnorm(x)} \\
+    \texttt{p} & funksioni i shpërndarjes $F(x)$ & \texttt{pnorm(x)} \\
+    \texttt{q} & kuantili $F^{-1}(p)$ & \texttt{qnorm(p)} \\
+    \texttt{r} & numra të rastit & \texttt{rnorm(n)} \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \pause
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Shpërndarja & Emri në R \\ \midrule
+    normale, lognormale & \texttt{norm}, \texttt{lnorm} \\
+    gama, eksponenciale, Weibull & \texttt{gamma}, \texttt{exp}, \texttt{weibull} \\
+    Poisson, binomiale & \texttt{pois}, \texttt{binom} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Normalja standarde në R}
+<<w2h2-norm>>=
+dnorm(0)              # height of the density at 0
+pnorm(1.96)           # P(Z <= 1.96)
+qnorm(0.975)          # the 97.5% quantile
+qnorm(pnorm(1.2))     # q and p are inverse functions
+@
+\end{frame}
+
+\begin{frame}{Figura: \texttt{pnorm} dhe \texttt{qnorm}}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=0.74\textwidth,height=0.52\textheight,
+      xlabel={$z$},ylabel={$\varphi(z)$},xmin=-3.5,xmax=3.5,ymin=0,ymax=0.45,
+      domain=-3.5:3.5,samples=120,grid=major,grid style={gray!20}]
+      \addplot[draw=none,fill=uptmid!25,domain=-3.5:1.96] {exp(-x^2/2)/sqrt(2*pi)} \closedcycle;
+      \addplot[uptmid,very thick]{exp(-x^2/2)/sqrt(2*pi)};
+      \addplot[accent,thick,dashed] coordinates {(1.96,0) (1.96,0.4)};
+      \node[accent,font=\scriptsize,anchor=west] at (axis cs:2.0,0.36) {$z=1.96$};
+      \node[uptblue,font=\scriptsize] at (axis cs:-0.6,0.12) {sipërfaqja $=0.975$};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small \texttt{pnorm(1.96)} jep sipërfaqen (0.975). \texttt{qnorm(0.975)} kthen pikën (1.96).
+\end{frame}
+
+\begin{frame}[fragile]{Shpërndarje diskrete: Poisson për numrin e dëmeve}
+<<w2h2-pois>>=
+lambda <- 0.14                  # about the motor portfolio frequency (Week 1)
+dpois(0:3, lambda)              # P(N = 0), ..., P(N = 3)
+1 - ppois(1, lambda)            # P(N >= 2) = 1 - P(N <= 1)
+@
+  \pause
+  \small Rreth 87\% e policave nuk kanë asnjë dëm në vit; vetëm $<1\%$ kanë dy ose më shumë.
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: ``të paktën'' te shpërndarjet diskrete}
+  \begin{Gabim}
+    $\Pr(N\ge 2)=1-\Pr(N\le 1)=$ \texttt{1 - ppois(1, lambda)}.\\
+    \textbf{Jo} \texttt{1 - ppois(2, lambda)}: kjo është $\Pr(N\ge 3)$.
+  \end{Gabim}
+  \pause
+  \begin{Keshille}
+    Shkruaj gjithmonë ngjarjen me shenjat $\le$, pastaj përkthe në R.
+    Alternativë: \texttt{ppois(1, lambda, lower.tail = FALSE)} jep $\Pr(N>1)$.
+  \end{Keshille}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeBin]{Parashiko!}
+  \begin{Parashiko}
+    10 persona të pavarur, secili me $q=0.01$ probabilitet vdekjeje në vit.
+    \begin{enumerate}
+      \item Sa është $\Pr(\text{të paktën një vdekje})$? Llogarit pa ndihmën e PC.
+      \item Shkruaj komandën në R me \texttt{pbinom}.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjBin}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Numrat e rastit: teoria vs simulimi}
+<<w2h2-sim>>=
+set.seed(2026)
+z <- rnorm(100000)
+c(mean = mean(z), sd = sd(z), p_below_1.96 = mean(z <= 1.96))
+@
+  \pause
+  \small Me 100\,000 vlera, simulimi rikthen teorinë: 0, 1 dhe 0.975.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lognormalja}
+% ------------------------------------------------------------
+
+\begin{frame}{Lognormalja: përkufizimi}
+  \begin{Definicion}[(lognormale, \emph{lognormal})]
+    $X$ është lognormale me parametra $\mu,\sigma$ nëse $\;Y=\log X\sim N(\mu,\sigma^2)$.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Pra $X=e^{Y}$: gjithmonë pozitive. \textcolor{okgreen}{$\checkmark$} për dëmet.
+    \item Logaritmi ``ngjesh'' dëmet e mëdha: mbi shkallën log ato duken normale.
+    \item $\mu,\sigma$ janë mesatarja dhe devijimi i $\log X$, \textbf{jo} i $X$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Dendësia}
+  \[
+    f(x)=\frac{1}{x\,\sigma\sqrt{2\pi}}\exp\!\Big(-\frac{(\ln x-\mu)^2}{2\sigma^2}\Big),\qquad x>0
+  \]
+  \pause
+  \begin{itemize}
+    \item Pse $1/x$? Nga ndryshimi i ndryshores $y=\ln x$, \; $dy=dx/x$.
+    \item Në R: \texttt{dlnorm(x, meanlog = mu, sdlog = sigma)}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Momentet: hap pas hapi}
+  \begin{align*}
+    E[X] &= E[e^{Y}], \qquad Y\sim N(\mu,\sigma^2)\\
+    \onslide<2->{&= M_Y(1) \qquad \text{(funksioni gjenerues i momenteve)}\\}
+    \onslide<3->{&= e^{\mu+\sigma^2/2}\\[4pt]}
+    \onslide<4->{\mathrm{Var}(X) &= E[X^2]-E[X]^2 = e^{2\mu+2\sigma^2}-e^{2\mu+\sigma^2}
+                 = e^{2\mu+\sigma^2}\big(e^{\sigma^2}-1\big)}
+  \end{align*}
+  \onslide<5->{\small Kujto: $M_Y(t)=E[e^{tY}]=e^{\mu t+\sigma^2t^2/2}$ për normalen.}
+\end{frame}
+
+\begin{frame}{Mediana dhe kuantilet}
+  \begin{itemize}
+    \item<1-> $\log$ është rritëse, ndaj kuantilet ``kalojnë'' nëpër të:
+      \[
+        q_p(X)=\exp\big(q_p(Y)\big)=\exp(\mu+\sigma\,z_p)
+      \]
+    \item<2-> Mediana: $z_{0.5}=0$ $\Rightarrow$ mediana $=e^{\mu}$.
+    \item<3-> Mesatarja $e^{\mu+\sigma^2/2}>e^{\mu}$ = mediana: gjithmonë, sa kohë $\sigma>0$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: $\mu=7$, $\sigma=0.9$}
+  \begin{enumerate}
+    \item<1-> Mediana: $e^{7}\approx 1\,096.6$ €.
+    \item<2-> Mesatarja: $e^{7+0.405}=e^{7}\cdot e^{0.405}\approx 1\,096.6\times1.4993\approx 1\,644.2$ €.
+    \item<3-> $q_{0.95}$: $z_{0.95}=1.645$ $\Rightarrow$ $e^{7+0.9\times1.645}=e^{8.4805}\approx 4\,819$ €.
+    \item<4-> $\mathrm{sd}(X)=1\,644.2\times\sqrt{e^{0.81}-1}\approx 1\,644.2\times1.117\approx 1\,837$ €.
+  \end{enumerate}
+  \onslide<5->{\small Këta janë parametrat e vërtetë të ``trupit'' të dëmeve sintetike.}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w2h2-lnorm>>=
+mu <- 7; sigma <- 0.9
+c(median = qlnorm(0.5, mu, sigma), mean = exp(mu + sigma^2 / 2),
+  q95 = qlnorm(0.95, mu, sigma),
+  sd = exp(mu + sigma^2 / 2) * sqrt(exp(sigma^2) - 1))
+set.seed(2026)
+mean(rlnorm(1e6, mu, sigma))      # simulation agrees with the formula
+@
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: \texttt{sdlog}}
+  \begin{Gabim}
+    \texttt{rlnorm(n, meanlog = 1644, sdlog = 1837)} \textbf{nuk} jep dëme me mesatare 1\,644 €.\\
+    \texttt{meanlog} dhe \texttt{sdlog} janë $\mu$ dhe $\sigma$ të $\log X$.
+  \end{Gabim}
+  \pause
+  \begin{Keshille}
+    Nga mesatarja $m$ dhe devijimi $s$ i $X$:
+    $\;\sigma^2=\log(1+s^2/m^2)$, \; $\mu=\log m-\sigma^2/2$.
+    (Kjo është metoda e momenteve: pas pak slide-sh.)
+  \end{Keshille}
+\end{frame}
+
+\begin{frame}[label=w2ush2a]{Radha jote!}
+  \begin{Ushtrim}[(3 minuta, pa ndihmën e PC)]
+    Dëmet në një degë tjetër: lognormale me $\mu=6$, $\sigma=0.5$.
+    \begin{enumerate}
+      \item Llogarit medianën dhe mesataren ($e^{6}\approx403.4$, \; $e^{0.125}\approx1.133$).
+      \item Llogarit $q_{0.99}$ ($z_{0.99}=2.326$, \; $e^{1.163}\approx3.20$).
+      \item Kontrollo në R me \texttt{qlnorm}.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjUsh2a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gama dhe Weibull}
+% ------------------------------------------------------------
+
+\begin{frame}{Gama dhe Weibull}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{Gama}$(\alpha,\beta)$
+      \begin{itemize}
+        \item $E[X]=\alpha/\beta$
+        \item $\mathrm{Var}(X)=\alpha/\beta^2$
+        \item R: \texttt{dgamma(x, shape, rate)}
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{Weibull}$(k,\lambda)$
+      \begin{itemize}
+        \item $F(x)=1-e^{-(x/\lambda)^k}$
+        \item $E[X]=\lambda\,\Gamma(1+1/k)$
+        \item R: \texttt{dweibull(x, shape, scale)}
+      \end{itemize}
+  \end{columns}
+  \pause
+  \begin{Gabim}
+    \texttt{dgamma(x, 2, 900)} lexohet si \texttt{shape = 2, rate = 900}, jo \texttt{scale = 900}.
+    Shkruaj gjithmonë emrin e argumentit.
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Tri shpërndarje me të njëjtën mesatare dhe devijim}
+<<w2h2-three-code, eval=FALSE>>=
+m <- exp(7 + 0.81 / 2); s <- m * sqrt(exp(0.81) - 1)    # lognormal(7, 0.9) moments
+a <- m^2 / s^2; b <- m / s^2                            # gamma with same m, s
+k <- uniroot(function(k) sqrt(gamma(1 + 2/k) / gamma(1 + 1/k)^2 - 1) - s / m,
+             c(0.3, 5))$root                            # Weibull shape with same CV
+lam <- m / gamma(1 + 1 / k)                             # Weibull scale
+@
+<<w2h2-three, echo=FALSE>>=
+m <- exp(7 + 0.81 / 2); s <- m * sqrt(exp(0.81) - 1)
+a <- m^2 / s^2; b <- m / s^2
+k <- uniroot(function(k) sqrt(gamma(1 + 2/k) / gamma(1 + 1/k)^2 - 1) - s / m, c(0.3, 5))$root
+lam <- m / gamma(1 + 1 / k)
+round(c(gamma_shape = a, gamma_rate = b, weibull_shape = k, weibull_scale = lam), 6)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Bishtat: e njëjta mesatare, rrezik i ndryshëm}
+<<w2h2-tails>>=
+u <- c(10000, 20000, 50000)
+round(rbind(lognormal = plnorm(u, 7, 0.9, lower.tail = FALSE),
+            gamma     = pgamma(u, shape = a, rate = b, lower.tail = FALSE),
+            weibull   = pweibull(u, shape = k, scale = lam, lower.tail = FALSE)), 6)
+@
+  \pause
+  \small $\Pr(X>u)$ për tri modele me \textbf{të njëjtat} dy momente. Në 50\,000 € ndryshimi është shumëfish.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Dy momentet e para nuk e përcaktojnë bishtin.
+    \item<2-> Lognormalja ka bishtin më të rëndë nga të tria në dëme shumë të mëdha.
+    \item<3-> Zgjedhja e modelit ndikon drejtpërdrejt te risigurimi dhe kapitali.
+    \item<4-> Prandaj në Orën 5 krahasojmë modelet me AIC dhe me grafikë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Metoda e momenteve}
+% ------------------------------------------------------------
+
+\begin{frame}{Metoda e momenteve (\emph{method of moments})}
+  \begin{Definicion}
+    Zgjidh parametrat që momentet \textbf{teorike} të jenë të barabarta me momentet e \textbf{mostrës}.
+  \end{Definicion}
+  \pause
+  Për lognormalen:
+  \begin{align*}
+    e^{\mu+\sigma^2/2} &= \bar x \\
+    \onslide<3->{e^{2\mu+\sigma^2}\big(e^{\sigma^2}-1\big) &= s^2 \\}
+    \onslide<4->{\Rightarrow\; \hat\sigma^2 &= \log\!\Big(1+\frac{s^2}{\bar x^2}\Big),\qquad
+                 \hat\mu=\log\bar x-\frac{\hat\sigma^2}{2}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: 5 dëmet e Orës 1}
+  \begin{enumerate}
+    \item<1-> $\bar x=1\,600$, \; $s^2=3.7\times10^6$.
+    \item<2-> $s^2/\bar x^2 = 3.7\times10^6/2.56\times10^6 = 1.4453$.
+    \item<3-> $\hat\sigma^2=\log(2.4453)\approx0.8942$, \; $\hat\sigma\approx0.946$.
+    \item<4-> $\hat\mu=\log 1600-0.4471\approx 7.3778-0.4471=6.931$.
+  \end{enumerate}
+  \onslide<5->{
+  \begin{Keshille}Për gamën: $\hat\alpha=\bar x^2/s^2$, \; $\hat\beta=\bar x/s^2$. Edhe më e thjeshtë.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përgjasia maksimale}
+% ------------------------------------------------------------
+
+\begin{frame}{Përgjasia maksimale: ideja}
+  \begin{itemize}
+    \item<1-> Kemi vrojtuar $x_1,\dots,x_n$.
+    \item<2-> Për çdo vlerë të parametrave $\theta$, pyesim: sa ``e besueshme'' është të vrojtonim këto të dhëna?
+    \item<3-> Zgjedhim $\hat\theta$ që e bën këtë më të madhe.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Definicion}[(përgjasia, \emph{likelihood})]
+    \[
+      L(\theta)=\prod_{i=1}^n f(x_i;\theta),\qquad
+      \ell(\theta)=\log L(\theta)=\sum_{i=1}^n \log f(x_i;\theta)
+    \]
+  \end{Definicion}}
+\end{frame}
+
+\begin{frame}{Pse logaritmi?}
+  \begin{itemize}
+    \item<1-> Prodhimi i 3\,000 dendësive të vogla bëhet $\approx0$ në kompjuter (\emph{underflow}).
+    \item<2-> Shuma e logaritmeve është numër i zakonshëm.
+    \item<3-> $\log$ është rritëse: maksimumi i $\ell$ është në të njëjtin $\theta$ si maksimumi i $L$.
+    \item<4-> Derivati i një shume është më i lehtë se derivati i një prodhimi.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{MLE për lognormalen: hap pas hapi}
+  \begin{align*}
+    \ell(\mu,\sigma) &= -\sum\ln x_i-n\ln\sigma-\frac n2\ln(2\pi)-\frac{1}{2\sigma^2}\sum(\ln x_i-\mu)^2\\
+    \onslide<2->{\frac{\partial\ell}{\partial\mu}&=\frac{1}{\sigma^2}\sum(\ln x_i-\mu)=0
+      \;\Rightarrow\; \hat\mu=\frac1n\sum\ln x_i\\}
+    \onslide<3->{\frac{\partial\ell}{\partial\sigma}&=-\frac n\sigma+\frac{1}{\sigma^3}\sum(\ln x_i-\mu)^2=0
+      \;\Rightarrow\; \hat\sigma^2=\frac1n\sum(\ln x_i-\hat\mu)^2}
+  \end{align*}
+  \onslide<4->{\small Pra: MLE e lognormales = mesatarja dhe devijimi i $\log x$ (me pjesëtim me $n$).}
+\end{frame}
+
+\begin{frame}[fragile]{MoM dhe MLE mbi 5 dëmet}
+<<w2h2-mommle>>=
+x <- c(400, 600, 800, 1200, 5000)
+s2 <- log(1 + var(x) / mean(x)^2)                      # method of moments
+mom <- c(mu = log(mean(x)) - s2 / 2, sigma = sqrt(s2))
+lx <- log(x)                                           # maximum likelihood
+mle <- c(mu = mean(lx), sigma = sqrt(mean((lx - mean(lx))^2)))
+round(rbind(MoM = mom, MLE = mle), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\hat\mu$ janë të afërta; $\hat\sigma$ ndryshon pak.
+    \item<2-> MoM varet shumë nga $s^2$, pra nga dëmi i madh (5\,000 €).
+    \item<3-> MLE punon në shkallë log: dëmi i madh ka më pak peshë.
+    \item<4-> Me 5 vrojtime asnjë metodë nuk është e besueshme. Në Orën 3: 3\,000 dëme dhe e vërteta e njohur.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: $n$ apo $n-1$?}
+  \begin{Gabim}
+    \texttt{sd(log(x))} pjesëton me $n-1$. MLE e $\sigma$ pjesëton me $n$.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Me $n=5$ ndryshimi është i dukshëm: $\sqrt{5/4}\approx1.118$.
+    \item Me $n=3\,000$ është i papërfillshëm.
+    \item Në provim: shkruaj qartë cilin përdor.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2gjejGab2]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily
+    \# MLE of the lognormal\\
+    mu\_hat <- log(mean(x))\\
+    sigma\_hat <- log(sd(x))
+  \end{Gabim}
+  \normalfont
+  \begin{enumerate}
+    \item Ku janë gabimet?
+    \item Shkruaj versionin e saktë.
+  \end{enumerate}
+  \shkoTe{w2zgjGab2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Vetitë e MLE\Zgj}
+  \begin{itemize}
+    \item<1-> \textbf{Konsistenca}: $\hat\theta\to\theta$ kur $n\to\infty$.
+    \item<2-> \textbf{Normaliteti asimptotik}: $\hat\theta\approx N\big(\theta, I(\theta)^{-1}\big)$ për $n$ të madh.
+    \item<3-> \textbf{Invarianca}: MLE e $g(\theta)$ është $g(\hat\theta)$.
+      \begin{itemize}
+        \item P.sh.\ MLE e mesatares së lognormales: $e^{\hat\mu+\hat\sigma^2/2}$.
+      \end{itemize}
+    \item<4-> Kur nuk ka formulë të mbyllur: maksimizim numerik me \texttt{optim()} (Ora 3).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë kthen \texttt{qlnorm(0.5, 7, 0.9)}? Pse?
+    \item Si e llogarit $\Pr(N\ge3)$ për $N\sim$ Poisson(0.14) në R?
+    \item Cili është MLE i $\mu$ për lognormalen?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $e^7\approx1097$, mediana; (2) \texttt{1 - ppois(2, 0.14)}; (3) mesatarja e $\log x_i$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item Përshkrimi: mesatare, mediana, $s$, IQR, CV, asimetria, kuantilet.
+    \item \texttt{d/p/q/r}: dendësi, probabilitet, kuantil, simulim.
+    \item Lognormalja: $E[X]=e^{\mu+\sigma^2/2}$, mediana $e^\mu$, $q_p=e^{\mu+\sigma z_p}$.
+    \item Të njëjtat momente $\neq$ i njëjti bisht.
+    \item MoM: barazo momentet. MLE: maksimizo $\ell(\theta)$; lognormalja ka formulë të mbyllur.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator: MoM dhe MLE mbi 3\,000 dëme, \texttt{optim()}, grafiku QQ, vlerësimi vs e vërteta.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika
+          Matematike me ilustrime në gjuhën R}, Kotti, 2021 (shpërndarjet, momentet, vlerësimi).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (shpërndarjet e humbjeve).
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur), kapitujt mbi shpërndarjet e ashpërsisë.
+    \item Dokumentacioni i R: \texttt{?Distributions}, \texttt{?Lognormal}, \texttt{?GammaDist}.
+  \end{itemize}
+\end{frame}

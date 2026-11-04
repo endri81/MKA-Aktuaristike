@@ -1,0 +1,49 @@
+% ============================================================
+%  Java 2 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w2zgjRob]{Zgjidhja: cila masë është e qëndrueshme?}
+  \textbf{C) mediana.}
+<<w2s2-rob>>=
+x  <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))$amount_eur
+x2 <- c(x, 5e6)                                  # add one huge claim
+round(rbind(before = c(mean(x),  median(x),  sd(x)),
+            after  = c(mean(x2), median(x2), sd(x2))), 1)
+@
+  \small Mediana pothuajse nuk lëviz; mesatarja dhe devijimi ndryshojnë ndjeshëm.
+  \vfill\kthehu{w2pyetjeRob}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjBin]{Zgjidhja: Parashiko (binomialja)}
+  \[
+    \Pr(\ge 1)=1-\Pr(0)=1-0.99^{10}\approx 1-0.9044=0.0956
+  \]
+<<w2s2-bin>>=
+1 - pbinom(0, size = 10, prob = 0.01)
+@
+  \vfill\kthehu{w2pyetjeBin}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjUsh2a]{Zgjidhja: Radha jote! (lognormale $\mu=6$, $\sigma=0.5$)}
+  \begin{itemize}
+    \item Mediana $=e^{6}\approx403.4$; \quad mesatarja $=e^{6.125}\approx403.4\times1.133\approx457.1$.
+    \item $q_{0.99}=e^{6+0.5\times2.326}=e^{6}\,e^{1.163}\approx403.4\times3.20\approx1\,291$.
+  \end{itemize}
+<<w2s2-ln>>=
+c(median = qlnorm(0.5, 6, 0.5), mean = exp(6 + 0.5^2 / 2), q99 = qlnorm(0.99, 6, 0.5))
+@
+  \vfill\kthehu{w2ush2a}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjGab2]{Zgjidhja: Gjej gabimin (MLE)}
+  \begin{enumerate}
+    \item \texttt{log(mean(x))} $\neq$ \texttt{mean(log(x))}: logaritmi i mesatares nuk është mesatarja e logaritmeve.
+    \item \texttt{log(sd(x))} nuk ka kuptim: $\sigma$ është devijimi i $\log x$, jo logaritmi i devijimit.
+  \end{enumerate}
+<<w2s2-gab, eval=FALSE>>=
+lx <- log(x)
+mu_hat    <- mean(lx)
+sigma_hat <- sqrt(mean((lx - mu_hat)^2))   # divides by n (MLE)
+@
+  \vfill\kthehu{w2gjejGab2}
+\end{frame}
