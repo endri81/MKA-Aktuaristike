@@ -1,0 +1,656 @@
+% ============================================================
+%  Java 3 · Ora 1 — Motivimi: sa paguan portofoli gjithsej?
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w3h1-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e bordit}
+% ------------------------------------------------------------
+
+\begin{frame}{Një mbledhje bordi në një kompani sigurimesh}
+  \begin{itemize}
+    \item<1-> Portofoli auto (Kasko): \textbf{10\,000 police}, të shpërndara në 12 qarqe.
+    \item<2-> Drejtori financiar pyet:
+  \end{itemize}
+  \onslide<3->{
+  \begin{Shembull}[(pyetja e bordit)]
+    ``Sa do të paguajmë \textbf{gjithsej} për dëme vitin e ardhshëm?
+    Dhe me çfarë probabiliteti shuma e dëmeve kalon 750\,000 €?''
+  \end{Shembull}}
+  \begin{itemize}
+    \item<4-> Pyetja e parë kërkon një \textbf{mesatare}.
+    \item<5-> Pyetja e dytë kërkon \textbf{gjithë shpërndarjen} e shumës totale.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pse ka rëndësi pyetja e dytë?}
+  \begin{itemize}
+    \item<1-> Prima mbulon mesataren. Kapitali mbulon \textbf{vitet e këqija}.
+    \item<2-> Solvency II: kapitali duhet të mjaftojë në 199 vite nga 200 (VaR 99.5\%).
+    \item<3-> Risiguruesi çmon kontratën stop-loss nga \textbf{bishti} i shumës totale.
+    \item<4-> AMF (Autoriteti i Mbikëqyrjes Financiare) kërkon rezerva dhe kapital të argumentuara.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Mesatarja i përgjigjet ``sa?''. Shpërndarja i përgjigjet ``sa keq mund të shkojë?''.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Çfarë sollëm nga Java 2}
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    Përbërësi & Modeli & Vlerësimi (Java 2) \\
+    \midrule
+    Frekuenca (\emph{frequency}) & Poisson me ekspozim & $\hat\lambda\approx0.141$ për police-vit \\
+    Ashpërsia (\emph{severity}) & Gamma (auto) & mesatare $\approx 870$ € \\
+    Dëmet individuale & Lognormale + Pareto & bisht i rëndë mbi 20\,000 € \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{10pt}
+  \begin{itemize}
+    \item<2-> I kemi \textbf{veç e veç}: sa dëme ndodhin dhe sa kushton secili.
+    \item<3-> Pyetja e sotme: si i \textbf{bashkojmë} në një shumë totale?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Portofoli auto në R}
+<<w3h1-motor>>=
+d <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+c(policies  = nrow(d),
+  exposure  = sum(d$exposure),        # policy-years
+  claims    = sum(d$n_claims),
+  total_eur = sum(d$claim_amount_eur))
+table(d$n_claims)                     # claims per policy
+@
+  \small Të dhëna \textbf{sintetike} (\texttt{motor\_portfolio\_synthetic.csv}), me parametra të njohur.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> 10\,000 police, por vetëm $\approx$\Sexpr{fmt(sum(d$exposure))} police-vite: shumë police mbulojnë një pjesë të vitit.
+    \item<2-> \Sexpr{sum(d$n_claims)} dëme gjithsej, me shumë \Sexpr{fmt(sum(d$claim_amount_eur))} €.
+    \item<3-> Shumica dërrmuese e policave (\Sexpr{fmt(100*mean(d$n_claims==0),1)}\%) nuk kanë asnjë dëm.
+    \item<4-> Disa police kanë 2 ose 3 dëme: numri i dëmeve është \textbf{i rastit}.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Pyetje}
+    Vitin e ardhshëm shuma totale nuk do të jetë saktësisht \Sexpr{fmt(sum(d$claim_amount_eur))} €. Sa mund të lëkundet?
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 3}
+  \begin{enumerate}
+    \item<1-> Të ndërtojmë \termi{modelin kolektiv}{collective risk model} $S=X_1+\dots+X_N$. \LO{K3}
+    \item<2-> Të përdorim shpërndarjet e humbjeve dhe modifikimet e policës në \Rkey{actuar}. \LO{S2}
+    \item<3-> Të kuptojmë \termi{funksionet e përziera}{mixed functions}: përzierjet dhe shpërndarjet e përbëra. \LO{K2}
+    \item<4-> Të llogarisim shpërndarjen e $S$: Panjer, simulim, përafrime. \LO{K3}
+    \item<5-> Të vlerësojmë VaR, TVaR dhe çmimin stop-loss të risigurimit. \LO{S2}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.5cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (n) at (0,1) {\textbf{Frekuenca} $N$\\Poisson, NB};
+    \node[b] (x) at (0,-1) {\textbf{Ashpërsia} $X$\\Gamma, Pareto};
+    \node[b,fill=accent!15,draw=accent] (s) at (4,0) {\textbf{Totali} $S$\\Panjer, simulim};
+    \node[b] (r) at (8,1) {\textbf{Kapitali}\\VaR, TVaR};
+    \node[b] (q) at (8,-1) {\textbf{Risigurimi}\\stop-loss, XL};
+    \draw[->,thick,uptmid] (n.east) -- (s.west);
+    \draw[->,thick,uptmid] (x.east) -- (s.west);
+    \draw[->,thick,uptmid] (s.east) -- (r.west);
+    \draw[->,thick,uptmid] (s.east) -- (q.west);
+    \node[font=\scriptsize,text=gray] at (4,-1.4) {Ora 3 dhe Ora 5};
+    \node[font=\scriptsize,text=gray] at (0,-2) {Ora 2};
+    \node[font=\scriptsize,text=gray] at (8,-2) {Ora 6};
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Modeli kolektiv}
+% ------------------------------------------------------------
+
+\begin{frame}{Modeli kolektiv i rrezikut}
+  \begin{Definicion}[(modeli kolektiv)]
+    Shuma totale e dëmeve në një periudhë është
+    \[
+      S=X_1+X_2+\dots+X_N,\qquad S=0 \text{ kur } N=0,
+    \]
+    ku $N$ është numri i dëmeve dhe $X_i$ shuma e dëmit të $i$-të.
+  \end{Definicion}
+  \pause
+  \textbf{Supozimet:}
+  \begin{enumerate}
+    \item $X_1,X_2,\dots$ janë të pavarura dhe me të njëjtën shpërndarje (\emph{i.i.d.}) si $X$.
+    \item $N$ është i pavarur nga $X_1,X_2,\dots$
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Një vit në portofol: figura}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (10.5,0) node[right,font=\small]{$t$};
+    \draw (0,0.1) -- (0,-0.1) node[below,font=\scriptsize]{1 janar};
+    \draw (10,0.1) -- (10,-0.1) node[below,font=\scriptsize]{31 dhjetor};
+    \foreach \t/\h/\lab in {1.6/0.8/X_1, 3.9/1.6/X_2, 5.2/0.5/X_3, 8.4/2.2/X_4}{
+      \draw[very thick,accent] (\t,0) -- (\t,\h);
+      \node[above,font=\small] at (\t,\h) {$\lab$};
+    }
+    \node[draw=uptblue,fill=uptlight,rounded corners=2pt,font=\small,align=left] at (5,-1.5)
+      {Këtë vit: $N=4$, \quad $S=X_1+X_2+X_3+X_4$};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \begin{itemize}
+    \item<2-> Dy burime pasigurie: \textbf{sa} shufra (numri $N$) dhe \textbf{sa të larta} (shumat $X_i$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Modeli individual kundrejt modelit kolektiv}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+    \textbf{Individual}
+    \[ S=\sum_{j=1}^{n} Y_j \]
+    \begin{itemize}
+      \item $n$ police, numër \textbf{i fiksuar}.
+      \item $Y_j$ = dëmi i policës $j$ (shpesh 0).
+      \item I përshtatshëm për portofole të vogla jete.
+    \end{itemize}
+    \column{0.48\textwidth}
+    \pause
+    \textbf{Kolektiv}
+    \[ S=\sum_{i=1}^{N} X_i \]
+    \begin{itemize}
+      \item $N$ dëme, numër \textbf{i rastit}.
+      \item $X_i>0$ = shuma e dëmit të $i$-të.
+      \item Standardi në jo-jetë: auto, prona, shëndet.
+    \end{itemize}
+  \end{columns}
+  \pause\vspace{6pt}
+  \begin{Keshille}Në modelin kolektiv nuk na intereson kush e pati dëmin, por sa dëme ndodhën dhe sa kushtuan.\end{Keshille}
+\end{frame}
+
+\begin{frame}[label=w3pyetjeS0]{Parashiko: sa është $\Pr(S=0)$?}
+  \begin{Parashiko}
+    Për portofolin auto, supozo $N\sim\text{Poisson}(\lambda)$ me $\lambda=768$ dëme në vit dhe $X>0$.
+    \begin{enumerate}
+      \item Sa është $\Pr(S=0)$?
+      \item Po për një policë të vetme me $\lambda=0.14$?
+      \item Çfarë lloj shpërndarjeje ka $S$ kur $X$ është e vazhdueshme?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w3zgjS0}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{$S$ është një shpërndarje e përzier}
+  \begin{itemize}
+    \item<1-> Kur $X$ është e vazhdueshme, $S$ ka:
+      \begin{itemize}
+        \item një \textbf{masë pikësore} në 0, me peshë $\Pr(N=0)$;
+        \item një \textbf{pjesë të vazhdueshme} mbi $(0,\infty)$.
+      \end{itemize}
+    \item<2-> Funksioni i shpërndarjes:
+      \[ F_S(s)=\Pr(N=0)+\sum_{k\ge1}\Pr(N=k)\,F_X^{*k}(s),\qquad s\ge0. \]
+    \item<3-> Kjo është shembulli i parë i \textbf{funksioneve të përziera} të sotme. \LO{K2}
+  \end{itemize}
+  \onslide<4->{\small $F_X^{*k}$ është shpërndarja e shumës $X_1+\dots+X_k$ (do ta përkufizojmë pas pak).}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: $S=N\cdot X$}
+  \begin{Gabim}
+    ``Simulo një $N$, simulo një $X$, dhe shumëzo: $S=N\cdot X$.''
+  \end{Gabim}
+  \begin{itemize}
+    \item<2-> Kjo supozon që të gjitha dëmet e vitit kanë \textbf{të njëjtën} shumë.
+    \item<3-> Mesatarja del e saktë: $E[NX]=E[N]E[X]$.
+    \item<4-> Por varianca del \textbf{shumë e madhe}: dëmet nuk mesatarizohen më me njëri-tjetrin.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Simulo $N$, pastaj simulo $N$ dëme \textbf{të ndryshme} dhe mblidhi: \texttt{sum(rgamma(N, ...))}. Këtë e bëjmë në Orën 3.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Një portofol lodër}
+  \begin{columns}[T]
+    \column{0.45\textwidth}
+    \textbf{Numri i dëmeve $N$}\par\smallskip
+    \begin{tabular}{cc}
+      \toprule $k$ & $\Pr(N=k)$ \\ \midrule
+      0 & 0.5 \\ 1 & 0.3 \\ 2 & 0.2 \\ \bottomrule
+    \end{tabular}
+    \column{0.45\textwidth}
+    \textbf{Shuma e dëmit $X$}\par\smallskip
+    \begin{tabular}{cc}
+      \toprule $x$ (€) & $\Pr(X=x)$ \\ \midrule
+      100 & 0.6 \\ 200 & 0.4 \\ \bottomrule
+    \end{tabular}
+  \end{columns}
+  \vspace{12pt}
+  \begin{itemize}
+    \item<2-> Vlerat e mundshme të $S$: 0, 100, 200, 300, 400.
+    \item<3-> Synimi: $\Pr(S=s)$ për secilën, \textbf{pa ndihmën e PC}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hapi 1: $S=0$ dhe $S=100$}
+  \begin{itemize}
+    \item<1-> $S=0$ vetëm kur $N=0$:
+      \[ \Pr(S=0)=\Pr(N=0)=0.5 \]
+    \item<2-> $S=100$ vetëm kur $N=1$ dhe $X_1=100$:
+      \[ \Pr(S=100)=\Pr(N=1)\cdot\Pr(X=100)=0.3\times0.6=0.18 \]
+  \end{itemize}
+  \onslide<3->{
+  \begin{Keshille}Me $N=2$ minimumi është $100+100=200$: rasti $N=2$ nuk jep kurrë $S=100$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Hapi 2: $S=200$ ndodh në dy mënyra}
+  \begin{itemize}
+    \item<1-> \textbf{Mënyra A:} $N=1$ dhe $X_1=200$:
+      \[ 0.3\times0.4=0.12 \]
+    \item<2-> \textbf{Mënyra B:} $N=2$ dhe $X_1=X_2=100$:
+      \[ 0.2\times0.6\times0.6=0.2\times0.36=0.072 \]
+    \item<3-> Mënyrat përjashtojnë njëra-tjetrën, ndaj mblidhen:
+      \[ \Pr(S=200)=0.12+0.072=0.192 \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hapi 3: $S=300$ dhe $S=400$}
+  \begin{itemize}
+    \item<1-> $S=300$: $N=2$ dhe $\{X_1,X_2\}=\{100,200\}$, në \textbf{dy} renditje:
+      \[ \Pr(S=300)=0.2\times(0.6\times0.4+0.4\times0.6)=0.2\times0.48=0.096 \]
+    \item<2-> $S=400$: $N=2$ dhe $X_1=X_2=200$:
+      \[ \Pr(S=400)=0.2\times0.4^2=0.2\times0.16=0.032 \]
+  \end{itemize}
+  \onslide<3->{
+  \begin{Gabim}Harrohet renditja: $(100,200)$ dhe $(200,100)$ janë dy rezultate të ndryshme.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Shpërndarja e plotë e $S$}
+  \begin{columns}[c]
+    \column{0.42\textwidth}
+    \centering
+    \begin{tabular}{cc}
+      \toprule $s$ (€) & $\Pr(S=s)$ \\ \midrule
+      0 & 0.500 \\ 100 & 0.180 \\ 200 & 0.192 \\ 300 & 0.096 \\ 400 & 0.032 \\
+      \midrule \textbf{Gjithsej} & \textbf{1.000} \\ \bottomrule
+    \end{tabular}
+    \column{0.55\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[ybar,bar width=14pt,width=6.4cm,height=4.4cm,ymin=0,ymax=0.6,
+          xtick={0,100,200,300,400},xlabel={$s$},ylabel={$\Pr(S=s)$},
+          tick label style={font=\scriptsize},label style={font=\small},
+          nodes near coords,nodes near coords style={font=\tiny},
+          every axis plot/.append style={fill=uptmid!70,draw=uptblue}]
+        \addplot coordinates {(0,0.5) (100,0.18) (200,0.192) (300,0.096) (400,0.032)};
+      \end{axis}
+    \end{tikzpicture}
+  \end{columns}
+  \pause\vspace{6pt}
+  \small Kontroll: $0.5+0.18+0.192+0.096+0.032=1$. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=w3ush1]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta)]
+    Me tabelën e shpërndarjes së $S$:
+    \begin{enumerate}
+      \item Llogarit $\Pr(S>200)$.
+      \item Llogarit $E[S]$ direkt nga tabela.
+      \item Kompania ka rezervuar 200 €. Me çfarë probabiliteti rezerva nuk mjafton?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Konvolucioni: emri i asaj që sapo bëmë}
+  \begin{Definicion}[(konvolucioni)]
+    Shpërndarja e $X_1+\dots+X_k$ quhet \termi{konvolucioni i $k$-të}{$k$-fold convolution} i $f_X$:
+    \[
+      f^{*0}(0)=1,\qquad f^{*k}(s)=\sum_{x} f^{*(k-1)}(s-x)\,f_X(x).
+    \]
+  \end{Definicion}
+  \pause
+  \begin{Teoreme}[(shpërndarja e $S$)]
+    \[ \Pr(S=s)=\sum_{k=0}^{\infty}\Pr(N=k)\,f^{*k}(s). \]
+  \end{Teoreme}
+  \pause
+  \small Me fjalë: kushtëzo sipas numrit të dëmeve, pastaj mblidh me peshat $\Pr(N=k)$.
+\end{frame}
+
+\begin{frame}{Tabela e konvolucionit}
+  \centering
+  \begin{tabular}{c|ccc|c}
+    \toprule
+    $s$ & $f^{*0}(s)$ & $f^{*1}(s)$ & $f^{*2}(s)$ & $\Pr(S=s)$ \\
+    \midrule
+    0   & 1 & 0   & 0    & $0.5\times1=0.500$ \\
+    100 & 0 & 0.6 & 0    & $0.3\times0.6=0.180$ \\
+    200 & 0 & 0.4 & 0.36 & $0.3\times0.4+0.2\times0.36=0.192$ \\
+    300 & 0 & 0   & 0.48 & $0.2\times0.48=0.096$ \\
+    400 & 0 & 0   & 0.16 & $0.2\times0.16=0.032$ \\
+    \midrule
+    $\Pr(N=k)$ & 0.5 & 0.3 & 0.2 & \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \small Çdo kolonë $f^{*k}$ mblidhet në 1. Kolona e fundit = rreshti $\times$ peshat $\Pr(N=k)$.
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R: konvolucioni nga zero}
+<<w3h1-conv>>=
+conv <- function(a, b) {             # convolution of two pmfs on 0, h, 2h, ...
+  out <- numeric(length(a) + length(b) - 1)
+  for (i in seq_along(a)) for (j in seq_along(b))
+    out[i + j - 1] <- out[i + j - 1] + a[i] * b[j]
+  out
+}
+f1 <- c(0, 0.6, 0.4)                 # X on 0, 100, 200
+f2 <- conv(f1, f1)                   # X1 + X2 on 0, ..., 400
+pN <- c(0.5, 0.3, 0.2)
+pS <- pN[1] * c(1, 0, 0, 0, 0) + pN[2] * c(f1, 0, 0) + pN[3] * f2
+setNames(pS, seq(0, 400, by = 100)); sum(pS)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> R jep të njëjtat pesë probabilitete si tabela jonë. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> \texttt{conv()} është vetëm dy cikle: çdo çift $(i,j)$ shton $a_i b_j$ te shuma $i+j$.
+    \item<3-> Me $N$ deri në 2 dhe 2 vlera të $X$, llogaritja është e lehtë.
+    \item<4-> Me $N$ deri në 1\,000 dhe $X$ në 10\,000 pika: miliona veprime për çdo $k$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Pse?}
+    Kjo është arsyeja pse na duhen \textbf{Panjer} (Ora 3--4) dhe \textbf{simulimi}: e njëjta përgjigje, shumë më shpejt.
+  \end{block}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim: momentet e $S$}
+% ------------------------------------------------------------
+
+\begin{frame}{Pritja totale: $E[S]$ hap pas hapi}
+  Ligji i pritjes totale (\emph{law of total expectation}): $E[S]=E\big[E[S\mid N]\big]$.
+  \pause
+  \begin{align*}
+    E[S\mid N=k] &= E[X_1+\dots+X_k] = k\,E[X] \\
+    \onslide<3->{\Rightarrow\; E[S\mid N] &= N\,E[X]} \\
+    \onslide<4->{\Rightarrow\; E[S] &= E\big[N\,E[X]\big] = E[N]\cdot E[X]}
+  \end{align*}
+  \onslide<5->{
+  \begin{Keshille}Në hapin e parë përdorëm pavarësinë: duke ditur $N=k$, shpërndarja e $X_i$ nuk ndryshon.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Varianca totale: $\mathrm{Var}[S]$ hap pas hapi}
+  Ligji i variancës totale: $\mathrm{Var}[S]=E\big[\mathrm{Var}(S\mid N)\big]+\mathrm{Var}\big(E[S\mid N]\big)$.
+  \pause
+  \begin{align*}
+    \mathrm{Var}(S\mid N=k) &= k\,\mathrm{Var}[X] \quad\text{(shumë e $k$ të pavarurave)} \\
+    \onslide<3->{E\big[\mathrm{Var}(S\mid N)\big] &= E[N]\,\mathrm{Var}[X]} \\
+    \onslide<4->{\mathrm{Var}\big(E[S\mid N]\big) &= \mathrm{Var}(N\,E[X]) = \mathrm{Var}[N]\,E[X]^2}
+  \end{align*}
+  \onslide<5->{
+  \[ \boxed{\mathrm{Var}[S]=E[N]\,\mathrm{Var}[X]+\mathrm{Var}[N]\,E[X]^2} \]}
+\end{frame}
+
+\begin{frame}{Dy burime pasigurie në një formulë}
+  \begin{Teoreme}[(momentet e modelit kolektiv)]
+    \[
+      E[S]=E[N]\,E[X],\qquad
+      \mathrm{Var}[S]=\underbrace{E[N]\,\mathrm{Var}[X]}_{\text{ashpërsia}}+\underbrace{\mathrm{Var}[N]\,E[X]^2}_{\text{numri}}
+    \]
+  \end{Teoreme}
+  \begin{itemize}
+    \item<2-> Termi i parë: edhe me $N$ të njohur, shumat $X_i$ ndryshojnë.
+    \item<3-> Termi i dytë: edhe me $X$ konstant, numri i dëmeve ndryshon.
+    \item<4-> Rasti $S=N\cdot X$ i gabuar nga më parë e humbet këtë ndarje.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Kontroll në portofolin lodër}
+  \begin{itemize}
+    \item<1-> $E[N]=0\times0.5+1\times0.3+2\times0.2=0.7$; \quad $E[N^2]=0.3+0.8=1.1$; \quad $\mathrm{Var}[N]=1.1-0.49=0.61$.
+    \item<2-> $E[X]=140$; \quad $E[X^2]=0.6\times10^4+0.4\times4\times10^4=22\,000$; \quad $\mathrm{Var}[X]=22\,000-19\,600=2\,400$.
+    \item<3-> $E[S]=0.7\times140=98$.
+    \item<4-> $\mathrm{Var}[S]=0.7\times2\,400+0.61\times19\,600=1\,680+11\,956=13\,636$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Nga tabela e $S$}
+    $E[S^2]=0.18\times10^4+0.192\times4\times10^4+0.096\times9\times10^4+0.032\times16\times10^4=23\,240$, \;
+    $23\,240-98^2=13\,636$. \textcolor{okgreen}{$\checkmark$}
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{I njëjti kontroll në R}
+<<w3h1-moments>>=
+s  <- seq(0, 400, by = 100)
+x  <- c(100, 200); fx <- c(0.6, 0.4); k <- 0:2
+EN <- sum(k * pN); VN <- sum(k^2 * pN) - EN^2
+EX <- sum(x * fx); VX <- sum(x^2 * fx) - EX^2
+c(formula_mean = EN * EX,         table_mean = sum(s * pS),
+  formula_var  = EN * VX + VN * EX^2,
+  table_var    = sum(s^2 * pS) - sum(s * pS)^2)
+@
+  \small Formula dhe tabela përputhen saktësisht.
+\end{frame}
+
+\begin{frame}[label=w3pyetjePois]{Parashiko: rasti Poisson}
+  \begin{Parashiko}
+    Le të jetë $N\sim\text{Poisson}(\lambda)$, pra $E[N]=\mathrm{Var}[N]=\lambda$.
+    \begin{enumerate}
+      \item Thjeshto formulën e $\mathrm{Var}[S]$.
+      \item Në të duhet të shfaqet vetëm një moment i $X$. Cili?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w3zgjPois}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Poisson i përbërë}
+  \begin{Definicion}[(Poisson i përbërë)]
+    Kur $N\sim\text{Poisson}(\lambda)$, themi që $S$ ka shpërndarje \termi{Poisson të përbërë}{compound Poisson}:
+    \[
+      E[S]=\lambda\,E[X],\qquad \mathrm{Var}[S]=\lambda\,E[X^2].
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Modeli bazë i jo-jetës: e përdorim gjatë gjithë javës.
+    \item ``I përbërë'' (\emph{compound}) = shpërndarje e $N$ e ``përbërë'' me shpërndarjen e $X$. \LO{K2}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w3mc1]{Zgjedhje e shumëfishtë}
+  Në një Poisson të përbërë, cili ndryshim e \textbf{rrit më shumë} $\mathrm{Var}[S]$?
+  \begin{enumerate}[A)]
+    \item Dyfishimi i $\lambda$ (dyfish më shumë dëme).
+    \item Dyfishimi i çdo dëmi ($X\to2X$, p.sh.\ inflacion i madh).
+    \item Të dyja e rrisin njësoj.
+    \item Asnjëra nuk e ndryshon variancën.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjMC1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kthim te bordi}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Frekuenca dhe ashpërsia nga të dhënat}
+<<w3h1-est>>=
+lambda <- sum(d$n_claims) / sum(d$exposure)    # claims per policy-year
+x1 <- d$claim_amount_eur[d$n_claims == 1]      # one claim -> one severity
+c(lambda    = lambda,
+  mean_x    = mean(x1),
+  shape_mom = mean(x1)^2 / var(x1))            # Gamma shape by moments
+@
+  \small Përdorim vetëm policat me 1 dëm: aty shuma e policës është shuma e një dëmi të vetëm.
+\end{frame}
+
+\begin{frame}{Vlerësimi kundrejt së vërtetës}
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    Parametri & Vlerësimi & E vërteta (sintetike) \\
+    \midrule
+    Mesatarja e ashpërsisë & \Sexpr{fmt(mean(x1), 1)} € & 900 € \\
+    Forma Gamma & \Sexpr{fmt(mean(x1)^2 / var(x1), 2)} & 2 \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{10pt}
+  \begin{itemize}
+    \item<2-> Afër, por jo saktësisht: vetëm \Sexpr{length(x1)} vrojtime.
+    \item<3-> Frekuenca e vërtetë nuk është një numër i vetëm: varet nga mosha, qarku, karburanti (GLM, Ora 5).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Përgjigjja e parë për bordin}
+<<w3h1-board>>=
+EN  <- lambda * sum(d$exposure)   # expected claims, same exposure next year
+EX  <- mean(x1); EX2 <- mean(x1^2)
+ES  <- EN * EX                    # E[S]   = lambda E[X]
+sdS <- sqrt(EN * EX2)             # Var[S] = lambda E[X^2]
+c(ES = ES, sdS = sdS, cv = sdS / ES,
+  q995_normal = ES + qnorm(0.995) * sdS)
+@
+  \small \texttt{q995\_normal} është vetëm një \textbf{përafrim normal}: e kontrollojmë në Orën 5.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Pritja: rreth \Sexpr{fmt(ES)} € dëme vitin e ardhshëm.
+    \item<2-> Devijimi standard: rreth \Sexpr{fmt(sdS)} €, vetëm \Sexpr{fmt(100 * sdS / ES, 1)}\% e pritjes.
+    \item<3-> Me përafrimin normal, VaR 99.5\% $\approx$ \Sexpr{fmt(ES + qnorm(0.995) * sdS)} €.
+    \item<4-> Pragu 750\,000 € i bordit është mbi këtë nivel: probabilitet i vogël, \textbf{nëse} përafrimi normal vlen.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}Përafrimi normal e nënvlerëson bishtin kur ashpërsia ka bisht të rëndë (Pareto). Prandaj na duhet shpërndarja e plotë.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w3tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Koeficienti i variacionit i Poisson-it të përbërë është
+    \[ \mathrm{CV}[S]=\frac{\sqrt{\lambda E[X^2]}}{\lambda E[X]}. \]
+    \begin{enumerate}
+      \item Si ndryshon CV kur portofoli katërfishohet ($\lambda\to4\lambda$)?
+      \item Çfarë do të thotë kjo për një kompani të vogël shqiptare kundrejt një të madheje?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjTps1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item<1-> \textbf{Tarifimi:} prima e pastër = $E[S]$ për policë $=\lambda\,E[X]$.
+    \item<2-> \textbf{Solvency II:} rreziku i primës dhe i rezervës përdor shpërndarjen e $S$ (VaR 99.5\%).
+    \item<3-> \textbf{IFRS 17:} rregullimi për rrezikun jo-financiar (\emph{risk adjustment}) mund të llogaritet nga kuantilet e $S$.
+    \item<4-> \textbf{Risigurimi:} risiguruesi paguan $(S-d)_+$; çmimi varet nga bishti.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përgatitja e mjedisit}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Paketa \texttt{actuar}}
+<<w3h1-actuar-run, include=FALSE>>=
+msg <- character()
+withCallingHandlers(library(actuar), message = function(m) {
+  msg <<- c(msg, conditionMessage(m)); invokeRestart("muffleMessage") })
+@
+<<w3h1-actuar, eval=FALSE>>=
+library(actuar)
+@
+<<w3h1-actuar-msg, echo=FALSE>>=
+cat(trimws(msg, "right"), sep = "\n")
+@
+<<w3h1-ver>>=
+packageVersion("actuar")
+@
+  \small Instalimi një herë: \texttt{install.packages("actuar")}.
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: ``is masked from''}
+  \begin{Gabim}
+    Mesazhi \texttt{The following objects are masked from 'package:stats': sd, var}
+    duket si gabim. Nuk është.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item \Rkey{actuar} përcakton \texttt{var()} dhe \texttt{sd()} që punojnë edhe me të dhëna të grupuara.
+    \item Për vektorë numerikë rezultati është \textbf{i njëjtë}:
+  \end{itemize}
+<<w3h1-mask>>=
+c(actuar = var(x1), stats = stats::var(x1))
+@
+\end{frame}
+
+\begin{frame}{Çfarë ofron \texttt{actuar} sot}
+  \centering
+  \begin{tabular}{ll}
+    \toprule
+    Detyra & Funksionet \\
+    \midrule
+    Shpërndarjet e humbjeve & \texttt{dpareto}, \texttt{ppareto1}, \texttt{levgamma}, \dots \\
+    Modifikimet e policës & \texttt{coverage()} \\
+    Përzierjet dhe shumat e përbëra & \texttt{rmixture()}, \texttt{rcompound()} \\
+    Diskretizimi & \texttt{discretize()} \\
+    Shpërndarja e $S$ & \texttt{aggregateDist()} \\
+    Masat e rrezikut & \texttt{VaR()}, \texttt{CTE()} \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{6pt}
+  \small Burimi: vinjetat e paketës \Rkey{actuar} (\Sexpr{as.character(packageVersion("actuar"))}).
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse $\Pr(S=0)\ge\Pr(N=0)$, dhe kur kemi barazim?
+    \item Me $E[N]=2$, $\mathrm{Var}[N]=2$, $E[X]=100$, $\mathrm{Var}[X]=400$: sa është $\mathrm{Var}[S]$?
+    \item Pse $S=N\cdot X$ jep variancë të gabuar?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $S=0$ edhe kur ka dëme me shumë 0; barazim kur $X>0$;
+  (2) $2\times400+2\times10\,000=20\,800$; (3) supozon që të gjitha dëmet e vitit janë të barabarta.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Modeli kolektiv: $S=X_1+\dots+X_N$, me $X_i$ i.i.d.\ dhe të pavarura nga $N$.
+    \item $\Pr(S=s)=\sum_k\Pr(N=k)f^{*k}(s)$: konvolucion i peshuar.
+    \item $E[S]=E[N]E[X]$; \; $\mathrm{Var}[S]=E[N]\mathrm{Var}[X]+\mathrm{Var}[N]E[X]^2$.
+    \item Poisson i përbërë: $\mathrm{Var}[S]=\lambda E[X^2]$; CV bie si $1/\sqrt{\lambda}$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Shpërndarjet e humbjeve në \Rkey{actuar}, franshiza dhe limiti, vlera e pritur e kufizuar, përzierjet.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT, 2025--2026.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për modelet e dëmeve agregate).
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika
+          Matematike me ilustrime në gjuhën R}, Kotti, 2021 (pritja e kushtëzuar).
+    \item V.~Goulet et al., vinjetat e paketës \Rkey{actuar} (versioni \Sexpr{as.character(packageVersion("actuar"))}).
+    \item README i të dhënave: \texttt{motor\_portfolio\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

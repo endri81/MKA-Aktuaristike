@@ -1,0 +1,61 @@
+% ============================================================
+%  Java 3 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w3zgjS0]{Zgjidhja: Parashiko ($\Pr(S=0)$)}
+<<w3s1-s0>>=
+c(portfolio = dpois(0, 768), one_policy = dpois(0, 0.14))
+@
+  \begin{enumerate}
+    \item $\Pr(S=0)=\Pr(N=0)=e^{-768}\approx0$: një portofol i madh pa asnjë dëm është praktikisht i pamundur.
+    \item Për një policë: $e^{-0.14}\approx0.869$. Masa në zero dominon.
+    \item E \textbf{përzier}: masë pikësore në 0 dhe pjesë e vazhdueshme mbi $(0,\infty)$.
+  \end{enumerate}
+  \vfill\kthehu{w3pyetjeS0}
+\end{frame}
+
+\begin{frame}[label=w3zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $\Pr(S>200)=\Pr(S=300)+\Pr(S=400)=0.096+0.032=0.128$.
+    \item $E[S]=0\times0.5+100\times0.18+200\times0.192+300\times0.096+400\times0.032$\\
+          $\phantom{E[S]}=18+38.4+28.8+12.8=98$ €.
+    \item Rezerva prej 200 € nuk mjafton kur $S>200$: probabiliteti 0.128, pra rreth 1 vit në 8.
+  \end{enumerate}
+  \vfill\kthehu{w3ush1}
+\end{frame}
+
+\begin{frame}[label=w3zgjPois]{Zgjidhja: Parashiko (rasti Poisson)}
+  \begin{align*}
+    \mathrm{Var}[S] &= \lambda\,\mathrm{Var}[X]+\lambda\,E[X]^2 \\
+                    &= \lambda\big(\mathrm{Var}[X]+E[X]^2\big) = \lambda\,E[X^2].
+  \end{align*}
+  \begin{itemize}
+    \item Shfaqet vetëm \textbf{momenti i dytë} $E[X^2]$, jo varianca e $X$.
+    \item Gamma me formë 2 dhe mesatare 900: $E[X^2]=900^2/2+900^2=1\,215\,000$.
+  \end{itemize}
+  \vfill\kthehu{w3pyetjePois}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $\mathrm{Var}[S]=\lambda E[X^2]$.
+  \begin{itemize}
+    \item $\lambda\to2\lambda$: varianca $\times2$.
+    \item $X\to2X$: $E[(2X)^2]=4E[X^2]$, varianca $\times4$.
+  \end{itemize}
+<<w3s1-mc>>=
+lam <- 0.7; EX2 <- 22000
+c(base = lam * EX2, double_lambda = 2 * lam * EX2, double_x = lam * 4 * EX2)
+@
+  \small Inflacioni i dëmeve është më i rrezikshëm se rritja e numrit të tyre.
+  \vfill\kthehu{w3mc1}
+\end{frame}
+
+\begin{frame}[label=w3zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item $\mathrm{CV}[S]=\dfrac{\sqrt{\lambda E[X^2]}}{\lambda E[X]}=\dfrac{1}{\sqrt\lambda}\cdot\dfrac{\sqrt{E[X^2]}}{E[X]}$.
+          Me $4\lambda$, CV \textbf{përgjysmohet}.
+    \item Një kompani e vogël ka luhatje relative më të mëdha: i duhet më shumë kapital për çdo lek primë,
+          ose më shumë risigurim. Ky është \textbf{diversifikimi}.
+  \end{enumerate}
+  \vfill\kthehu{w3tps1}
+\end{frame}
