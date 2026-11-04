@@ -22,7 +22,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 | Java | Tema | Statusi |
 |---|---|---|
 | 01 | Bazat e R në aktuaristikë | ✅ gati (324 slide) |
-| 02 | Analiza e të dhënave, `stats`, `tvm` | ⏳ |
+| 02 | Analiza e të dhënave, `stats`, `tvm` | ✅ gati |
 | 03 | Libraritë për jo-jetën (`actuar`) | ⏳ |
 | 04 | Rezervat (`ChainLadder`), kredibiliteti | ⏳ |
 | 05 | `lifecontingencies`, tabelat e vdekshmërisë | ⏳ |

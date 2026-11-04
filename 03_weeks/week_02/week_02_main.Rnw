@@ -160,6 +160,9 @@ attach(list(DATA = "../../02_data"), name = "mka_paths")   # survives rm(list = 
 <<hour6, child='week_02_hour6.Rnw'>>=
 @
 
+<<hour7, child='week_02_hour7.Rnw'>>=
+@
+
 % ===================== SHTOJCA =====================
 \appendix
 \section*{Zgjidhjet}
@@ -180,6 +183,9 @@ attach(list(DATA = "../../02_data"), name = "mka_paths")   # survives rm(list = 
 @
 
 <<hour6sol, child='week_02_hour6_sol.Rnw'>>=
+@
+
+<<hour7sol, child='week_02_hour7_sol.Rnw'>>=
 @
 
 \end{document}

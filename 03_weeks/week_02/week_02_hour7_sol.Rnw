@@ -1,0 +1,129 @@
+% ============================================================
+%  Java 2 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=w2sT1]{Zgjidhja T1}
+  \textbf{B)} MLE e $\mu$ është mesatarja e $\log x_i$.
+  \begin{itemize}
+    \item A) $\log\bar x\neq\overline{\log x}$ (pabarazia e Jensen-it: $\log\bar x>\overline{\log x}$).
+    \item C) $\sigma$ është devijimi i $\log x$, jo $\log s$.
+    \item D) MoM dhe MLE zakonisht ndryshojnë (Ora 2, Ora 3).
+  \end{itemize}
+  \vfill\kthehu{w2qT1}
+\end{frame}
+
+\begin{frame}[label=w2sT2]{Zgjidhja T2}
+  \textbf{C)} Fiton AIC më i vogël, mbi të njëjtat të dhëna.
+  \begin{itemize}
+    \item A) E kundërta.
+    \item B) $\ell$ varet nga të dhënat dhe nga shkalla (euro vs mijë euro): krahasimi nuk ka kuptim.
+    \item D) AIC $=2k-2\ell$: penalizon numrin $k$ të parametrave.
+  \end{itemize}
+  \vfill\kthehu{w2qT2}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU1]{Zgjidhja U1}
+  \begin{itemize}
+    \item $\bar x=6\,000/5=1\,200$; \quad mediana $=900$.
+    \item Devijimet: $-1000,-700,-300,200,1800$; \; katrorët: $1, 0.49, 0.09, 0.04, 3.24$ ($\times10^6$).
+    \item $s^2=4.86\times10^6/4=1\,215\,000$; \quad $s\approx1\,102.3$.
+    \item Mediana mbetet 900 kur 3\,000 bëhet 30\,000: është më e qëndrueshme.
+  \end{itemize}
+<<w2s7-u1>>=
+x <- c(200, 500, 900, 1400, 3000)
+c(mean = mean(x), median = median(x), var = var(x), sd = sd(x))
+@
+  \vfill\kthehu{w2qU1}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU2]{Zgjidhja U2}
+  \begin{itemize}
+    \item Mediana $=e^8\approx2\,981$; \quad mesatarja $=e^{8.125}\approx2\,981\times1.1331\approx3\,378$.
+    \item $q_{0.99}=e^{8+0.5\times2.326}=e^{8}e^{1.163}\approx2\,981\times3.200\approx9\,539$.
+  \end{itemize}
+<<w2s7-u2>>=
+c(median = qlnorm(0.5, 8, 0.5), mean = exp(8 + 0.5^2 / 2), q99 = qlnorm(0.99, 8, 0.5))
+@
+  \vfill\kthehu{w2qU2}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU3]{Zgjidhja U3}
+  \begin{itemize}
+    \item $\Pr(N=0)=e^{-0.2}\approx0.8187$.
+    \item $\Pr(N\ge2)=1-e^{-0.2}(1+0.2)\approx1-0.8187\times1.2=0.0175$.
+  \end{itemize}
+<<w2s7-u3>>=
+c(p0 = dpois(0, 0.2), p_ge2 = 1 - ppois(1, 0.2),
+  same = ppois(1, 0.2, lower.tail = FALSE))
+@
+  \vfill\kthehu{w2qU3}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU4]{Zgjidhja U4}
+  \[
+    \hat\alpha=\frac{\bar x^2}{s^2}=\frac{1\,440\,000}{1\,215\,000}\approx1.185,\qquad
+    \hat\beta=\frac{\bar x}{s^2}=\frac{1\,200}{1\,215\,000}\approx0.000988
+  \]
+<<w2s7-u4>>=
+a <- 1200^2 / 1215000; b <- 1200 / 1215000
+c(alpha = a, beta = b, mean_check = a / b)
+@
+  \vfill\kthehu{w2qU4}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU5]{Zgjidhja U5}
+  \begin{itemize}
+    \item $a_{\overline{4}|}=(1-0.735030)/0.08=3.312127$; \quad $\ddot a_{\overline{4}|}=1.08\times3.312127=3.577097$.
+    \item $P=1\,000\,000/3.312127\approx301\,920.8$ lekë.
+  \end{itemize}
+<<w2s7-u5>>=
+library(tvm)
+pmt(amt = 1e6, maturity = 4, rate = 0.08)
+@
+  \vfill\kthehu{w2qU5}
+\end{frame}
+
+\begin{frame}[label=w2sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item $I_1=0.08\times1\,000\,000=80\,000$ lekë.
+    \item $C_1=301\,920.8-80\,000=221\,920.8$ lekë.
+    \item $B_1=1\,000\,000-221\,920.8=778\,079.2$ lekë.
+    \item $C_2=221\,920.8\times1.08\approx239\,674.5$ lekë.
+  \end{enumerate}
+  \small Kontroll: $I_2=0.08\times778\,079.2=62\,246.3$, \; $C_2=301\,920.8-62\,246.3=239\,674.5$. \textcolor{okgreen}{$\checkmark$}
+  \vfill\kthehu{w2qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU7]{Zgjidhja U7}
+<<w2s7-u7>>=
+cf <- c(-5e5, 2e5, 2e5, 2e5)
+c(npv_10pct = npv(0.10, cf), irr = irr(cf))
+@
+  \small NPV negative ($\approx-2\,630$ lekë) dhe IRR $\approx9.70\%<10\%$: projekti refuzohet.
+  (I njëjti IRR si në Orën 4: flukset janë thjesht gjysma.)
+  \vfill\kthehu{w2qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w2sU8]{Zgjidhja U8}
+<<w2s7-u8, message=FALSE>>=
+library(fitdistrplus)
+xk <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))$amount_eur
+xk <- xk[xk <= 20000] / 1000
+f1 <- fitdist(xk, "lnorm"); f2 <- fitdist(xk, "weibull")
+gofstat(list(f1, f2), fitnames = c("lnorm", "weibull"))$aic
+@
+  \small Lognormalja fiton (AIC më i vogël). Konfirmimi: \texttt{qqcomp()}, ku Weibull-i nënvlerëson dëmet e mëdha.
+  \vfill\kthehu{w2qU8}
+\end{frame}
+
+\begin{frame}[label=w2sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{enumerate}
+    \item \texttt{pmt(..., maturity = 5, rate = 0.06)} jep këstin \textbf{vjetor}.
+          Mujor: \texttt{maturity = 60, rate = 0.06 / 12}.
+    \item \texttt{rgamma(1000, 2, 900)}: argumenti i tretë është \texttt{rate}. Mesatarja del $2/900\approx0.002$.
+          E saktë: \texttt{rgamma(1000, shape = 2, scale = 900)} (mesatare 1\,800).
+    \item \texttt{npv(0.05, c(P, P, P))} vendos pagesën e parë në $t=0$.
+          E saktë: \texttt{npv(0.05, c(0, P, P, P))}.
+  \end{enumerate}
+  \vfill\kthehu{w2qGab7}
+\end{frame}

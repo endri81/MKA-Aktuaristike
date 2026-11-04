@@ -1,0 +1,349 @@
+% ============================================================
+%  Java 2 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): pa ndihmën e PC dhe në R.
+      \end{itemize}
+    \item<3-> 25 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Shtyp \textbf{Shiko zgjidhjen} vetëm pasi ta kesh provuar vetë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w2qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Për një mostër $x_1,\dots,x_n$ nga lognormalja, cili pohim është i saktë?
+    \begin{enumerate}
+      \item[A)] MLE e $\mu$ është $\log\bar x$.
+      \item[B)] MLE e $\mu$ është mesatarja e $\log x_i$.
+      \item[C)] MLE e $\sigma$ është $\log s$.
+      \item[D)] MoM dhe MLE japin gjithmonë të njëjtin rezultat.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Krahasojmë tre modele me AIC. Cili pohim është i saktë?
+    \begin{enumerate}
+      \item[A)] Fiton modeli me AIC më të madh.
+      \item[B)] AIC mund të krahasohet edhe kur modelet janë përshtatur mbi të dhëna të ndryshme.
+      \item[C)] Fiton modeli me AIC më të vogël, kur të dhënat janë të njëjta.
+      \item[D)] AIC nuk varet nga numri i parametrave.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU1]{U1 · Pa ndihmën e PC}
+  \begin{Ushtrim}[(statistika përshkruese)]
+    Dëmet (€): 200, 500, 900, 1\,400, 3\,000.
+    \begin{enumerate}
+      \item Llogarit mesataren dhe medianën.
+      \item Llogarit variancën e mostrës $s^2$ dhe $s$.
+      \item Cila masë është më e qëndrueshme nëse dëmi i fundit bëhet 30\,000 €?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU2]{U2 · Pa ndihmën e PC}
+  \begin{Ushtrim}[(lognormalja)]
+    $X\sim$ Lognormale($\mu=8$, $\sigma=0.5$). Jepen: $e^8\approx2\,981$, \; $e^{0.125}\approx1.1331$,
+    \; $z_{0.99}=2.326$, \; $e^{1.163}\approx3.200$.
+    \begin{enumerate}
+      \item Llogarit medianën dhe mesataren.
+      \item Llogarit $q_{0.99}$.
+      \item Shkruaj komandat R që i kontrollojnë.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU3]{U3 · Poisson}
+  \begin{Ushtrim}[(numri i dëmeve)]
+    $N\sim$ Poisson($\lambda=0.2$).
+    \begin{enumerate}
+      \item $\Pr(N=0)$ pa ndihmën e PC ($e^{-0.2}\approx0.8187$).
+      \item $\Pr(N\ge2)$: formula dhe komanda R.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU4]{U4 · Metoda e momenteve}
+  \begin{Ushtrim}[(gama)]
+    Me të dhënat e U1 ($\bar x=1\,200$, $s^2=1\,215\,000$):
+    \begin{enumerate}
+      \item Vlerëso $\alpha$ dhe $\beta$ të gamës me metodën e momenteve.
+      \item Kontrollo: $\hat\alpha/\hat\beta$ duhet të jetë $\bar x$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU5]{U5 · Pa ndihmën e PC}
+  \begin{Ushtrim}[(anuitetet dhe kredia)]
+    $i=8\%$, $n=4$, $v^4=0.735030$.
+    \begin{enumerate}
+      \item Llogarit $a_{\overline{4}|}$ dhe $\ddot a_{\overline{4}|}$.
+      \item Kredi 1\,000\,000 lekë, 4 këste vjetore në fund të vitit. Sa është kësti?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU6]{U6 · Tabela e amortizimit}
+  \begin{Ushtrim}[(rreshti i parë)]
+    Për kredinë e U5:
+    \begin{enumerate}
+      \item Sa është interesi i vitit 1?
+      \item Sa principal kthehet në vitin 1?
+      \item Sa është borxhi pas këstit të parë?
+      \item Sa principal kthehet në vitin 2? (Ndihmë: $C_{k+1}=C_k(1+i)$.)
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU7]{U7 · NPV dhe IRR në R}
+  \begin{Ushtrim}[(investim)]
+    Flukse: $-500\,000$ sot; $+200\,000$ në fund të viteve 1, 2, 3.
+    \begin{enumerate}
+      \item NPV me 10\%: pozitive apo negative? Llogarite me \texttt{tvm::npv}.
+      \item Llogarit IRR. A e pranon projektin me normë kërkese 10\%?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w2qU8]{U8 · Zgjedhja e modelit në R}
+  \begin{Ushtrim}[(\texttt{fitdistrplus})]
+    Me trupin e \texttt{individual\_claims\_synthetic.csv} ($\le$ 20\,000 €), në mijë euro:
+    \begin{enumerate}
+      \item Përshtat lognormalen dhe Weibull-in me \texttt{fitdist()}.
+      \item Krahasoji me \texttt{gofstat()}. Cili fiton sipas AIC?
+      \item Cili grafik e konfirmon zgjedhjen?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): statistika}
+  \small
+  \begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+    \toprule
+    Gabimi & Rregulli \\ \midrule
+    \texttt{meanlog}, \texttt{sdlog} = mesatarja, devijimi i $X$ & janë $\mu$, $\sigma$ të $\log X$ \\
+    MLE e $\mu$ = $\log\bar x$ & mesatarja e $\log x_i$ \\
+    $\Pr(N\ge2)$ = \texttt{1 - ppois(2, ...)} & \texttt{1 - ppois(1, ...)} \\
+    \texttt{dgamma(x, 2, 900)} si \texttt{scale = 900} & është \texttt{rate}; shkruaj emrat \\
+    \texttt{optim()} me $+\ell$ & \texttt{optim()} minimizon: jep $-\ell$ \\
+    \texttt{fitdist()} dështon në euro & ndrysho shkallën (mijë euro) \\
+    $p$-vlera e KS me parametra të vlerësuar & tepër optimiste; përdor AIC + QQ \\
+    pritje Poisson pa ekspozim & $\sum_i\Pr(N_i=k)$ me $\lambda e_i$ \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): financa}
+  \small
+  \begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+    \toprule
+    Gabimi & Rregulli \\ \midrule
+    normë vjetore me periudha mujore & \texttt{rate = 0.06/12}, \texttt{maturity = 120} \\
+    nominale e trajtuar si efektive & $(1+i^{(m)}/m)^m-1$ \\
+    $a_{\overline{n}|}$ në vend të $\ddot a_{\overline{n}|}$ & pagesat në fillim: $\ddot a=(1+i)a$ \\
+    \texttt{npv(i, c(P, P, P))} për pagesa në fund & shto 0 në fillim ose \texttt{ts = 1:n} \\
+    \texttt{rate()}, \texttt{cft()} pa tolerancë & kontrollo me \texttt{uniroot(..., tol = 1e-12)} \\
+    \texttt{up\_fee = 0.01} si 1\% & është shumë në lekë \\
+    normë nominale e ulët = kredi e lirë & krahaso koston efektive \\
+    IRR me flukse që ndryshojnë shenjë disa herë & mund të ketë disa IRR; përdor NPV \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[label=w2qGab7]{Gjej gabimin: raundi i shpejtë}
+  \begin{Gabim}[(tre gabime, dy minuta)]
+    \ttfamily\small
+    \# monthly instalment, 3 000 000 ALL, 5 years, 6\% nominal\\
+    P <- pmt(amt = 3e6, maturity = 5, rate = 0.06)\\
+    \# claims: gamma with mean 1800 and shape 2\\
+    sim <- rgamma(1000, 2, 900)\\
+    \# value today of 3 payments at the END of years 1-3\\
+    v0 <- npv(0.05, c(P, P, P))
+  \end{Gabim}
+  \normalfont
+  \shkoTe{w2sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): \texttt{stats}}
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Detyra & R \\ \midrule
+    përshkrim & \Rkey{mean}, \Rkey{median}, \Rkey{sd}, \Rkey{IQR}, \Rkey{quantile} \\
+    dendësi / probabilitet / kuantil / simulim & \Rkey{d...}, \Rkey{p...}, \Rkey{q...}, \Rkey{r...} \\
+    shpërndarjet & \texttt{norm}, \texttt{lnorm}, \texttt{gamma}, \texttt{weibull}, \texttt{exp}, \texttt{pois}, \texttt{binom} \\
+    bishti i djathtë & \texttt{lower.tail = FALSE} \\
+    MLE numerike & \Rkey{optim(par, fn, ..., hessian = TRUE)} \\
+    rrënja e një ekuacioni & \Rkey{uniroot(f, interval, tol)} \\
+    ECDF, QQ & \Rkey{ecdf}, \Rkey{ppoints}, \Rkey{qqnorm} \\
+    testet & \Rkey{ks.test}, \Rkey{pchisq} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Formula & Kuptimi \\ \midrule
+    $E[X]=e^{\mu+\sigma^2/2}$, \; mediana $e^\mu$ & lognormalja \\
+    $q_p=e^{\mu+\sigma z_p}$ & kuantilet e lognormales \\
+    MoM: $\hat\sigma^2=\log(1+s^2/\bar x^2)$, \; $\hat\mu=\log\bar x-\hat\sigma^2/2$ & lognormalja \\
+    MLE: $\hat\mu=\overline{\log x}$, \; $\hat\sigma^2=\frac1n\sum(\log x_i-\hat\mu)^2$ & lognormalja \\
+    MoM gama: $\hat\alpha=\bar x^2/s^2$, \; $\hat\beta=\bar x/s^2$ & gama \\
+    Pareto: $\hat\alpha=n/\sum\log(x_i/u)$ & bishti \\
+    AIC $=2k-2\ell$ & zgjedhja e modelit \\
+    $a_{\overline{n}|}=\frac{1-v^n}{i}$, \; $\ddot a_{\overline{n}|}=(1+i)a_{\overline{n}|}$, \; $s_{\overline{n}|}=\frac{(1+i)^n-1}{i}$ & anuitetet \\
+    $P=L\,j/(1-(1+j)^{-n})$, \; $I_k=jB_{k-1}$ & kredia \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (3/3): \texttt{fitdistrplus} dhe \texttt{tvm}}
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Detyra & R \\ \midrule
+    orientim & \Rkey{descdist(x, boot = 200)} \\
+    përshtatje & \Rkey{fitdist(x, "lnorm")}, \texttt{"gamma"}, \texttt{"weibull"} \\
+    krahasim & \Rkey{gofstat(list(...), fitnames = ...)} \\
+    grafikë & \Rkey{qqcomp}, \Rkey{denscomp}, \Rkey{cdfcomp} \\
+    kësti / norma & \Rkey{pmt(amt, maturity, rate)}, \Rkey{rate(amt, maturity, pmt, tol)} \\
+    kredia & \Rkey{loan(rate, maturity, amt, type = "french")}, \Rkey{rem(cf, amt, r)} \\
+    kostoja & \Rkey{cft(amt, maturity, rate, up\_fee)} \\
+    vlerësimi & \Rkey{npv(i, cf)}, \Rkey{irr(cf)}, \Rkey{xirr(cf, d)} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 3)}
+  \begin{Ushtrim}[(skript i vetëm, i riprodhueshëm)]
+    \begin{enumerate}
+      \item Me \texttt{motor\_portfolio\_synthetic.csv}: përshtat \textbf{ashpërsinë} e dëmeve (vetëm policat me dëm,
+            shuma / numri) me gamë dhe lognormale. Krahaso me AIC. E vërteta: Gamma, formë 2, mesatare 900 €.
+      \item Llogarit primën e pastër për \textbf{benzinë} dhe \textbf{naftë}. Krahaso raportin e frekuencave me $e^{0.10}$.
+      \item Ndërto tabelën e amortizimit për 2\,000\,000 lekë, 3 vjet, 5.4\% nominale, këste mujore.
+            Sa interes paguhet gjithsej?
+    \end{enumerate}
+  \end{Ushtrim}
+  \small Kriteri: skripti ekzekutohet pa gabim pas \emph{Session $\rightarrow$ Restart R}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 3}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 3: libraritë për sigurimet e jo-jetës}
+  \begin{itemize}
+    \item<1-> Paketa \Rkey{actuar}: shpërndarjet e humbjeve, Pareto dhe shumë të tjera. \LO{K3}
+    \item<2-> Shpërndarjet e përziera dhe të përbëra: $S=X_1+\dots+X_N$. \LO{K2}
+    \item<3-> Dëmet agregate: algoritmi Panjer dhe simulimi.
+    \item<4-> Stop-loss: $E[(S-d)_+]$, me \texttt{pmax()} të Javës 1.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Shembull}[(pyetja e Javës 3)]
+    Me frekuencën dhe ashpërsinë e sotme: sa është probabiliteti që dëmet totale të vitit të kalojnë
+    një nivel të caktuar?
+  \end{Shembull}}
+\end{frame}
+
+\begin{frame}[fragile]{Përgatitja për Javën 3}
+<<w2h7-prep, eval=FALSE>>=
+install.packages("actuar")   # once, before next week
+library(actuar)
+@
+  \pause
+  \begin{Keshille}Ruaje skriptin e sotëm: modeli i ngjitur dhe prima e pastër janë pika e nisjes së Javës 3.\end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Si e zgjedh një shpërndarje për dëmet? Përmend dy mjete.
+    \item Pse norma nominale e ulët nuk do të thotë kredi e lirë?
+    \item Pse VaR 99.5\% varet kryesisht nga bishti?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) AIC dhe grafiku QQ; (2) komisionet ndryshojnë koston efektive;
+  (3) kuantili 99.5\% ndodhet në zonën e dëmeve të rralla dhe të mëdha.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 2}
+  \begin{itemize}
+    \item \textbf{Ora 1--2}: shpërndarjet, \texttt{d/p/q/r}, lognormalja, MoM dhe MLE.
+    \item \textbf{Ora 3}: MLE nga zero me \texttt{optim()}, QQ dhe ECDF; vlerësimi vs e vërteta.
+    \item \textbf{Ora 4}: normat, anuitetet, kreditë, NPV dhe IRR.
+    \item \textbf{Ora 5}: \texttt{fitdistrplus}, testet, \texttt{tvm}, me kurthet e tyre.
+    \item \textbf{Ora 6}: modeli i ngjitur, prima e pastër, kostoja efektive, rreziku i interesit.
+  \end{itemize}
+  \vfill
+  \begin{block}{Rregulli i javës}
+    Pasiguria dhe koha: çdo çmim aktuarial është një vlerë e \textbf{pritur} dhe e \textbf{aktualizuar}.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09: struktura e provimit (15\% teori, 85\% ushtrime).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021.
+    \item M.~L.~Delignette-Muller, C.~Dutang, \emph{Journal of Statistical Software}, 64(4), 2015 (\texttt{fitdistrplus}).
+    \item Dokumentacioni i paketës \Rkey{tvm}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}
