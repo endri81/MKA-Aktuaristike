@@ -1,0 +1,646 @@
+% ============================================================
+%  Java 3 · Ora 2 — Teoria I: shpërndarjet e humbjeve dhe modifikimet
+% ============================================================
+\section{Teoria I: humbjet}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w3h2-setup, include=FALSE>>=
+suppressMessages(library(actuar))
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Familja e humbjeve}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse shpërndarje të veçanta për humbjet?}
+  \begin{itemize}
+    \item<1-> Një dëm është gjithmonë \textbf{pozitiv}: normalja nuk bën.
+    \item<2-> Shumica e dëmeve janë të vogla, pak janë shumë të mëdha: shpërndarje \textbf{e anuar djathtas}.
+    \item<3-> Dëmet e mëdha (zjarr, përmbytje, përgjegjësi) vendosin kapitalin: na intereson \textbf{bishti}.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Përgjigjja e R-së}
+    \Rkey{stats} ka Gamma, Lognormalen, Weibull-in. \Rkey{actuar} shton dhjetëra shpërndarje humbjesh,
+    me të njëjtin stil \texttt{d/p/q/r} dhe dy prefikse të reja: \texttt{m} dhe \texttt{lev}.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Rifreskim: Gamma dhe Lognormalja}
+  \centering
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{lll}
+    \toprule
+    & Gamma$(\alpha,\theta)$ & Lognormale$(\mu,\sigma)$ \\
+    \midrule
+    Dendësia $f(x)$ & $\dfrac{x^{\alpha-1}e^{-x/\theta}}{\Gamma(\alpha)\theta^\alpha}$ & $\dfrac{1}{x\sigma\sqrt{2\pi}}e^{-(\log x-\mu)^2/(2\sigma^2)}$ \\
+    $E[X]$ & $\alpha\theta$ & $e^{\mu+\sigma^2/2}$ \\
+    $E[X^k]$ & $\theta^k\,\Gamma(\alpha+k)/\Gamma(\alpha)$ & $e^{k\mu+k^2\sigma^2/2}$ \\
+    R & \texttt{dgamma(x, shape, scale)} & \texttt{dlnorm(x, meanlog, sdlog)} \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \small Të dyja kanë \textbf{të gjitha} momentet të fundme. Pareto-ja jo: kjo është arsyeja pse e duam.
+\end{frame}
+
+\begin{frame}{Pareto II (Lomax)}
+  \begin{Definicion}[(Pareto II, \emph{Lomax})]
+    Me formë $\alpha>0$ dhe shkallë $\theta>0$, për $x>0$:
+    \[
+      S(x)=\Pr(X>x)=\left(\frac{\theta}{x+\theta}\right)^{\alpha},\qquad
+      f(x)=\frac{\alpha\,\theta^\alpha}{(x+\theta)^{\alpha+1}}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $E[X]=\theta/(\alpha-1)$, vetëm kur $\alpha>1$.
+    \item Në \Rkey{actuar}: \texttt{dpareto(x, shape, scale)}, \texttt{ppareto}, \texttt{qpareto}, \texttt{rpareto}.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Mbështetja fillon në 0: e përshtatshme për të gjithë dëmet, jo vetëm për dëmet mbi një prag.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Pareto me një parametër}
+  \begin{Definicion}[(Pareto me një parametër, \emph{single-parameter Pareto})]
+    Me formë $\alpha>0$ dhe minimum të \textbf{njohur} $\theta>0$, për $x>\theta$:
+    \[
+      S(x)=\left(\frac{\theta}{x}\right)^{\alpha},\qquad
+      f(x)=\frac{\alpha\,\theta^\alpha}{x^{\alpha+1}}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $E[X]=\dfrac{\alpha\theta}{\alpha-1}$, vetëm kur $\alpha>1$.
+    \item Në \Rkey{actuar}: \texttt{dpareto1(x, shape, min)}, \texttt{ppareto1}, \dots
+    \item Kjo është Pareto-ja e \textbf{Javës 2}: bishti mbi pragun 20\,000 €.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Lidhja midis dy Pareto-ve}
+  \begin{Teoreme}
+    Nëse $Y\sim$ Pareto me një parametër $(\alpha,\theta)$, atëherë $Y-\theta\sim$ Lomax$(\alpha,\theta)$.
+  \end{Teoreme}
+  \pause
+  \textbf{Vërtetimi} (një rresht):
+  \[
+    \Pr(Y-\theta>x)=\Pr(Y>x+\theta)=\left(\frac{\theta}{x+\theta}\right)^{\alpha}. \qquad\blacksquare
+  \]
+  \pause
+  \begin{itemize}
+    \item Pareto me një parametër = Lomax e \textbf{zhvendosur} me $\theta$.
+    \item Mesataret: $\dfrac{\theta}{\alpha-1}+\theta=\dfrac{\alpha\theta}{\alpha-1}$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Dy Pareto në një figurë}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=10cm,height=5.4cm,domain=0:80000,samples=200,
+        xlabel={$x$ (€)},ylabel={$S(x)$},ymin=0,ymax=1.05,
+        tick label style={font=\scriptsize},label style={font=\small},
+        scaled x ticks=false,xticklabel style={/pgf/number format/1000 sep={\,}},
+        legend style={font=\scriptsize,at={(0.97,0.95)},anchor=north east}]
+      \addplot[very thick,uptmid] {(20000/(x+20000))^1.8};
+      \addlegendentry{Lomax$(1.8,\;20\,000)$: \texttt{ppareto}}
+      \addplot[very thick,accent,domain=20000:80000] {(20000/x)^1.8};
+      \addlegendentry{Pareto1$(1.8,\;20\,000)$: \texttt{ppareto1}}
+      \addplot[thin,accent,dashed] coordinates {(20000,0) (20000,1)};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small E njëjta kurbë, e zhvendosur me 20\,000 €.
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: \texttt{ppareto} nuk është \texttt{ppareto1}}
+  \begin{Gabim}
+    Nga Java 2: ``Pareto me $\alpha=1.8$ mbi 20\,000 €''. Studenti shkruan \texttt{ppareto(x, 1.8, 20000)}.
+  \end{Gabim}
+<<w3h2-par>>=
+x <- 30000
+c(lomax   = ppareto(x, shape = 1.8, scale = 20000, lower.tail = FALSE),
+  pareto1 = ppareto1(x, shape = 1.8, min = 20000, lower.tail = FALSE),
+  formula = (20000 / x)^1.8)
+@
+  \small \texttt{ppareto1} përputhet me formulën $(\theta/x)^\alpha$. Lomax jep probabilitet shumë më të madh.
+\end{frame}
+
+\begin{frame}[fragile,label=w3gab2]{Gjej gabimin}
+  Duam $\Pr(X>25\,000)$ për dëmet e bishtit, Pareto me një parametër $(1.8,\,20\,000)$:
+<<w3h2-gab, eval=FALSE>>=
+p_tail <- ppareto(25000, shape = 1.8, scale = 20000,
+                  lower.tail = FALSE)
+@
+  \begin{enumerate}
+    \item Çfarë llogarit ky kod, me formulë?
+    \item Jep dy mënyra të sakta për ta rregulluar.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjGab2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Dy shpërndarje të tjera të dobishme}
+  \centering
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{lll}
+    \toprule
+    & Inverse Gaussian & Log-logistike \\
+    \midrule
+    Ku përdoret & dëme me bisht mesatar & dëme, kohëzgjatje \\
+    $S(x)$ ose $f(x)$ & $f$ e shprehur me $\Phi$ & $S(x)=\dfrac{1}{1+(x/\theta)^\gamma}$ \\
+    Momentet & të gjitha & vetëm $k<\gamma$ \\
+    R (\Rkey{actuar}) & \texttt{dinvgauss(x, mean, shape)} & \texttt{dllogis(x, shape, scale)} \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \small Nuk i mësojmë përmendësh: mjafton të dimë që ekzistojnë dhe si thirren.
+\end{frame}
+
+\begin{frame}{Momentet: kur ekzistojnë?}
+  Për Lomax-in:
+  \[
+    E[X^k]=\int_0^\infty x^k\,\frac{\alpha\theta^\alpha}{(x+\theta)^{\alpha+1}}\,dx.
+  \]
+  \pause
+  \begin{itemize}
+    \item Për $x$ të mëdha, integrandi sillet si $x^{k-\alpha-1}$.
+    \item<3-> $\int^\infty x^{k-\alpha-1}dx<\infty$ vetëm kur $k-\alpha-1<-1$, pra $k<\alpha$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}
+    Momenti $E[X^k]$ i Pareto-s ekziston vetëm për $k<\alpha$.
+    Me $\alpha=1.8$: mesatarja ekziston, \textbf{varianca jo}.
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}[fragile]{Momentet në R: prefiksi \texttt{m}}
+<<w3h2-mom>>=
+c(mean_lomax = mpareto(1, shape = 1.8, scale = 2000),
+  EX2_lomax  = mpareto(2, shape = 1.8, scale = 2000),
+  EX2_gamma  = mgamma(2, shape = 2, scale = 1250))
+@
+  \begin{itemize}
+    \item<2-> \texttt{mpareto(order, shape, scale)} jep $E[X^k]$.
+    \item<3-> \texttt{Inf}: R e di që momenti i dytë nuk ekziston për $\alpha=1.8<2$.
+    \item<4-> Mesatarja $2\,000/0.8=2\,500$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Tre shpërndarje me të njëjtën mesatare 2\,500 €}
+<<w3h2-tails, echo=FALSE, fig.height=3.3>>=
+xs <- seq(100, 25000, length.out = 400)
+tails <- rbind(
+  data.frame(x = xs, S = pgamma(xs, 2, scale = 1250, lower.tail = FALSE), model = "Gamma(2, 1250)"),
+  data.frame(x = xs, S = plnorm(xs, log(2500) - 0.5, 1, lower.tail = FALSE), model = "Lognormale(sdlog = 1)"),
+  data.frame(x = xs, S = ppareto(xs, 1.8, 2000, lower.tail = FALSE), model = "Lomax(1.8, 2000)"))
+ggplot(tails, aes(x, S, colour = model)) + geom_line(linewidth = 1) +
+  scale_y_log10() + coord_cartesian(ylim = c(1e-6, 1)) + labs(x = "x (EUR)", y = "S(x), shkalla log", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Boshti $y$ është logaritmik: çdo vijë horizontale = 10 herë më pak probabilitet.
+    \item<2-> Gamma bie si $e^{-x/\theta}$: vijë pothuajse e drejtë dhe e pjerrët. \textbf{Bisht i lehtë.}
+    \item<3-> Lomax bie si $x^{-\alpha}$: shumë më ngadalë. \textbf{Bisht i rëndë.}
+    \item<4-> Lognormalja është në mes.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Pse?}
+    E njëjta mesatare, pra e njëjta prima e pastër. Por kapitali i nevojshëm për Lomax-in është shumë më i madh.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w3mc2]{Zgjedhje e shumëfishtë}
+  Një portofol dëmesh zjarri ka $\hat\alpha=1.4$ (Pareto). Cili pohim është i saktë?
+  \begin{enumerate}[A)]
+    \item Mesatarja dhe varianca janë të fundme.
+    \item Mesatarja është e fundme, varianca jo.
+    \item As mesatarja, as varianca nuk janë të fundme.
+    \item Varianca është e fundme, mesatarja jo.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjMC2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Modifikimet e policës}
+% ------------------------------------------------------------
+
+\begin{frame}{Humbja dhe pagesa nuk janë e njëjta gjë}
+  \begin{itemize}
+    \item<1-> $X$ = \textbf{humbja} (\emph{loss}): sa kushton aksidenti.
+    \item<2-> $Y$ = \textbf{pagesa} (\emph{payment}): sa paguan siguruesi sipas kontratës.
+    \item<3-> Kontrata ndryshon $X$ në $Y$ me katër mjete:
+      \begin{enumerate}
+        \item franshiza (\emph{deductible});
+        \item limiti (\emph{policy limit});
+        \item bashkësigurimi (\emph{coinsurance});
+        \item inflacioni (\emph{inflation}).
+      \end{enumerate}
+  \end{itemize}
+  \onslide<4->{\small Në Kasko franshiza jepet shpesh si shumë fikse ose si përqindje e dëmit.}
+\end{frame}
+
+\begin{frame}{Franshiza e zbritshme}
+  \begin{Definicion}[(franshiza e zbritshme $d$, \emph{ordinary deductible})]
+    Siguruesi paguan vetëm pjesën mbi $d$:
+    \[
+      Y^L=(X-d)_+=\begin{cases}0, & X\le d,\\ X-d, & X>d.\end{cases}
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $Y^L$ = pagesa \textbf{për humbje} (\emph{per loss}): përfshin zerot.
+    \item<3-> $Y^P=X-d\mid X>d$ = pagesa \textbf{për pagesë} (\emph{per payment}): vetëm kur paguan.
+  \end{itemize}
+  \onslide<4->{
+  \[ \boxed{E[Y^P]=\frac{E[Y^L]}{\Pr(X>d)}} \]}
+\end{frame}
+
+\begin{frame}{Funksioni i pagesës: figura}
+  \centering
+  \begin{tikzpicture}[>=Stealth,scale=0.9]
+    \draw[->] (0,0) -- (8,0) node[right,font=\small]{$X$ (humbja)};
+    \draw[->] (0,0) -- (0,4.3) node[above,font=\small]{$Y$ (pagesa)};
+    \draw[very thick,uptmid] (0,0) -- (1.5,0) -- (5.5,4*0.8) -- (7.8,4*0.8);
+    \draw[dashed,gray] (0,0) -- (4.3,4.3) node[above right,font=\scriptsize]{$Y=X$};
+    \draw[dashed] (1.5,0) node[below,font=\small]{$d$} -- (1.5,0.2);
+    \draw[dashed] (5.5,0) node[below,font=\small]{$u$} -- (5.5,3.2);
+    \draw[dashed] (0,3.2) node[left,font=\small]{$u-d$} -- (5.5,3.2);
+    \node[font=\scriptsize,text=uptmid,align=center] at (6.8,2.6) {limiti:\\pagesa e kufizuar};
+    \node[font=\scriptsize,text=uptmid,align=center] at (0.8,0.7) {franshiza:\\0};
+  \end{tikzpicture}\par
+  \small Franshiza $d$ dhe humbja maksimale e mbuluar $u$: pagesa është $(X\wedge u)-(X\wedge d)$.
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC}
+  $X\in\{500,\;1\,500,\;3\,000\}$ €, secila me probabilitet $1/3$. Franshiza $d=1\,000$ €.
+  \pause
+  \begin{center}
+    \begin{tabular}{cccc}
+      \toprule $X$ & $Y^L=(X-d)_+$ & $Y^P$ & $X\wedge2\,000$ \\ \midrule
+      500 & 0 & --- & 500 \\
+      1\,500 & 500 & 500 & 1\,500 \\
+      3\,000 & 2\,000 & 2\,000 & 2\,000 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item $E[Y^L]=(0+500+2\,000)/3=833.33$ €.
+    \item $\Pr(X>d)=2/3$, \; $E[Y^P]=833.33/(2/3)=1\,250$ € $=(500+2\,000)/2$. \textcolor{okgreen}{$\checkmark$}
+    \item Me limit $u=2\,000$: $E[X\wedge2\,000]=(500+1\,500+2\,000)/3=1\,333.33$ €.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Franshiza e kushtëzuar}
+  \begin{Definicion}[(franshiza e kushtëzuar, \emph{franchise deductible})]
+    Kur $X>d$, siguruesi paguan \textbf{të gjithë} humbjen; kur $X\le d$, asgjë:
+    \[ Y^L=X\cdot\mathbf{1}\{X>d\}. \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Në shembullin tonë: pagesat $0,\;1\,500,\;3\,000$, \; $E[Y^L]=1\,500$ €.
+    \item Lidhja: $E[Y^L_{\text{kushtëzuar}}]=E[(X-d)_+]+d\cdot\Pr(X>d)=833.33+1\,000\cdot\tfrac23=1\,500$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \pause
+  \begin{Gabim}Të dy llojet quhen shpesh ``franshizë''. Në kontratë dhe në \texttt{coverage()} duhet të dihet cili është: argumenti \texttt{franchise = TRUE}.\end{Gabim}
+\end{frame}
+
+\begin{frame}{Bashkësigurimi dhe inflacioni}
+  \begin{itemize}
+    \item<1-> \textbf{Bashkësigurimi} $\alpha\in(0,1]$: siguruesi paguan vetëm pjesën $\alpha$ të shumës.
+    \item<2-> \textbf{Inflacioni} $r$: humbja e vitit të ardhshëm është $(1+r)X$; $d$ dhe $u$ mbeten të fiksuara.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Teoreme}[(pagesa për humbje, rasti i përgjithshëm)]
+    \[
+      Y^L=\alpha\Big[\big((1+r)X\wedge u\big)-\big((1+r)X\wedge d\big)\Big],
+    \]
+    \[
+      E[Y^L]=\alpha(1+r)\left\{E\Big[X\wedge\tfrac{u}{1+r}\Big]-E\Big[X\wedge\tfrac{d}{1+r}\Big]\right\}.
+    \]
+  \end{Teoreme}}
+  \onslide<4->{\small Këto janë saktësisht argumentet e \texttt{coverage(..., deductible, limit, coinsurance, inflation)}.}
+\end{frame}
+
+\begin{frame}[label=w3pyetjeInfl]{Parashiko: inflacioni dhe franshiza}
+  \begin{Parashiko}
+    Humbjet rriten 10\% nga inflacioni. Franshiza mbetet 1\,000 €.
+    \begin{enumerate}
+      \item Pagesa e pritur e siguruesit rritet më shumë, më pak, apo saktësisht 10\%?
+      \item Pse?
+    \end{enumerate}
+    Provo me $X\sim$ Eksponenciale me mesatare 1\,000 €.
+  \end{Parashiko}
+  \vfill\shkoTe{w3zgjInfl}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlera e pritur e kufizuar}
+% ------------------------------------------------------------
+
+\begin{frame}{Vlera e pritur e kufizuar}
+  \begin{Definicion}[(\emph{limited expected value})]
+    \[ E[X\wedge u]=E[\min(X,u)]=\int_0^u x\,f(x)\,dx+u\,S(u). \]
+  \end{Definicion}
+  \pause
+  \textbf{Formula me $S(x)$} (integrim me pjesë, $f=-S'$):
+  \begin{align*}
+    \int_0^u x f(x)\,dx &= \big[-xS(x)\big]_0^u+\int_0^u S(x)\,dx \\
+    \onslide<3->{&= -u\,S(u)+\int_0^u S(x)\,dx}
+  \end{align*}
+  \onslide<4->{
+  \[ \Rightarrow\quad\boxed{E[X\wedge u]=\int_0^u S(x)\,dx} \]}
+\end{frame}
+
+\begin{frame}{Figura: sipërfaqja nën $S(x)$}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=10cm,height=5.2cm,domain=0:5000,samples=100,
+        xlabel={$x$ (€)},ylabel={$S(x)$},ymin=0,ymax=1.05,
+        tick label style={font=\scriptsize},label style={font=\small},
+        scaled x ticks=false,xticklabel style={/pgf/number format/1000 sep={\,}}]
+      \addplot[fill=uptlight,draw=none,domain=0:1000] {exp(-x/1000)} \closedcycle;
+      \addplot[fill=accent!25,draw=none,domain=1000:5000] {exp(-x/1000)} \closedcycle;
+      \addplot[very thick,uptblue] {exp(-x/1000)};
+      \node[font=\small] at (axis cs:450,0.35) {$E[X\wedge d]$};
+      \node[font=\small] at (axis cs:1900,0.12) {$E[(X-d)_+]$};
+      \draw[dashed] (axis cs:1000,0) -- (axis cs:1000,1);
+      \node[font=\small,above] at (axis cs:1000,1) {$d$};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small Sipërfaqja e plotë nën $S(x)$ është $E[X]$. Franshiza e ndan në dy pjesë.
+\end{frame}
+
+\begin{frame}{Stop-loss: pjesa mbi $d$}
+  \begin{Teoreme}[(prima stop-loss)]
+    \[
+      E[(X-d)_+]=\int_d^\infty S(x)\,dx=E[X]-E[X\wedge d].
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Arsyeja: $X=(X\wedge d)+(X-d)_+$ për çdo vlerë të $X$.
+    \item<3-> E njëjta formulë vlen për $S$ (shuma totale): çmimi i risigurimit stop-loss (Ora 4).
+    \item<4-> \termi{Raporti i eliminimit të humbjes}{loss elimination ratio}:
+      \[ \mathrm{LER}(d)=\frac{E[X\wedge d]}{E[X]}. \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Eksponencialja pa ndihmën e PC}
+  $X\sim$ Eksponenciale me mesatare $\theta=1\,000$: \; $S(x)=e^{-x/\theta}$.
+  \pause
+  \begin{align*}
+    E[X\wedge d] &= \int_0^d e^{-x/\theta}dx=\theta\big(1-e^{-d/\theta}\big) \\
+    \onslide<3->{&= 1\,000\,(1-e^{-1})=632.12 \text{ € për } d=1\,000} \\
+    \onslide<4->{E[(X-d)_+] &= 1\,000-632.12=367.88 \text{ €}} \\
+    \onslide<5->{\mathrm{LER}(1\,000) &= 0.632}
+  \end{align*}
+  \onslide<6->{\small Franshiza 1\,000 € heq 63\% të pagesave të pritura: 37\% e primës mbetet.}
+\end{frame}
+
+\begin{frame}{Lomax: formulë e mbyllur}
+  Me $S(x)=\big(\theta/(x+\theta)\big)^\alpha$ dhe $\alpha\ne1$:
+  \begin{align*}
+    E[X\wedge u] &= \int_0^u\left(\frac{\theta}{x+\theta}\right)^{\alpha}dx \\
+    \onslide<2->{&= \theta^\alpha\left[\frac{(x+\theta)^{1-\alpha}}{1-\alpha}\right]_0^u} \\
+    \onslide<3->{&= \frac{\theta}{\alpha-1}\left[1-\left(\frac{\theta}{u+\theta}\right)^{\alpha-1}\right]}
+  \end{align*}
+  \onslide<4->{\small Kur $u\to\infty$ dhe $\alpha>1$: $E[X\wedge u]\to\theta/(\alpha-1)=E[X]$. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R: prefiksi \texttt{lev}}
+<<w3h2-lev>>=
+S_exp <- function(x) exp(-x / 1000)
+c(levexp  = levexp(1000, rate = 1 / 1000),
+  formula = 1000 * (1 - exp(-1)),
+  integr  = integrate(S_exp, 0, 1000)$value)
+th_ <- 2000; a <- 1.8; u <- 5000
+c(levpareto = levpareto(u, shape = a, scale = th_),
+  formula   = th_ / (a - 1) * (1 - (th_ / (u + th_))^(a - 1)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Tre rrugë, e njëjta përgjigje: funksioni \texttt{lev}, formula, integrali numerik.
+    \item<2-> \texttt{levexp(limit, rate)}, \texttt{levgamma(limit, shape, scale)}, \texttt{levpareto(limit, shape, scale)}\dots
+    \item<3-> Kur nuk ka formulë, \texttt{integrate(S, 0, u)} punon gjithmonë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Stop-loss në R: \texttt{mexp(1, rate) - levexp(d, rate)}, pra $E[X]-E[X\wedge d]$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w3ush2]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta, pa ndihmën e PC)]
+    $X\sim$ Lomax$(\alpha=3,\;\theta=2\,000)$, franshiza $d=1\,000$ €. Llogarit:
+    \begin{enumerate}
+      \item $E[X]$;
+      \item $E[X\wedge1\,000]$ dhe LER;
+      \item $E[(X-1\,000)_+]$;
+      \item $\Pr(X>1\,000)$ dhe $E[Y^P]$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Pamje e parë e \texttt{coverage()}}
+  \texttt{coverage()} ndërton \textbf{dendësinë e pagesës} nga dendësia e humbjes:
+<<w3h2-cov>>=
+f_pay <- coverage(dgamma, pgamma, deductible = 1000)   # per payment
+y <- 500                                               # payment of 500
+c(coverage = f_pay(y, shape = 2, scale = 450),
+  formula  = dgamma(y + 1000, 2, scale = 450) /
+             pgamma(1000, 2, scale = 450, lower.tail = FALSE))
+@
+  \small Formula: $f_{Y^P}(y)=f_X(y+d)/S_X(d)$. Përdorimin e plotë e bëjmë në Orën 5.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Funksionet e përziera}
+% ------------------------------------------------------------
+
+\begin{frame}{``Funksionet e përziera'': çfarë kuptojmë këtu}
+  \begin{block}{Shënim për \LO{K2}}
+    Në programin e lëndës, ``funksionet e përziera'' përdoret në dy kuptime:
+    \begin{enumerate}
+      \item \textbf{shpërndarjet e përziera dhe të përbëra} (jo-jeta, sot);
+      \item \textbf{funksionet aktuariale për disa jetë}, me numrat e komutimit (jeta, Java 6).
+    \end{enumerate}
+  \end{block}
+  \pause
+  \begin{itemize}
+    \item Sot: përzierjet e fundme, përzierjet e vazhdueshme dhe shpërndarjet e përbëra.
+    \item Të tri janë në kapitujt e Charpentier-it për modelet e humbjeve dhe në \Rkey{actuar}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Përzierja e fundme}
+  \begin{Definicion}[(përzierje e fundme, \emph{finite mixture})]
+    Me pesha $w_j\ge0$, $\sum_j w_j=1$:
+    \[ F(x)=\sum_{j=1}^{m} w_j\,F_j(x),\qquad f(x)=\sum_{j=1}^{m} w_j\,f_j(x). \]
+  \end{Definicion}
+  \pause
+  \textbf{Interpretimi në dy hapa:}
+  \begin{enumerate}
+    \item zgjidh grupin $j$ me probabilitet $w_j$;
+    \item gjenero dëmin nga $F_j$.
+  \end{enumerate}
+  \pause
+  \small Shembull: dëmet e xhamave (të vogla) dhe dëmet e përplasjeve (të mëdha) në të njëjtin portofol.
+\end{frame}
+
+\begin{frame}{Përzierja e Javës 2: trupi dhe bishti}
+  E vërteta e \texttt{individual\_claims\_synthetic.csv} (sintetike):
+  \[
+    F(x)=0.95\,F_{\text{LN}(7,\,0.9)}(x)+0.05\,F_{\text{Pareto1}(1.8,\;20\,000)}(x).
+  \]
+  \pause
+  \textbf{Mesatarja}, si mesatare e peshuar:
+  \begin{align*}
+    E[X] &= 0.95\,e^{7+0.9^2/2}+0.05\cdot\frac{1.8\times20\,000}{0.8} \\
+    \onslide<3->{&\approx 0.95\times1\,644.2+0.05\times45\,000} \\
+    \onslide<4->{&\approx 1\,562.0+2\,250=3\,812 \text{ €}}
+  \end{align*}
+  \onslide<5->{\small 5\% e dëmeve japin \textbf{më shumë se gjysmën} e mesatares.}
+\end{frame}
+
+\begin{frame}{Momentet e një përzierjeje}
+  \begin{itemize}
+    \item<1-> Momentet e \textbf{papërpunuara} janë mesatare të peshuara:
+      \[ E[X^k]=\sum_j w_j\,E[X_j^k]. \]
+    \item<2-> Varianca \textbf{nuk} është mesatarja e peshuar e variancave:
+      \[ \mathrm{Var}[X]=E[X^2]-E[X]^2\ne\sum_j w_j\,\mathrm{Var}[X_j]. \]
+    \item<3-> Në përzierjen tonë: $E[X^2]$ i Pareto-s me $\alpha=1.8$ është $\infty$, ndaj $\mathrm{Var}[X]=\infty$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Llogarit \texttt{var(x)} mbi të dhënat dhe e quan ``variancën e vërtetë''. Me $\alpha<2$ ajo nuk ekziston: vlerësimi lëviz pa u stabilizuar.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi i përzierjes me \texttt{rmixture()}}
+<<w3h2-mix>>=
+set.seed(2026)
+x_mix <- rmixture(3000, probs = c(0.95, 0.05),
+                  models = expression(rlnorm(7, 0.9),
+                                      rpareto1(1.8, 20000)))
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+true_mean <- 0.95 * exp(7 + 0.9^2 / 2) + 0.05 * 1.8 * 20000 / 0.8
+c(true = true_mean, simulated = mean(x_mix), data = mean(cl$amount_eur))
+@
+  \small Në \texttt{expression()} jepet thirrja pa argumentin \texttt{n}: \texttt{rmixture()} e plotëson vetë.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Simulimi dhe të dhënat sintetike japin mesatare afër \Sexpr{fmt(true_mean)} €, por jo saktësisht.
+    \item<2-> Me 3\,000 dëme, 150 prej tyre vijnë nga Pareto-ja: disa prej tyre janë shumë të mëdha.
+    \item<3-> Një dëm i vetëm prej 500\,000 € e zhvendos mesataren me rreth 167 € ($500\,000/3\,000$).
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Vlerësimi kundrejt së vërtetës}
+    Mesatarja e mostrës konvergjon ngadalë kur varianca është e pafundme. Kjo nuk është gabim i kodit: është natyra e bishtit të rëndë.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Përzierja e vazhdueshme: shoferë të ndryshëm}
+  \begin{itemize}
+    \item<1-> Çdo shofer ka frekuencën e vet $\Lambda$; kompania nuk e di.
+    \item<2-> Për shoferin me $\Lambda=\lambda$: $N\mid\Lambda=\lambda\sim\text{Poisson}(\lambda)$.
+    \item<3-> Në portofol $\Lambda$ ndryshon: $\Lambda\sim\text{Gamma}(r,\beta)$ (formë $r$, normë $\beta$).
+  \end{itemize}
+  \onslide<4->{
+  \[
+    \Pr(N=k)=\int_0^\infty \underbrace{\frac{e^{-\lambda}\lambda^k}{k!}}_{\text{Poisson}}\,
+    \underbrace{\frac{\beta^r\lambda^{r-1}e^{-\beta\lambda}}{\Gamma(r)}}_{\text{Gamma}}\,d\lambda.
+  \]}
+  \onslide<5->{\small Si përzierja e fundme, por me pafundësi grupesh: shuma bëhet integral.}
+\end{frame}
+
+\begin{frame}{Poisson--Gamma = binomiale negative}
+  \begin{align*}
+    \Pr(N=k) &= \frac{\beta^r}{k!\,\Gamma(r)}\int_0^\infty \lambda^{k+r-1}e^{-(1+\beta)\lambda}\,d\lambda \\
+    \onslide<2->{&= \frac{\beta^r}{k!\,\Gamma(r)}\cdot\frac{\Gamma(k+r)}{(1+\beta)^{k+r}}} \\
+    \onslide<3->{&= \frac{\Gamma(k+r)}{k!\,\Gamma(r)}\left(\frac{\beta}{1+\beta}\right)^{r}\left(\frac{1}{1+\beta}\right)^{k}}
+  \end{align*}
+  \onslide<4->{
+  \begin{Teoreme}
+    $N\sim$ Binomiale negative me \texttt{size} $=r$ dhe \texttt{prob} $=\beta/(1+\beta)$.
+    \quad $E[N]=r/\beta$, \; $\mathrm{Var}[N]=r/\beta+r/\beta^2>E[N]$.
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll numerik në R}
+<<w3h2-nb>>=
+r <- 2; b <- 10                      # E[Lambda] = r / b = 0.2
+mix_pmf <- function(k) integrate(function(l)
+  dpois(k, l) * dgamma(l, shape = r, rate = b), 0, Inf)$value
+rbind(integral = sapply(0:3, mix_pmf),
+      dnbinom  = dnbinom(0:3, size = r, prob = b / (1 + b)))
+@
+  \small Integrali i përzierjes dhe \texttt{dnbinom()} përputhen.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Heterogjeniteti i shoferëve shtohet si \textbf{mbishpërndarje} (\emph{overdispersion}): $\mathrm{Var}[N]>E[N]$.
+    \item<2-> Këtu $E[N]=0.2$ dhe $\mathrm{Var}[N]=0.2+0.02=0.22$.
+    \item<3-> Nëse të dhënat tregojnë variancë më të madhe se mesatarja, Poisson-i i thjeshtë nuk mjafton.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kjo është edhe baza e kredibilitetit (Java 4): $\Lambda$ i një shoferi vlerësohet duke kombinuar historinë e tij me portofolin.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w3mc3]{Zgjedhje e shumëfishtë}
+  Cila nga këto \textbf{nuk} është shpërndarje e përzier ose e përbërë?
+  \begin{enumerate}[A)]
+    \item $0.95\,$LN$(7,0.9)+0.05\,$Pareto1$(1.8,20\,000)$.
+    \item Poisson me $\lambda$ që ndjek Gamma.
+    \item $S=X_1+\dots+X_N$ me $N$ Poisson.
+    \item $X\sim$ Gamma$(2,450)$ me parametra të njohur.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjMC3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë jep \texttt{ppareto1(30000, 1.8, 20000, lower.tail = FALSE)} me formulë?
+    \item Pse $E[(X-d)_+]=E[X]-E[X\wedge d]$?
+    \item Poisson--Gamma me $r=1$, $\beta=4$: sa janë $E[N]$ dhe $\mathrm{Var}[N]$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $(20\,000/30\,000)^{1.8}\approx0.482$; (2) $X=(X\wedge d)+(X-d)_+$;
+  (3) $E[N]=0.25$, $\mathrm{Var}[N]=0.25+0.0625=0.3125$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item Lomax (\texttt{pareto}) dhe Pareto me një parametër (\texttt{pareto1}): $Y-\theta\sim$ Lomax.
+    \item Pareto: $E[X^k]<\infty$ vetëm për $k<\alpha$; \texttt{mpareto()} kthen \texttt{Inf}.
+    \item Pagesa: $Y^L=(X\wedge u)-(X\wedge d)$; \; $E[Y^P]=E[Y^L]/S(d)$.
+    \item $E[X\wedge u]=\int_0^u S(x)dx$; \; stop-loss $=E[X]-E[X\wedge d]$; \; prefiksi \texttt{lev}.
+    \item Përzierjet: e fundme (\texttt{rmixture}) dhe e vazhdueshme (Poisson--Gamma = NB).
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator nga zero: simulimi i $S$, algoritmi Panjer, diskretizimi, VaR dhe TVaR.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitujt për shpërndarjet e humbjeve).
+    \item V.~Goulet et al., vinjetat e paketës \Rkey{actuar} (\Sexpr{as.character(packageVersion("actuar"))}): \texttt{?coverage}, \texttt{?rmixture}, \texttt{?Pareto}, \texttt{?SingleParameterPareto}.
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur), kapitulli për modifikimet e policës.
+    \item README i të dhënave: \texttt{individual\_claims\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

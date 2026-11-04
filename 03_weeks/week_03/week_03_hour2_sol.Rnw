@@ -1,0 +1,72 @@
+% ============================================================
+%  Java 3 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w3s2-setup, include=FALSE>>=
+suppressMessages(library(actuar))
+@
+
+\begin{frame}[fragile,label=w3zgjGab2]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item \texttt{ppareto} është Lomax: llogarit $\big(20\,000/(25\,000+20\,000)\big)^{1.8}$, jo $(20\,000/25\,000)^{1.8}$.
+    \item Dy rregullime: \texttt{ppareto1(25000, 1.8, 20000, ...)}, ose Lomax mbi tepricën $x-\theta=5\,000$.
+  \end{enumerate}
+<<w3s2-gab>>=
+c(wrong  = ppareto(25000, 1.8, 20000, lower.tail = FALSE),
+  fix1   = ppareto1(25000, 1.8, 20000, lower.tail = FALSE),
+  fix2   = ppareto(25000 - 20000, 1.8, 20000, lower.tail = FALSE),
+  manual = (20000 / 25000)^1.8)
+@
+  \vfill\kthehu{w3gab2}
+\end{frame}
+
+\begin{frame}[label=w3zgjMC2]{Zgjidhja: zgjedhja e shumëfishtë (bishti)}
+  \textbf{B)} $E[X^k]<\infty$ vetëm për $k<\alpha=1.4$.
+  \begin{itemize}
+    \item $k=1<1.4$: mesatarja ekziston.
+    \item $k=2>1.4$: varianca është e pafundme.
+    \item D) është e pamundur: nëse $E[X^2]<\infty$, atëherë edhe $E[X]<\infty$.
+  \end{itemize}
+  \vfill\kthehu{w3mc2}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjInfl]{Zgjidhja: Parashiko (inflacioni)}
+  Eksponencialja: $E[(X-d)_+]=\theta e^{-d/\theta}$.
+<<w3s2-infl>>=
+before <- 1000 * exp(-1000 / 1000)        # theta = 1000
+after  <- 1100 * exp(-1000 / 1100)        # theta = 1100 after 10% inflation
+c(before = before, after = after, growth = after / before - 1)
+@
+  \begin{itemize}
+    \item Rritja është $\approx20\%$, \textbf{dyfishi} i inflacionit.
+    \item Pse? Çdo humbje rritet 10\%, por franshiza jo: më shumë humbje e kalojnë $d$ dhe secila paguan më shumë mbi $d$.
+    \item Ky efekt quhet \termi{efekti i levës}{leveraging effect}.
+  \end{itemize}
+  \vfill\kthehu{w3pyetjeInfl}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjUsh2]{Zgjidhja: Radha jote! (Lomax)}
+  \begin{enumerate}
+    \item $E[X]=2\,000/2=1\,000$ €.
+    \item $E[X\wedge1\,000]=1\,000\big[1-(2/3)^2\big]=1\,000\times5/9=555.56$ €; \; LER $=0.556$.
+    \item $E[(X-1\,000)_+]=1\,000-555.56=444.44$ €.
+    \item $\Pr(X>1\,000)=(2/3)^3=8/27=0.2963$; \; $E[Y^P]=444.44/0.2963=1\,500$ €.
+  \end{enumerate}
+<<w3s2-ush>>=
+lev <- levpareto(1000, shape = 3, scale = 2000)
+sl  <- mpareto(1, 3, 2000) - lev
+c(lev = lev, stop_loss = sl,
+  per_payment = sl / ppareto(1000, 3, 2000, lower.tail = FALSE))
+@
+  \vfill\kthehu{w3ush2}
+\end{frame}
+
+\begin{frame}[label=w3zgjMC3]{Zgjidhja: zgjedhja e shumëfishtë (përzierjet)}
+  \textbf{D)} Gamma me parametra të njohur është një shpërndarje e vetme.
+  \begin{itemize}
+    \item A) Përzierje e fundme me dy përbërës.
+    \item B) Përzierje e vazhdueshme: binomiale negative.
+    \item C) Shpërndarje e përbërë: Poisson i përbërë.
+  \end{itemize}
+  \vfill\kthehu{w3mc3}
+\end{frame}
