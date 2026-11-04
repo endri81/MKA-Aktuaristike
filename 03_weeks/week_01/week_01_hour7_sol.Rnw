@@ -1,0 +1,143 @@
+% ============================================================
+%  Java 1 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=sT1]{Zgjidhja T1}
+  \textbf{B)} Një veprim zbatohet mbi çdo element të vektorit pa cikël të shkruar nga ne.
+  \begin{itemize}
+    \item A) Gabim: vektorizimi nuk do të thotë llogaritje paralele.
+    \item C), D) Gabim: R nuk e ndryshon tipin as renditjen e vektorit.
+  \end{itemize}
+  \vfill\kthehu{qT1}
+\end{frame}
+
+\begin{frame}[label=sT2]{Zgjidhja T2}
+  \textbf{B)} Probabiliteti që një person i gjallë në moshën $x$ të vdesë para moshës $x+1$.
+  \begin{itemize}
+    \item A) Kjo është $d_x$ (numër), jo probabilitet.
+    \item C) Kjo është $p_x$.
+    \item D) Probabiliteti është gjithmonë në $[0,1]$.
+  \end{itemize}
+  \vfill\kthehu{qT2}
+\end{frame}
+
+\begin{frame}[fragile,label=sU1]{Zgjidhja U1}
+  \begin{itemize}
+    \item $d_{70}=1\,600$, \quad $d_{71}=1\,900$.
+    \item $q_{70}=1600/80000=0.0200$, \quad $q_{71}=1900/78400=0.0242$.
+    \item ${}_2p_{70}=76500/80000=0.95625$ \; dhe \; $p_{70}\,p_{71}=0.98\times0.975765=0.95625$.
+  \end{itemize}
+<<sol7-u1>>=
+lx <- c(80000, 78400, 76500)
+-diff(lx)                          # d70, d71
+round(-diff(lx) / lx[1:2], 4)      # q70, q71
+lx[3] / lx[1]                      # 2p70
+@
+  \vfill\kthehu{qU1}
+\end{frame}
+
+\begin{frame}[fragile,label=sU2]{Zgjidhja U2}
+  \[
+    A^1_{70:\overline{2}|}=\frac{d_{70}\,v+d_{71}\,v^2}{l_{70}},\qquad v=\frac{1}{1.04}
+  \]
+<<sol7-u2>>=
+lx <- c(80000, 78400, 76500); dx <- -diff(lx)
+nsp <- function(i) 50000 * sum((1 / (1 + i))^(1:2) * dx / lx[1])
+round(c(i_4pct = nsp(0.04), i_6pct = nsp(0.06)), 2)
+@
+  \small Me $i=6\%$ prima \textbf{zvogëlohet}: përfitimi i ardhshëm aktualizohet më shumë.
+  \vfill\kthehu{qU2}
+\end{frame}
+
+\begin{frame}[fragile,label=sU3]{Zgjidhja U3}
+<<sol7-u3, results='markup'>>=
+x <- c(2, 4, 6, 8)
+x[x > 3] * c(1, 10)
+@
+  \begin{itemize}
+    \item \texttt{x[x > 3]} = \texttt{4 6 8} (3 vlera). \texttt{c(1, 10)} riciklohet: \texttt{1 10 1}.
+    \item Paralajmërim: 3 nuk është shumëfish i 2.
+  \end{itemize}
+  \vfill\kthehu{qU3}
+\end{frame}
+
+\begin{frame}[fragile,label=sU4]{Zgjidhja U4}
+<<sol7-u4>>=
+a_due_certain <- function(n, i = 0.05) {
+  v <- 1 / (1 + i)
+  sum(v^(0:(n - 1)))
+}
+a_due_certain(3)
+1 + 1 / 1.05 + 1 / 1.05^2
+@
+  \small $\ddot a_{40:\overline{3}|}=2.8299<2.8594$: pagesat e anuitetit të jetës bëhen vetëm nëse personi është gjallë.
+  \vfill\kthehu{qU4}
+\end{frame}
+
+\begin{frame}[fragile,label=sU5]{Zgjidhja U5}
+<<sol7-u5>>=
+mp <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+f <- tapply(mp$n_claims, mp$fuel, sum) / tapply(mp$exposure, mp$fuel, sum)
+round(f, 4)
+round(c(ratio = unname(f["nafte"] / f["benzine"]), truth = exp(0.10)), 3)
+@
+  \small Shumë afër. Por kujdes: raporti i thjeshtë mund të përziejë efekte të tjera (Ora 6).
+  \vfill\kthehu{qU5}
+\end{frame}
+
+\begin{frame}[fragile,label=sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item Rruga: skedari ndodhet në dosjen e të dhënave $\Rightarrow$ \texttt{"data/..."}.
+    \item \texttt{+} duhet të jetë në \textbf{fund} të rreshtit, jo në fillim.
+    \item Funksioni quhet \texttt{scale\_y\_log10()}.
+  \end{enumerate}
+<<sol7-u6, eval=FALSE>>=
+mt <- read.csv("data/mortality_table_synthetic.csv")
+ggplot(mt, aes(age, qx_female)) +
+  geom_line() +
+  scale_y_log10()
+@
+  \vfill\kthehu{qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=sU7]{Zgjidhja U7}
+  \begin{itemize}
+    \item $\dfrac{\mu_{60}}{\mu_{50}}=c^{10}=2.75$ \;$\Rightarrow$\; $c=2.75^{1/10}\approx1.1065$.
+    \item $B=\mu_{50}/c^{50}\approx 2.54\times10^{-5}$.
+    \item $\mu_{70}=\mu_{60}\,c^{10}=0.0110\times2.75=0.03025$.
+  \end{itemize}
+<<sol7-u7>>=
+cc <- (0.011 / 0.004)^(1 / 10)
+round(cc, 4)                       # c
+signif(0.004 / cc^50, 3)           # B
+0.011 * cc^10                      # mu70
+@
+  \vfill\kthehu{qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=sU8]{Zgjidhja U8}
+  \begin{itemize}
+    \item $N\sim\text{Bin}(1000,\,0.02)$: \; $E[N]=20$, \; $\mathrm{sd}(N)=\sqrt{1000\cdot0.02\cdot0.98}\approx4.43$.
+  \end{itemize}
+<<sol7-u8>>=
+set.seed(2026)
+deaths <- rbinom(10000, size = 1000, prob = 0.02)
+round(c(mean = mean(deaths), sd = sd(deaths),
+        p_over_30_sim = mean(deaths > 30),
+        p_over_30_exact = 1 - pbinom(30, 1000, 0.02)), 4)
+@
+  \vfill\kthehu{qU8}
+\end{frame}
+
+\begin{frame}[fragile,label=sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{enumerate}
+    \item \texttt{NA} në \texttt{qx}: kontrollo të dhënat \textbf{para} llogaritjes: \texttt{stopifnot(!anyNA(qx))}.
+    \item \texttt{v\^{}(0:3)}: sigurimi paguhet në fund të vitit $\Rightarrow$ \texttt{v\^{}(1:4)}.
+    \item \texttt{A == NA} jep \texttt{NA}, dhe \texttt{if (NA)} jep gabim $\Rightarrow$ \texttt{is.na(A)}.
+  \end{enumerate}
+<<sol7-gab, error=TRUE>>=
+A <- NA
+if (A == NA) print("missing data")
+@
+  \vfill\kthehu{qGab7}
+\end{frame}

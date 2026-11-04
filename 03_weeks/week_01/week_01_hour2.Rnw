@@ -1,0 +1,609 @@
+% ============================================================
+%  Java 1 · Ora 2 — Teoria I: R si gjuhë
+% ============================================================
+\section{R si gjuhë}
+
+\begin{frame}{Ora 2 · R si gjuhë}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Objektet}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{R si makinë llogaritëse}
+<<calc>>=
+2 + 3
+100 * 1.05^3          # 100 EUR accumulated 3 years at 5%
+100 / 1.05^3          # present value of 100 EUR due in 3 years
+exp(log(5))           # log is the natural logarithm
+@
+  \pause
+  \small \texttt{[1]} do të thotë: ``elementi i parë i rezultatit''. Pse? Çdo rezultat në R është vektor.
+\end{frame}
+
+\begin{frame}{Caktimi: \texttt{<-}}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \node[draw=uptblue,fill=uptlight,rounded corners=2pt,minimum width=1.6cm,minimum height=0.8cm,font=\ttfamily] (n) at (0,0) {i};
+    \node[draw=accent,fill=accent!12,rounded corners=2pt,minimum width=1.6cm,minimum height=0.8cm,font=\ttfamily] (v) at (4,0) {0.05};
+    \draw[->,very thick,uptmid] (v) -- node[above,font=\ttfamily\small]{i <- 0.05} (n);
+    \node[below=0.2cm of n,font=\scriptsize] {emri (etiketa)};
+    \node[below=0.2cm of v,font=\scriptsize] {vlera në memorie};
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> Lexo: ``\texttt{i} merr vlerën 0.05''.
+    \item<3-> Shigjeta tregon drejtimin: vlera shkon \textbf{te} emri.
+    \item<4-> \texttt{=} punon gjithashtu, por në kurs përdorim \texttt{<-}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Caktimi në praktikë}
+<<assign>>=
+i <- 0.05           # interest rate
+v <- 1 / (1 + i)    # discount factor, computed from i
+v
+i <- 0.03           # change i ...
+v                   # ... v does NOT change by itself
+@
+  \pause
+  \begin{Keshille}R nuk është Excel: \texttt{v} nuk rillogaritet vetë kur ndryshon \texttt{i}.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Rregullat e emrave}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{\textcolor{okgreen}{Të vlefshëm}}
+      \begin{itemize}
+        \item \texttt{lx}, \texttt{q\_male}
+        \item \texttt{premium2026}
+        \item \texttt{net.premium}
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{\textcolor{warnred}{Të pavlefshëm}}
+      \begin{itemize}
+        \item \texttt{2026premium} (fillon me shifër)
+        \item \texttt{net premium} (hapësirë)
+        \item \texttt{if}, \texttt{TRUE} (fjalë të rezervuara)
+      \end{itemize}
+  \end{columns}
+  \pause
+  \begin{Gabim}R dallon shkronjat e mëdha: \texttt{Lx} dhe \texttt{lx} janë dy objekte të ndryshme.\end{Gabim}
+\end{frame}
+
+\begin{frame}[label=pyetjeAssign]{Parashiko!}
+  \begin{Parashiko}
+    \ttfamily
+    a <- 3\\
+    b <- a\\
+    a <- 10\\
+    b
+  \end{Parashiko}
+  \normalfont Çfarë printon R: \textbf{A)} 3 \quad \textbf{B)} 10 \quad \textbf{C)} gabim?
+  \vspace{6pt}
+
+  \shkoTe{zgjAssign}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Çfarë ka në memorie? \texttt{ls()} dhe \texttt{rm()}}
+<<lsrm>>=
+rm(list = ls())     # start from an empty workspace
+age <- 40
+sum_insured <- 100000
+ls()                # list objects
+rm(age)             # remove one object
+ls()
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tipet}
+% ------------------------------------------------------------
+
+\begin{frame}{Tipet bazë (\emph{atomic types})}
+  \centering\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Tipi & Shembull & Përdorim aktuarial \\ \midrule
+    \texttt{numeric} (double) & \texttt{0.05}, \texttt{3336.57} & interesi, primat \\
+    \texttt{integer} & \texttt{40L} & mosha, numri i dëmeve \\
+    \texttt{character} & \texttt{"Tirane"} & rajoni, kanali \\
+    \texttt{logical} & \texttt{TRUE}, \texttt{FALSE} & ka dëm / s'ka dëm \\
+    \bottomrule
+  \end{tabular}
+  \vspace{6pt}
+  \pause
+  \begin{itemize}
+    \item Dy \textbf{klasa} të rëndësishme mbi to: \texttt{Date} (data) dhe \texttt{factor} (kategori).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Si e mësojmë tipin? \texttt{class()}}
+<<classes>>=
+class(0.05)
+class(40L)
+class("Tirane")
+class(TRUE)
+class(40)           # without L, 40 is numeric (double)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{40} dhe \texttt{40L} duken njësoj, por ruhen ndryshe.
+    \item<2-> Në praktikë: R zgjedh vetë \texttt{numeric}. Rrallë na duhet \texttt{L}.
+    \item<3-> \texttt{"40"} (me thonjëza) \textbf{nuk} është numër. Është tekst.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kur lexon një CSV, kontrollo gjithmonë tipin e çdo kolone.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Datat: \texttt{Date}}
+<<dates>>=
+start <- as.Date("2026-01-15")   # policy start (ISO format)
+end   <- as.Date("2029-01-15")   # policy end
+end - start                       # exposure in days
+as.numeric(end - start) / 365.25  # exposure in years
+@
+  \pause
+  \small Pse \texttt{365.25}? Viti mesatar, me vitet e brishtë.
+\end{frame}
+
+\begin{frame}[fragile]{Kategoritë: \texttt{factor}}
+<<factor>>=
+region <- factor(c("Tirane", "Durres", "Tirane", "Shkoder", "Tirane"))
+region
+levels(region)
+table(region)       # counts per level
+@
+  \pause
+  \small \texttt{factor} = tekst me një listë të fiksuar nivelesh. Modelet (p.sh.\ \texttt{lm}) e kuptojnë si kategori.
+\end{frame}
+
+\begin{frame}{Shndërrimi automatik (\emph{coercion})}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      t/.style={draw=uptblue,fill=uptlight,rounded corners=2pt,minimum width=2.2cm,minimum height=0.8cm,font=\ttfamily\small}]
+    \node[t] (l) at (0,0) {logical};
+    \node[t] (i) at (3,0) {integer};
+    \node[t] (d) at (6,0) {double};
+    \node[t,fill=accent!15,draw=accent] (c) at (9,0) {character};
+    \draw[->,thick,uptmid] (l) -- (i);
+    \draw[->,thick,uptmid] (i) -- (d);
+    \draw[->,thick,uptmid] (d) -- (c);
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> Një vektor mban \textbf{vetëm një tip}.
+    \item<3-> Kur përzien tipe, R kalon te tipi \textbf{më djathtas}.
+    \item<4-> \texttt{TRUE} $\rightarrow$ 1, \texttt{FALSE} $\rightarrow$ 0. Kjo është shumë e dobishme!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=pyetjeClass]{Pyetje e shpejtë}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Çfarë kthen \texttt{class(c(1, "a", TRUE))}?
+    \begin{enumerate}
+      \item[A)] \texttt{"numeric"}
+      \item[B)] \texttt{"logical"}
+      \item[C)] \texttt{"character"}
+      \item[D)] gabim
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{zgjClass}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: numra si tekst}
+<<chartonum, error=TRUE>>=
+premium <- "1000"        # read as text, e.g. from a messy CSV
+premium + 1
+as.numeric(premium) + 1  # convert first
+@
+  \pause
+  \begin{Gabim}Mesazhi \texttt{non-numeric argument} zakonisht do të thotë: një kolonë është lexuar si tekst.\end{Gabim}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vektorët}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Krijimi i vektorëve: \texttt{c()}}
+<<cvec>>=
+qx <- c(0.010, 0.012, 0.015)   # one-year death probabilities, ages 40-42
+qx
+length(qx)
+@
+  \pause
+  \small \texttt{c()} = \emph{combine}. Elementet ndahen me presje.
+\end{frame}
+
+\begin{frame}[fragile]{Sekuenca: \texttt{:}, \texttt{seq()}, \texttt{rep()}}
+<<seqrep>>=
+40:43                          # step 1
+seq(from = 20, to = 60, by = 10)
+seq(0, 1, length.out = 5)
+rep(100, times = 3)            # level annual payment
+rep(c("M", "F"), each = 2)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Funksione që përmbledhin një vektor}
+<<summ>>=
+claims <- c(1200, 450, 3100, 800, 950)   # claim amounts (EUR)
+sum(claims)
+mean(claims)
+max(claims)
+range(claims)
+@
+  \pause
+  \small Këto janë funksione nga libraritë bazë (\Rkey{base}, \Rkey{stats}) \LO{K1}
+\end{frame}
+
+\begin{frame}[label=ush2a]{Radha jote!}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item Krijo vektorin e moshave 40, 45, 50, 55, 60 me \texttt{seq()}.
+      \item Krijo vektorin e 5 pagesave vjetore prej 1\,179.03 € me \texttt{rep()}.
+      \item Sa është shuma totale e pagesave (pa aktualizim)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjUsh2a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Indeksimi}
+% ------------------------------------------------------------
+
+\begin{frame}{Indeksimi: si zgjedhim elemente}
+  \centering
+  \begin{tikzpicture}[cell/.style={draw=uptblue,fill=uptlight,minimum width=1.5cm,minimum height=0.8cm,font=\ttfamily\small}]
+    \foreach \v/\k in {1000/1,990/2,978/3,963/4}{
+      \node[cell] (c\k) at (1.6*\k,0) {\v};
+      \node[font=\scriptsize\ttfamily,text=accent] at (1.6*\k,-0.7) {[\k]};
+    }
+    \node[font=\ttfamily,left=0.3cm of c1] {lx};
+    \onslide<2->{\node[cell,fill=accent!25,draw=accent] at (1.6*3,0) {978};}
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<1-> Pozicioni shkruhet në kllapa katrore: \texttt{lx[3]}.
+    \item<2-> \texttt{lx[3]} = 978. Numërimi fillon nga \textbf{1}, jo nga 0.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Indeksim me pozicione}
+<<idxpos>>=
+lx <- c(1000, 990, 978, 963)
+lx[1]               # first element
+lx[c(1, 4)]         # first and last
+lx[2:4]             # a range
+lx[length(lx)]      # last element, whatever the length
+@
+\end{frame}
+
+\begin{frame}[fragile]{Indeksim negativ: ``të gjitha përveç''}
+<<idxneg>>=
+lx[-1]              # drop the first element
+lx[-length(lx)]     # drop the last element
+lx[-1] - lx[-length(lx)]   # l(x+1) - l(x), element by element
+@
+  \pause
+  \small Rreshti i fundit jep $-d_x$. Kjo është pikërisht ajo që bën \texttt{diff(lx)}.
+\end{frame}
+
+\begin{frame}[fragile]{Indeksim logjik: zgjidh sipas kushtit}
+<<idxlog>>=
+qx <- c(0.010, 0.012, 0.015, 0.019)
+qx > 0.012                 # a logical vector
+qx[qx > 0.012]             # keep only TRUE positions
+sum(qx > 0.012)            # how many? TRUE counts as 1
+@
+  \pause
+  \begin{Keshille}\texttt{sum(kusht)} numëron; \texttt{mean(kusht)} jep përqindjen.\end{Keshille}
+\end{frame}
+
+\begin{frame}[fragile]{Indeksim me emra}
+<<idxname>>=
+lx <- c(1000, 990, 978, 963)
+names(lx) <- 40:43         # label each element by age
+lx
+lx["42"]                   # select by name, not position
+@
+  \pause
+  \begin{Gabim}\texttt{lx[42]} kërkon pozicionin 42 $\Rightarrow$ \texttt{NA}. Emri është \texttt{lx["42"]}.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Ku ndodhet? \texttt{which()}}
+<<which>>=
+qx <- c(0.010, 0.012, 0.015, 0.019)
+ages <- 40:43
+which(qx > 0.012)          # positions where the condition holds
+ages[which(qx > 0.012)]    # the ages themselves
+ages[qx > 0.012]           # same result, shorter
+@
+\end{frame}
+
+\begin{frame}[label=gjejGab2]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily
+    lx <- c(1000, 990, 978, 963)\\
+    dx <- lx[2:4] - lx[1:3]\\
+    dx\\[2pt]
+    \#\# [1] -10 -12 -15
+  \end{Gabim}
+  \normalfont
+  \begin{enumerate}
+    \item Pse numrat dalin negativë?
+    \item Rregullo rreshtin e dytë.
+  \end{enumerate}
+  \shkoTe{zgjGab2}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vektorizimi}
+% ------------------------------------------------------------
+
+\begin{frame}{Vektorizimi: ideja}
+  \centering
+  \begin{tikzpicture}[>=Stealth,cell/.style={draw=uptblue,fill=uptlight,minimum width=1.5cm,minimum height=0.7cm,font=\ttfamily\small}]
+    \node[font=\ttfamily] at (-1.4,0) {qx};
+    \foreach \v/\k in {0.010/0,0.012/1,0.015/2} \node[cell] (q\k) at (1.8*\k,0) {\v};
+    \node[font=\ttfamily] at (-1.4,-1.6) {1 - qx};
+    \foreach \v/\k in {0.990/0,0.988/1,0.985/2}{
+      \node[cell,fill=accent!12,draw=accent] (p\k) at (1.8*\k,-1.6) {\v};
+      \draw[->,thick,uptmid] (q\k) -- (p\k);
+    }
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> Një veprim mbi vektorin = i njëjti veprim mbi \textbf{çdo} element.
+    \item<3-> Pa cikël \texttt{for}. Kodi lexohet si formula.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Nga $q_x$ te $p_x$ dhe ${}_tp_x$}
+<<vecpx>>=
+qx <- c(0.010, 0.012, 0.015)  # ages 40, 41, 42
+px <- 1 - qx                  # one-year survival
+px
+tpx <- cumprod(px)            # 1p40, 2p40, 3p40
+tpx
+@
+  \pause
+  \small \texttt{cumprod()} = prodhimi kumulativ: $p_{40}$, \; $p_{40}p_{41}$, \; $p_{40}p_{41}p_{42}$.
+\end{frame}
+
+\begin{frame}[fragile]{Nga $q_x$ te $l_x$ në një rresht}
+<<veclx>>=
+qx <- c(0.010, 0.012, 0.015)
+lx <- 1000 * c(1, cumprod(1 - qx))   # radix l40 = 1000
+lx
+-diff(lx)                            # back to deaths d(x)
+@
+  \pause
+  \small Kontroll: $978.12 = 990\times(1-0.012)$. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Formula ${}_tp_x=p_x\,p_{x+1}\cdots p_{x+t-1}$ u bë \textbf{një} funksion: \texttt{cumprod()}.
+    \item<2-> E njëjta logjikë punon për 3 mosha ose për 110 mosha.
+    \item<3-> $l_x$ nuk ka pse të jetë numër i plotë: është numër i \emph{pritur} të gjallësh.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Rregulli i riciklimit (\emph{recycling})}
+  \centering
+  \begin{tikzpicture}[cell/.style={draw=uptblue,fill=uptlight,minimum width=1.2cm,minimum height=0.65cm,font=\ttfamily\small},
+                      rc/.style={cell,fill=accent!12,draw=accent,dashed}]
+    \foreach \v/\k in {1/0,2/1,3/2,4/3} \node[cell] at (1.4*\k,0) {\v};
+    \node[cell] at (0,-1) {10}; \node[cell] at (1.4,-1) {100};
+    \onslide<2->{\node[rc] at (2.8,-1) {10}; \node[rc] at (4.2,-1) {100};}
+    \onslide<3->{\foreach \v/\k in {10/0,200/1,30/2,400/3} \node[cell,fill=okgreen!12,draw=okgreen] at (1.4*\k,-2.2) {\v};}
+    \node[font=\Large] at (-1,-0.5) {$\times$};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \begin{itemize}
+    \item<2-> Vektori i shkurtër \textbf{përsëritet} derisa të arrijë gjatësinë e të gjatit.
+    \item<4-> Kështu funksionon edhe \texttt{1 - qx}: numri 1 riciklohet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Riciklimi në R}
+<<recyc, results='markup'>>=
+c(1, 2, 3, 4) * c(10, 100)     # lengths 4 and 2: fine
+c(1, 2, 3) * c(10, 100)        # lengths 3 and 2: warning
+@
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: riciklimi i heshtur}
+  \begin{Gabim}
+    Nëse gjatësia e gjatë është shumëfish i së shkurtrës, R \textbf{nuk} jep paralajmërim.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Shembull: 110 mosha, por \texttt{v\^{}(1:55)} vetëm 55 faktorë aktualizimi.
+    \item R përdor faktorët 1--55 dy herë. Rezultati del \textbf{pa asnjë mesazh}, por është i gabuar.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Kontrollo \texttt{length()} e çdo vektori para se t'i shumëzosh.\end{Keshille}
+\end{frame}
+
+\begin{frame}[label=pyetjeRecyc]{Parashiko!}
+  \begin{Parashiko}
+    Çfarë printon R?\\[3pt]
+    \texttt{c(100, 200, 300, 400, 500, 600) * c(1, 0)}
+  \end{Parashiko}
+  \shkoTe{zgjRecyc}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlerat që mungojnë}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{\texttt{NA}: vlerë që mungon (\emph{missing value})}
+<<na>>=
+claims <- c(1200, NA, 3100, 800)   # one claim not yet assessed
+mean(claims)
+mean(claims, na.rm = TRUE)         # ignore missing values
+is.na(claims)
+sum(is.na(claims))                 # how many are missing?
+@
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{NaN} dhe \texttt{Inf}}
+<<naninf>>=
+0 / 0          # Not a Number
+1 / 0          # infinity
+log(0)
+is.na(c(1, NA, NaN))   # NaN also counts as missing
+@
+  \pause
+  \small Ku shfaqen? P.sh.\ $q_x = d_x/l_x$ kur $l_x=0$ në fund të tabelës.
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: \texttt{== NA}}
+<<eqna>>=
+x <- c(5, NA, 7)
+x == NA          # wrong: comparing with "unknown" gives unknown
+is.na(x)         # right
+@
+  \pause
+  \begin{Gabim}Për të gjetur vlerat që mungojnë, përdor gjithmonë \texttt{is.na()}.\end{Gabim}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Strukturat e të dhënave}
+% ------------------------------------------------------------
+
+\begin{frame}{Katër struktura kryesore}
+  \centering
+  \begin{tikzpicture}[c/.style={draw=uptblue,fill=uptlight,minimum width=0.55cm,minimum height=0.45cm},
+                      lab/.style={font=\small\bfseries,text=uptblue}]
+    % vector
+    \foreach \k in {0,...,3} \node[c] at (0.6*\k,0) {};
+    \node[lab] at (0.9,-0.95) {vektor};
+    % matrix
+    \foreach \r in {0,1,2} \foreach \k in {0,1,2} \node[c] at (3.6+0.6*\k,0.45-0.5*\r) {};
+    \node[lab] at (4.2,-0.95) {matricë};
+    % list
+    \node[c,minimum width=0.8cm] at (7.2,0.4) {};
+    \node[c,fill=accent!20,minimum width=1.4cm] at (7.5,-0.05) {};
+    \node[c,fill=okgreen!20,minimum width=0.5cm] at (7.05,-0.5) {};
+    \node[lab] at (7.4,-0.95) {listë};
+    % data frame
+    \foreach \k/\col in {0/uptlight,1/accent!20,2/okgreen!20}
+      \foreach \r in {0,1,2} \node[c,fill=\col] at (9.9+0.6*\k,0.45-0.5*\r) {};
+    \node[lab] at (10.5,-0.95) {data frame};
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> \textbf{Matricë}: tabelë, i njëjti tip kudo.
+    \item<3-> \textbf{Listë}: kuti me objekte të çfarëdoshme.
+    \item<4-> \textbf{Data frame}: tabelë ku çdo kolonë ka tipin e vet. Struktura jonë kryesore.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Matrica}
+<<matrix>>=
+qx <- matrix(c(0.0010, 0.0012, 0.0015,     # male
+               0.0007, 0.0008, 0.0010),    # female
+             ncol = 2,
+             dimnames = list(age = 40:42, sex = c("M", "F")))
+qx
+qx["41", "F"]          # row "41", column "F"
+@
+\end{frame}
+
+\begin{frame}[fragile]{Lista: një policë si objekt}
+<<list>>=
+policy <- list(id = 1017, age = 40, sum_insured = 100000,
+               term = 3, beneficiaries = c("spouse", "child"))
+policy$age
+policy$beneficiaries
+length(policy)         # number of components
+@
+  \pause
+  \small \texttt{\$} merr një komponent me emër. Shumë funksione në R kthejnë lista.
+\end{frame}
+
+\begin{frame}[fragile]{Data frame: tabela e jetës}
+<<df>>=
+lt <- data.frame(x  = 40:43,
+                 lx = c(1000, 990, 978, 963))
+lt
+dim(lt)                # rows, columns
+@
+\end{frame}
+
+\begin{frame}[fragile]{Si zgjedhim brenda një data frame}
+<<dfidx>>=
+lt$lx                  # a column, as a vector
+lt[2, ]                # row 2, all columns
+lt[lt$x >= 42, ]       # rows that satisfy a condition
+@
+  \pause
+  \small Formati: \texttt{df[rreshtat, kolonat]}. Bosh = ``të gjitha''.
+\end{frame}
+
+\begin{frame}[fragile]{Struktura me një vështrim: \texttt{str()}}
+<<str>>=
+lt$region <- factor("Tirane")       # add a column (recycled to 4 rows)
+str(lt)
+@
+  \pause
+  \begin{Keshille}\texttt{str()} është komanda e parë pas çdo \texttt{read.csv()}.\end{Keshille}
+\end{frame}
+
+\begin{frame}[label=ush2b]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta)]
+    Me data frame-in \texttt{lt} (moshat 40--43):
+    \begin{enumerate}
+      \item Shto kolonën \texttt{dx} (për moshën 43 vendos \texttt{NA}).
+      \item Shto kolonën \texttt{qx = dx / lx}.
+      \item Printo vetëm rreshtat ku $q_x > 0.012$.
+    \end{enumerate}
+    Ndihmë: \texttt{c(-diff(lt\$lx), NA)}.
+  \end{Ushtrim}
+  \shkoTe{zgjUsh2b}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë jep \texttt{lx[-1]} për \texttt{lx <- c(1000, 990, 978)}?
+    \item Pse \texttt{1 - qx} punon edhe pse \texttt{1} ka gjatësi 1?
+    \item Si numëron sa polica kanë \texttt{premium > 1000}?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) \texttt{990 978}; (2) riciklimi; (3) \texttt{sum(premium > 1000)}.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item Caktimi: \texttt{emri <- vlera}. R nuk rillogarit vetë.
+    \item Tipet: numeric, integer, character, logical; klasat \texttt{Date}, \texttt{factor}.
+    \item Indeksimi: pozicion, negativ, logjik, emër. Fillon nga 1.
+    \item Vektorizimi + riciklimi: \texttt{1 - qx}, \texttt{cumprod()}, \texttt{diff()}.
+    \item \texttt{NA}: kontrollo me \texttt{is.na()}, injoro me \texttt{na.rm = TRUE}.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator: ndërtojmë tabelën e jetës dhe çmimin nga zero, rresht pas rreshti.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item K.~Antonio, \emph{Introduction to R for actuaries}, kapitulli 3
+          (objektet, tipet, vektorët, indeksimi, vlerat që mungojnë).
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika
+          Matematike me ilustrime në gjuhën R}, Kotti, 2021 (hyrja në R).
+    \item Dokumentacioni i R: \texttt{?Arithmetic} (riciklimi), \texttt{?NA}, \texttt{?data.frame}.
+  \end{itemize}
+\end{frame}

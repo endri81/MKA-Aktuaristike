@@ -1,0 +1,463 @@
+% ============================================================
+%  Java 1 · Ora 5 — Laborator R II: paketat, ggplot2, lm()
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Paketat, ggplot2 dhe \texttt{lm()}}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<h5-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+sexcol <- scale_colour_manual(values = c(M = "#2C5AA0", F = "#D97706"))
+@
+
+% ------------------------------------------------------------
+\subsection{Paketat}
+% ------------------------------------------------------------
+
+\begin{frame}{Çfarë është një paketë?}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,minimum height=1cm,align=center,font=\small}]
+    \node[b] (cran) at (0,0) {CRAN\\(mijëra paketa)};
+    \node[b] (lib) at (5.2,0) {Kompjuteri yt\\(biblioteka)};
+    \node[b,fill=accent!15,draw=accent] (ses) at (10.4,0) {Seanca R\\(në punë)};
+    \draw[->,thick,uptmid] (cran) -- node[above,font=\scriptsize\ttfamily]{install.packages()} node[below,font=\scriptsize]{një herë} (lib);
+    \draw[->,thick,uptmid] (lib) -- node[above,font=\scriptsize\ttfamily]{library()} node[below,font=\scriptsize]{çdo seancë} (ses);
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> Paketë = funksione + dokumentim + të dhëna, të shkruara nga të tjerë.
+    \item<3-> Gjatë kursit: \Rkey{ggplot2}, \Rkey{tvm}, \Rkey{actuar}, \Rkey{ChainLadder},
+          \Rkey{lifecontingencies}, \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Instalimi dhe ngarkimi}
+<<h5-install, eval=FALSE>>=
+install.packages("ggplot2")   # once per computer (needs internet)
+library(ggplot2)              # once per session, at the top of the script
+@
+<<h5-version>>=
+packageVersion("ggplot2")     # which version am I using?
+R.version.string
+@
+  \pause
+  \small Shëno versionet në raport: rezultatet mund të ndryshojnë pak nga një version në tjetrin.
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: emri i gabuar}
+<<h5-libbad, error=TRUE>>=
+library(ggplot)               # the package is called ggplot2
+@
+  \pause
+  \begin{Gabim}\texttt{there is no package called ...}: ose emri është shkruar gabim, ose paketa nuk është instaluar.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Libraria \texttt{stats}: gjithmonë e ngarkuar \LO{K1}}
+  \centering\small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Detyra & Funksioni & Javë \\ \midrule
+    Shpërndarje: dendësi, probabilitet, kuantil, simulim & \texttt{dnorm}, \texttt{pnorm}, \texttt{qnorm}, \texttt{rnorm} & 2--3 \\
+    Statistika përshkruese & \texttt{mean}, \texttt{var}, \texttt{quantile} & 2 \\
+    Regresioni linear & \texttt{lm()} & \textbf{sot} \\
+    Regresioni jo-linear & \texttt{nls()} & \textbf{sot} (zgjerim) \\
+    Optimizimi & \texttt{optim()}, \texttt{uniroot()} & 2, 10 \\
+    Modelet e përgjithësuara & \texttt{glm()} & 3 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{6pt}
+  \pause
+  \begin{Keshille}Shkrimi \texttt{stats::lm()} tregon qartë nga cila paketë vjen funksioni.\end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Të dhënat}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tabela e plotë (sintetike)}
+<<h5-read>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+range(mt$age)
+mt[mt$age %in% c(0, 40, 80, 110), ]
+@
+  \small\textcolor{gray}{Të dhëna \textbf{sintetike}. E vërteta (meshkuj): $A=0.0005$, $B=0.000022$, $c=1.105$.}
+\end{frame}
+
+\begin{frame}[fragile]{Kolona të reja: $d_x$}
+<<h5-derive>>=
+mt$dx_male   <- mt$lx_male   - c(mt$lx_male[-1],   0)   # deaths, last age: all
+mt$dx_female <- mt$lx_female - c(mt$lx_female[-1], 0)
+sum(mt$dx_male)                  # everybody dies eventually
+mt$lx_male[1]
+@
+  \pause
+  \small Kontroll: $\sum d_x = l_0$. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=pyetjeMinq]{Parashiko!}
+  \begin{Parashiko}
+    Para se ta vizatojmë:
+    \begin{enumerate}
+      \item Në cilën moshë $q_x$ i meshkujve është më i vogël?
+      \item Në cilën moshë vdesin \textbf{më shumë} persona ($d_x$ maksimal)?
+    \end{enumerate}
+    Shkruaj një hamendje. Pastaj kontrollo me \texttt{which.min()} dhe \texttt{which.max()}.
+  \end{Parashiko}
+  \shkoTe{zgjMinq}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{ggplot2: gramatika}
+% ------------------------------------------------------------
+
+\begin{frame}{Gramatika e grafikëve: shtresa mbi shtresa}
+  \centering
+  \begin{tikzpicture}[ly/.style={draw=uptblue,fill=uptlight,minimum width=7.5cm,minimum height=0.55cm,font=\small,align=left,text width=7.2cm}]
+    \node[ly] at (0,0)    {\textbf{data}: \texttt{mt}};
+    \node[ly] at (0,0.65) {\textbf{aes}: \texttt{x = age}, \texttt{y = qx\_male}};
+    \node[ly] at (0,1.3)  {\textbf{geom}: \texttt{geom\_line()}, \texttt{geom\_point()}};
+    \node[ly] at (0,1.95) {\textbf{scale}: \texttt{scale\_y\_log10()}};
+    \node[ly] at (0,2.6)  {\textbf{labs}: titujt e boshteve};
+    \node[ly,fill=accent!12,draw=accent] at (0,3.25) {\textbf{theme}: pamja};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \pause
+  \small Çdo shtresë shtohet me \texttt{+}. Fillo nga poshtë: të dhënat, pastaj çfarë shkon në cilin bosht.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 1: të dhënat dhe boshtet}
+<<h5-g1, fig.width=6, fig.height=2.6, out.width='0.62\\textwidth'>>=
+ggplot(mt, aes(x = age, y = qx_male))
+@
+  \small Bosh! Kemi thënë \emph{çfarë} të vizatojmë, por jo \emph{si}.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2: shto një gjeometri}
+<<h5-g2, fig.width=6, fig.height=2.6, out.width='0.62\\textwidth'>>=
+ggplot(mt, aes(x = age, y = qx_male)) +
+  geom_line()
+@
+  \small Pothuajse zero deri në 60, pastaj ``shpërthen''. Pse nuk shihet asgjë në moshat e reja?
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 3: shkalla logaritmike}
+<<h5-g3, fig.width=6, fig.height=2.6, out.width='0.62\\textwidth'>>=
+ggplot(mt, aes(x = age, y = qx_male)) +
+  geom_line() +
+  scale_y_log10()
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mosha 0: $q_0$ i lartë: vdekshmëria foshnjore.
+    \item<2-> Moshat 1--30: pothuajse e sheshtë: $A$ (Makeham) dominon.
+    \item<3-> Pas $\approx$ 35: \textbf{vijë e drejtë} në shkallë log $\Rightarrow$ rritje eksponenciale: $B c^x$.
+    \item<4-> Pyetja e Orës: sa është pjerrësia e kësaj vije? Ajo na jep $c$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Meshkuj dhe femra në një grafik: formati ``i gjatë''}
+<<h5-long>>=
+long <- rbind(
+  data.frame(age = mt$age, sex = "M", qx = mt$qx_male,   lx = mt$lx_male),
+  data.frame(age = mt$age, sex = "F", qx = mt$qx_female, lx = mt$lx_female))
+dim(long)
+head(long, 3)
+@
+  \pause
+  \small Një rresht për çdo (moshë, gjini). Kështu ggplot ndan grupet me \texttt{colour = sex}.
+\end{frame}
+
+\begin{frame}[fragile]{$q_x$: meshkuj vs femra}
+<<h5-gMF, fig.width=6, fig.height=2.5, out.width='0.62\\textwidth'>>=
+ggplot(long, aes(age, qx, colour = sex)) +
+  geom_line(linewidth = 0.9) +
+  scale_y_log10() +
+  labs(x = "Age x", y = "q(x), log scale", colour = NULL) + th + sexcol
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Femrat kanë $q_x$ më të ulët në pothuajse çdo moshë.
+    \item<2-> Vijat pothuajse paralele pas 40 $\Rightarrow$ pjerrësi të ngjashme ($c_F=1.112$ vs $c_M=1.105$).
+    \item<3-> Pasojë aktuariale: anuitetet për femrat kushtojnë më shumë; sigurimi i jetës më pak.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Në BE, tarifat nuk mund të dallojnë sipas gjinisë (vendimi \emph{Test-Achats}, 2011),
+  por aktuarët i përdorin tabelat sipas gjinisë për rezervat dhe analizat.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=ush5a]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta)]
+    Me data frame-in \texttt{long}:
+    \begin{enumerate}
+      \item Vizato $l_x$ për meshkujt dhe femrat (shkallë normale, jo log).
+      \item Vendos titujt: \texttt{"Age x"} dhe \texttt{"l(x)"}.
+      \item Në cilën moshë $l_x$ i meshkujve bie nën 50\,000?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjUsh5a}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Shpërndarja e moshës së vdekjes: $d_x$}
+<<h5-dx, fig.width=6, fig.height=2.6, out.width='0.66\\textwidth'>>=
+long$dx <- c(mt$dx_male, mt$dx_female)
+ggplot(long[long$age > 0, ], aes(age, dx, colour = sex)) +
+  geom_line(linewidth = 0.9) +
+  labs(x = "Age at death", y = "d(x)", colour = NULL) + th + sexcol
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $d_x$ = histogrami i moshave të vdekjes për 100\,000 të lindur.
+    \item<2-> Moda për meshkujt: rreth 84 vjeç. Për femrat: më vonë.
+    \item<3-> Pse bie pas modës? Ka gjithnjë e më pak të gjallë që mund të vdesin.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ruaj grafikun}
+<<h5-save, eval=FALSE>>=
+p <- ggplot(long, aes(age, qx, colour = sex)) +
+  geom_line() + scale_y_log10() + th
+ggsave("output/qx_by_sex.pdf", p, width = 7, height = 4)   # vector: for reports
+ggsave("output/qx_by_sex.png", p, width = 7, height = 4, dpi = 300)
+@
+  \pause
+  \begin{Keshille}PDF për raporte dhe slide; PNG për email dhe Word.\end{Keshille}
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: \texttt{+} në fillim të rreshtit}
+<<h5-plusbad, error=TRUE, fig.show='hide'>>=
+p <- ggplot(mt, aes(age, qx_male))
+  + geom_line()
+@
+  \pause
+  \begin{Gabim}R e mbyll komandën në fund të rreshtit të parë. \texttt{+} duhet të jetë në \textbf{fund} të rreshtit.\end{Gabim}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlerësimi i Gompertz me \texttt{lm()}}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja: logaritmi e bën vijë të drejtë}
+  \begin{align*}
+    \mu_x &= B\,c^{x} && \text{(Gompertz, pa } A\text{)}\\
+    \onslide<2->{\log\mu_x &= \log B + x\,\log c &&\\}
+    \onslide<3->{y &= \beta_0 + \beta_1\,x && \text{regresion linear!}}
+  \end{align*}
+  \onslide<4->{
+  \begin{itemize}
+    \item $\hat c = e^{\hat\beta_1}$, \quad $\hat B = e^{\hat\beta_0}$.
+    \item Nga $q_x$ te $\mu$: $\;-\log(1-q_x)=\int_x^{x+1}\mu_s\,ds$ (intensiteti mesatar i vitit).
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{lm()} mbi moshat 40--90}
+<<h5-lm>>=
+sub <- mt[mt$age >= 40 & mt$age <= 90, ]
+sub$mu <- -log(1 - sub$qx_male)          # average force of mortality
+fit <- lm(log(mu) ~ age, data = sub)     # log(mu) = b0 + b1 * age
+coef(fit)
+exp(coef(fit))                           # B_hat and c_hat
+summary(fit)$r.squared
+@
+\end{frame}
+
+\begin{frame}{Vlerësimi vs e vërteta}
+  \centering
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    Parametri & Vlerësimi (\texttt{lm}, 40--90) & E vërteta \\ \midrule
+    $c$ & \Sexpr{format(round(exp(coef(fit))[2], 4), nsmall = 4)} & 1.1050 \\
+    $R^2$ & \Sexpr{format(round(summary(fit)$r.squared, 4), nsmall = 4)} & -- \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> $R^2\approx 0.999$: vija përshtatet shumë mirë.
+    \item<3-> Por $\hat c$ është \textbf{pak më i vogël} se e vërteta. Pse?
+    \item<4-> Kemi injoruar $A$. Në moshat 40--50, $A$ ``ngre'' vdekshmërinë dhe e bën vijën më të sheshtë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Figura: të dhënat dhe vija e vlerësuar}
+<<h5-fitplot, fig.width=6, fig.height=2.4, out.width='0.6\\textwidth'>>=
+sub$fitted <- fitted(fit)                 # predicted log(mu)
+ggplot(sub, aes(age)) +
+  geom_point(aes(y = log(mu)), colour = "#2C5AA0", size = 1) +
+  geom_line(aes(y = fitted), colour = "#D97706", linewidth = 1) +
+  labs(x = "Age x", y = "log(mu)") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Mbetjet tregojnë të vërtetën}
+<<h5-resid, fig.width=6, fig.height=2.2, out.width='0.58\\textwidth'>>=
+ggplot(sub, aes(age, resid(fit))) +
+  geom_hline(yintercept = 0, colour = "grey50") +
+  geom_point(colour = "#2C5AA0", size = 1) +
+  labs(x = "Age x", y = "Residual") + th
+@
+  \small Formë ``U'': modeli linear \textbf{nuk} është i saktë. Mbetjet e shohin atë që $R^2$ e fsheh.
+\end{frame}
+
+\begin{frame}[label=gjejGab5]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily\small
+    all <- mt[mt\$age >= 1 \& mt\$age <= 109, ]\\
+    fit\_all <- lm(log(-log(1 - qx\_male)) \~{} age, data = all)\\
+    exp(coef(fit\_all))[2]\\[2pt]
+    \#\#      age\\
+    \#\# 1.080692
+  \end{Gabim}
+  \normalfont Studenti thotë: ``Përdora \textbf{të gjitha} të dhënat, ndaj vlerësimi im është më i mirë.'' A ka të drejtë?
+  \vspace{4pt}
+
+  \shkoTe{zgjGab5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=ndrysho5]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    \begin{enumerate}
+      \item Përsërit \texttt{lm()} me moshat \textbf{70--100}. Si ndryshon $\hat c$?
+      \item Përsërit me \texttt{qx\_female}, moshat 40--90. Krahaso me $c_F=1.112$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjNdrysho5}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Makeham me \texttt{nls()}}
+% ------------------------------------------------------------
+
+\begin{frame}{Modeli i plotë: Gompertz--Makeham\Zgj}
+  \[
+    -\log(1-q_x)=\int_x^{x+1}(A+B c^s)\,ds = A + B\,c^{x}\,\frac{c-1}{\ln c}
+  \]
+  \pause
+  \begin{itemize}
+    \item Jo-linear në $A$, $B$, $c$: logaritmi nuk e drejton më.
+    \item \texttt{nls()} (\emph{nonlinear least squares}) minimizon $\sum(\text{vrojtim}-\text{model})^2$ numerikisht.
+    \item Duhen \textbf{vlera fillestare} të arsyeshme: i marrim nga \texttt{lm()}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{nls()} në praktikë\Zgj}
+<<h5-nls>>=
+s2 <- mt[mt$age >= 20 & mt$age <= 100, ]
+s2$mu <- -log(1 - s2$qx_male)
+fit_gm <- nls(mu ~ A + B * c^age * (c - 1) / log(c), data = s2,
+              start = list(A = 0.001, B = exp(coef(fit))[[1]],
+                           c = exp(coef(fit))[[2]]))
+signif(coef(fit_gm), 5)
+@
+\end{frame}
+
+\begin{frame}{Vlerësimi vs e vërteta\Zgj}
+  \centering
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Parametri & \texttt{lm} (Gompertz) & \texttt{nls} (Makeham) & E vërteta \\ \midrule
+    $A$ & -- & \Sexpr{signif(coef(fit_gm)[["A"]], 4)} & 0.0005 \\
+    $B$ & -- & \Sexpr{signif(coef(fit_gm)[["B"]], 4)} & 0.000022 \\
+    $c$ & \Sexpr{format(round(exp(coef(fit))[2], 4), nsmall = 4)} & \Sexpr{format(round(coef(fit_gm)[["c"]], 4), nsmall = 4)} & 1.1050 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> Modeli i saktë gjen parametrat e vërtetë (gabimi vjen vetëm nga rrumbullakimi i $q_x$).
+    \item<3-> Mësimi: një model i thjeshtuar mund të ketë $R^2$ të lartë dhe prapë të jetë i zhvendosur (\emph{biased}).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{dplyr}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{E njëjta pyetje, dy stile\Zgj}
+  \small Pyetja: $q_x$ mesatar i meshkujve sipas dekadës së moshës (20--79).
+<<h5-base>>=
+d <- mt[mt$age >= 20 & mt$age < 80, ]
+d$decade <- 10 * (d$age %/% 10)               # 20, 30, ..., 70
+round(tapply(d$qx_male, d$decade, mean), 5)   # base R
+@
+\end{frame}
+
+\begin{frame}[fragile]{Stili \texttt{dplyr}: lexohet si fjali\Zgj}
+<<h5-dplyr, message=FALSE>>=
+library(dplyr)
+mt |>
+  filter(age >= 20, age < 80) |>              # keep rows
+  mutate(decade = 10 * (age %/% 10)) |>       # new column
+  group_by(decade) |>
+  summarise(mean_qx = round(mean(qx_male), 5))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?\Zgj}
+  \begin{itemize}
+    \item<1-> Të dy stilet japin \textbf{të njëjtat} numra.
+    \item<2-> \texttt{|>} (\emph{pipe}): ``merr rezultatin dhe kaloje te hapi tjetër''.
+    \item<3-> Në kurs: R bazë si gjuhë kryesore; \texttt{dplyr} kur e bën kodin më të qartë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{I gjithë laboratori në një skript}
+<<h5-all, eval=FALSE>>=
+library(ggplot2)
+mt  <- read.csv("data/mortality_table_synthetic.csv")
+sub <- mt[mt$age >= 40 & mt$age <= 90, ]
+sub$mu <- -log(1 - sub$qx_male)
+fit <- lm(log(mu) ~ age, data = sub)
+exp(coef(fit))                                       # B_hat, c_hat
+ggplot(mt, aes(age, qx_male)) + geom_line() + scale_y_log10()
+ggsave("output/qx_male_log.pdf", width = 7, height = 4)
+@
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Cili është ndryshimi midis \texttt{install.packages()} dhe \texttt{library()}?
+    \item Pse $\log\mu_x$ dhe jo $\mu_x$ si variabël e varur në \texttt{lm()}?
+    \item Pse $R^2=0.999$ nuk mjafton për të thënë që modeli është i saktë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) një herë vs çdo seancë; (2) Gompertz bëhet linear në log; (3) mbetjet tregojnë formë sistematike.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item Paketat: \texttt{install.packages()} një herë, \texttt{library()} çdo seancë.
+    \item ggplot2: data + aes + geom + scale + labs + theme, të lidhura me \texttt{+}.
+    \item Shkalla log e bën të dukshëm ligjin Gompertz.
+    \item \texttt{lm(log(mu) \~{} age)}: $\hat c\approx 1.099$; me \texttt{nls()} (Makeham): 1.105 = e vërteta.
+    \item Kontrollo mbetjet, jo vetëm $R^2$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: tabelat reale të Shqipërisë (1950--2011) dhe portofoli auto.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item H.~Wickham, \emph{ggplot2: Elegant Graphics for Data Analysis} (botim online, 3rd ed.).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (ligjet parametrike të vdekshmërisë: Gompertz, Makeham).
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R},
+          Kotti, 2021 (regresioni linear).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike, parametrat e vërtetë).
+    \item Dokumentacioni: \texttt{?lm}, \texttt{?nls}, \texttt{?ggsave}, vinjeta \texttt{dplyr}.
+  \end{itemize}
+\end{frame}

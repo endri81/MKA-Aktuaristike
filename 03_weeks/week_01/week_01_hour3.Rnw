@@ -1,0 +1,600 @@
+% ============================================================
+%  Java 1 · Ora 3 — Laborator R I: tabela e jetës nga zero
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyra}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyra e laboratorit}
+  \begin{Shembull}[(klienti)]
+    Mosha 40, sigurim jete me afat \textbf{5 vjet}, shuma 100\,000 €, interesi $i=5\%$.
+  \end{Shembull}
+  \pause
+  Do të ndërtojmë në R, \textbf{vetëm me R bazë}:
+  \begin{enumerate}
+    \item<2-> $l_x$ dhe $d_x$ nga $q_x$;
+    \item<3-> ${}_tp_x$ dhe jetëgjatësinë e pritur për 5 vjet;
+    \item<4-> primën e vetme neto dhe primën vjetore;
+    \item<5-> funksionin tonë të parë aktuarial. \LO{S2}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Plani: gjashtë hapa}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      st/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.9cm,
+                 minimum height=0.9cm,align=center,font=\small}]
+    \node[st] (a) at (0,0)    {1. $q_x$};
+    \node[st] (b) at (3.6,0)  {2. $l_x,\ d_x$};
+    \node[st] (c) at (7.2,0)  {3. ${}_tp_x,\ e_x$};
+    \node[st] (d) at (0,-1.6) {4. $v^t$};
+    \node[st] (e) at (3.6,-1.6) {5. $A^1_{x:\overline{n}|}$};
+    \node[st,fill=accent!15,draw=accent] (f) at (7.2,-1.6) {6. $\ddot a_{x:\overline{n}|},\ P$};
+    \draw[->,thick,uptmid] (a) -- (b);
+    \draw[->,thick,uptmid] (b) -- (c);
+    \draw[->,thick,uptmid] (c.south) -- ++(0,-0.35) -| (d.north);
+    \draw[->,thick,uptmid] (d) -- (e);
+    \draw[->,thick,uptmid] (e) -- (f);
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \pause
+  \small Pas çdo hapi: \textbf{kontroll}. Një numër i pakontrolluar nuk është rezultat.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 0: hap një skript të ri}
+<<lab-header, eval=FALSE>>=
+# ------------------------------------------------
+# MKA - Week 1 - Lab 1: life table from scratch
+# Client: age 40, 5-year term, S = 100000, i = 5%
+# ------------------------------------------------
+rm(list = ls())   # clean workspace: the script must run on its own
+@
+  \pause
+  \begin{Keshille}Ruaje skedarin si \texttt{R/lab1\_life\_table.R} brenda projektit.\end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 1--2: $l_x$ dhe $d_x$}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Hapi 1: probabilitetet e vdekjes}
+<<lab-qx>>=
+age <- 40:44
+qx  <- c(0.010, 0.012, 0.015, 0.019, 0.024)
+names(qx) <- age          # label by age
+qx
+length(qx)                # one q per age: 5 values
+@
+  \pause
+  \small Të dhëna \textbf{ilustruese}, të zgjedhura që të llogariten lehtë pa ndihmën e PC.
+\end{frame}
+
+\begin{frame}[label=pyetjeP43]{Parashiko!}
+  \begin{Parashiko}
+    Pa ekzekutuar kodin:
+    \begin{enumerate}
+      \item Sa është $p_{43}$?
+      \item A do të jetë $l_{45}$ më i madh apo më i vogël se 90\,000 (me $l_{40}=100\,000$)?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{zgjP43}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2a: $l_x$ nga $q_x$}
+<<lab-lx>>=
+radix <- 100000                        # l40, the starting cohort
+lx <- radix * c(1, cumprod(1 - qx))   # l40, l41, ..., l45
+names(lx) <- 40:45
+round(lx, 2)
+@
+  \pause
+  \begin{itemize}
+    \item 5 vlera $q_x$ $\Rightarrow$ \textbf{6} vlera $l_x$ (nga 40 deri në 45).
+    \item Pse? Çdo $q_x$ çon nga $l_x$ te $l_{x+1}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2b: $d_x$ dhe kontrolli}
+<<lab-dx>>=
+dx <- -diff(lx)                       # deaths in each year
+names(dx) <- age
+round(dx, 2)
+sum(dx)                               # total deaths in 5 years
+lx["40"] - lx["45"]                   # must be equal
+@
+  \pause
+  \small Kontroll: të vdekurit gjithsej = sa hynë $-$ sa mbetën. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Nga 100\,000 persona 40 vjeç, rreth 7\,754 vdesin brenda 5 vjetësh.
+    \item<2-> $d_x$ rritet çdo vit, edhe pse $l_x$ zvogëlohet. Pse? Sepse $q_x$ rritet më shpejt.
+    \item<3-> Kontrolli $\sum d_x = l_{40}-l_{45}$ kap gabimet e indeksimit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2c: e vendosim në një data frame}
+<<lab-df-bad, error=TRUE>>=
+lt <- data.frame(x = age, qx = qx, lx = lx, dx = dx)
+@
+  \pause
+  \begin{Gabim}
+    Kolonat e një data frame duhet të kenë të njëjtën gjatësi.
+    \texttt{lx} ka 6 vlera, të tjerat kanë 5.
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2c: zgjidhja}
+<<lab-df>>=
+lt <- data.frame(x  = age,
+                 qx = qx,
+                 lx = lx[-length(lx)],   # drop l45: keep ages 40-44
+                 dx = dx,
+                 row.names = NULL)
+lt
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 3: mbijetesa}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Hapi 3a: ${}_tp_{40}$ me dy mënyra}
+<<lab-tpx>>=
+tpx_a <- lx[-1] / lx[1]           # l(40+t) / l40, t = 1..5
+tpx_b <- cumprod(1 - qx)          # p40 * p41 * ... (product form)
+round(tpx_a, 6)
+all.equal(unname(tpx_a), unname(tpx_b))   # same numbers?
+@
+  \pause
+  \begin{Keshille}Dy mënyra të ndryshme që japin të njëjtin rezultat = kontroll i fortë.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Hapi 3b: jetëgjatësia e pritur e kufizuar}
+  \begin{Definicion}[(jetëgjatësia e plotë e kufizuar, \emph{temporary curtate expectation})]
+    Numri i pritur i viteve të \textbf{plota} që jeton një person $x$ vjeç, brenda $n$ vitesh:
+    \[
+      e_{x:\overline{n}|}=\sum_{t=1}^{n}{}_tp_x
+    \]
+  \end{Definicion}
+  \pause
+  \small Pse shuma e probabiliteteve? Çdo vit $t$ jep 1 vit të plotë nëse personi është gjallë në $x+t$.
+  Pritja e një treguesi 0/1 = probabiliteti i tij.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 3b: në R}
+<<lab-ex>>=
+tpx <- unname(tpx_a)
+e40_5 <- sum(tpx)                 # expected complete years in [40, 45]
+e40_5
+@
+  \pause
+  \begin{itemize}
+    \item Nga 5 vite të mundshme, një person 40 vjeç jeton mesatarisht $\approx 4.80$ vite të plota.
+    \item ``Humbja'' prej $\approx 0.20$ vjetësh vjen nga vdekjet e hershme.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=ush3a]{Radha jote!}
+  \begin{Ushtrim}[(3 minuta, pa ndihmën e PC)]
+    Me $q_{40}=0.010$, $q_{41}=0.012$, $q_{42}=0.015$:
+    \begin{enumerate}
+      \item Llogarit ${}_1p_{40}$, ${}_2p_{40}$, ${}_3p_{40}$.
+      \item Llogarit $e_{40:\overline{3}|}$.
+    \end{enumerate}
+    Pastaj kontrolloje në R me një rresht.
+  \end{Ushtrim}
+  \shkoTe{zgjUsh3a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 4--5: sigurimi}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Hapi 4: faktorët e aktualizimit}
+<<lab-v>>=
+i <- 0.05
+v <- 1 / (1 + i)
+n <- 5
+round(v^(1:n), 6)         # discount factors for payments at t = 1..5
+@
+  \pause
+  \small Pagesa e sigurimit bëhet në fund të vitit të vdekjes: kohët $t=1,\dots,5$.
+\end{frame}
+
+\begin{frame}{Hapi 5: formula në formën e produktit}
+  \[
+    A^1_{x:\overline{n}|}=\sum_{k=0}^{n-1} v^{k+1}\;{}_kp_x\;q_{x+k}
+  \]
+  \pause
+  \begin{itemize}
+    \item ${}_kp_x$: gjallë në fillim të vitit $k+1$ (për $k=0$: ${}_0p_x=1$).
+    \item $q_{x+k}$: vdes gjatë atij viti.
+    \item $v^{k+1}$: pagesa në fund të vitit.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Në R na duhet vektori $({}_0p_x,\ {}_1p_x,\dots,{}_{n-1}p_x)$ = \texttt{c(1, tpx[-n])}.\end{Keshille}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 5: prima e vetme neto}
+<<lab-A>>=
+kpx <- c(1, tpx[-n])                 # 0p40, 1p40, ..., 4p40
+A   <- sum(v^(1:n) * kpx * qx)        # EPV of 1 EUR death benefit
+A
+S <- 100000
+S * A                                # net single premium (EUR)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll me formën e Orës 1}
+<<lab-A-check>>=
+A_dx <- sum(v^(1:n) * dx / lx[1])    # Hour 1 form: d(x+k) / l(x)
+all.equal(A, unname(A_dx))
+@
+  \pause
+  \small ${}_kp_x\,q_{x+k} = d_{x+k}/l_x$: dy shkrime të së njëjtës probabilitet. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile,label=gjejGab3]{Gjej gabimin}
+<<lab-A-bug>>=
+A_bug <- sum(v^(1:n) * tpx * qx)     # a student's version
+S * A_bug
+@
+  \begin{enumerate}
+    \item Pse rezultati del më i \textbf{vogël} se \Sexpr{format(round(S*A,2), big.mark=" ", nsmall=2)}?
+    \item Cili rresht rregullon gabimin?
+  \end{enumerate}
+  \shkoTe{zgjGab3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Prima e vetme neto për 5 vjet: $\approx 6\,580.64$ €.
+    \item<2-> Për 3 vjet (Ora 1) ishte $\approx 3\,336.57$ €. Pse kaq më shumë?
+    \item<3-> Dy arsye: dy vite më shumë mbulim \textbf{dhe} $q_x$ më të larta në moshat 43--44.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 6: prima vjetore}
+% ------------------------------------------------------------
+
+\begin{frame}{Anuiteti i paguar në fillim (\emph{annuity-due})}
+  \begin{Definicion}
+    Vlera aktuale e pritshme e 1 € në fillim të çdo viti, sa kohë personi është gjallë, për $n$ vjet:
+    \[
+      \ddot a_{x:\overline{n}|}=\sum_{k=0}^{n-1} v^{k}\;{}_kp_x
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Pagesa e parë ($k=0$) është sot dhe e sigurt: $v^0\cdot{}_0p_x=1$.
+    \item Këtu klienti \textbf{paguan} primat.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 6: anuiteti dhe prima vjetore}
+<<lab-a>>=
+a_due <- sum(v^(0:(n - 1)) * kpx)    # EPV of 1 EUR per year, in advance
+a_due
+P <- S * A / a_due                   # net annual premium (EUR)
+P
+@
+  \pause
+  \small Pse $\ddot a < 5$? Sepse pagesat e ardhshme aktualizohen \textbf{dhe} mund të mos ndodhin.
+\end{frame}
+
+\begin{frame}[fragile]{Parimi i ekuivalencës}
+  \begin{Teoreme}[(parimi i ekuivalencës, \emph{equivalence principle})]
+    Prima neto zgjidhet që: VAP e primave = VAP e përfitimeve.
+    \[
+      P\,\ddot a_{x:\overline{n}|}=S\,A^1_{x:\overline{n}|}
+    \]
+  \end{Teoreme}
+<<lab-equiv>>=
+P * a_due - S * A                    # should be zero (up to rounding)
+@
+\end{frame}
+
+\begin{frame}[label=ndrysho3]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    Ekzekuto përsëri hapat 4--6 me:
+    \begin{enumerate}
+      \item $i=0\%$. Sa bëhet $\ddot a_{40:\overline{5}|}$? Krahasoje me $e_{40:\overline{4}|}+1$.
+      \item $i=10\%$. Prima vjetore rritet apo zvogëlohet?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjNdrysho3}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Funksioni ynë i parë}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse një funksion?}
+  \begin{itemize}
+    \item<1-> Klienti tjetër: mosha 50, afati 10 vjet, interesi 3\%.
+    \item<2-> Kopjo--ngjit 20 rreshta dhe ndrysho numrat? Rrezik gabimi.
+    \item<3-> Më mirë: shkruaj llogaritjen \textbf{një herë}, përdore shumë herë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Rregull praktik: nëse e kopjon një bllok kodi për herë të dytë, bëje funksion.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Anatomia e një funksioni}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      lab/.style={font=\scriptsize,text=accent,align=center}]
+    \node[draw=uptblue,fill=codebg,rounded corners=3pt,align=left,font=\ttfamily\small,inner sep=8pt] (f) {%
+      epv\_term <- function(qx, i, n) \{\\
+      \quad v <- 1 / (1 + i)\\
+      \quad kpx <- c(1, cumprod(1 - qx))[1:n]\\
+      \quad sum(v\^{}(1:n) * kpx * qx[1:n])\\
+      \}};
+    \pause
+    \node[lab] (a1) at (-4.6,1.4) {emri};
+    \draw[->,accent] (a1) -- ($(f.north west)+(0.9,-0.35)$);
+    \node[lab] (a2) at (2.6,1.5) {argumentet\\(hyrjet)};
+    \draw[->,accent] (a2) -- ($(f.north west)+(4.6,-0.35)$);
+    \pause
+    \node[lab] (a3) at (5.2,-0.2) {trupi};
+    \draw[->,accent] (a3) -- ($(f.east)+(-0.2,0)$);
+    \pause
+    \node[lab] (a4) at (-4.6,-1.4) {vlera e fundit\\= rezultati};
+    \draw[->,accent] (a4) -- ($(f.south west)+(0.6,0.75)$);
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Funksioni \texttt{epv\_term()}}
+<<fun-def>>=
+# EPV of 1 EUR paid at the end of the year of death, n-year term
+epv_term <- function(qx, i, n) {
+  v   <- 1 / (1 + i)                       # discount factor
+  kpx <- c(1, cumprod(1 - qx))[1:n]        # 0px, ..., (n-1)px
+  sum(v^(1:n) * kpx * qx[1:n])             # last value is returned
+}
+epv_term(qx, i = 0.05, n = 5)              # today's client
+@
+  \pause
+  \small Del njësoj me \texttt{A} nga hapi 5. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Testi më i rëndësishëm: shembulli i Orës 1}
+<<fun-test>>=
+q_toy <- c(10/1000, 12/990, 15/978)        # from l = 1000, 990, 978, 963
+100000 * epv_term(q_toy, i = 0.05, n = 3)
+@
+  \pause
+  \begin{itemize}
+    \item 3\,336.57 €: \textbf{njësoj} si llogaritja pa ndihmën e PC në Orën 1. \textcolor{okgreen}{$\checkmark$}
+    \item Rregull: çdo funksion i ri testohet mbi një shembull me përgjigje të njohur.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Vlera të paracaktuara (\emph{default arguments})}
+<<fun-default>>=
+epv_term <- function(qx, i = 0.05, n = length(qx)) {
+  v   <- 1 / (1 + i)
+  kpx <- c(1, cumprod(1 - qx))[1:n]
+  sum(v^(1:n) * kpx * qx[1:n])
+}
+epv_term(qx)                 # i = 5% and n = 5 by default
+epv_term(qx, n = 3)          # override only n
+@
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: $n$ më i madh se tabela}
+<<fun-bad, error=TRUE>>=
+epv_term(qx, n = 7)          # only 5 qx values exist!
+@
+  \pause
+  \begin{Gabim}R nuk ndalon: \texttt{qx[6]} dhe \texttt{qx[7]} janë \texttt{NA}, dhe rezultati bëhet \texttt{NA}.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Mbrojtja: \texttt{stopifnot()}}
+<<fun-safe, error=TRUE>>=
+epv_term <- function(qx, i = 0.05, n = length(qx)) {
+  stopifnot(n <= length(qx), all(qx >= 0 & qx <= 1))   # input checks
+  v   <- 1 / (1 + i)
+  kpx <- c(1, cumprod(1 - qx))[1:n]
+  sum(v^(1:n) * kpx * qx[1:n])
+}
+epv_term(qx, n = 7)
+@
+  \pause
+  \small Një gabim i qartë është më i mirë se një \texttt{NA} i heshtur.
+\end{frame}
+
+\begin{frame}[label=ush3b]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Shkruaj funksionin \texttt{annuity\_due(qx, i = 0.05, n = length(qx))}
+    që kthen $\ddot a_{x:\overline{n}|}$.
+    \begin{enumerate}
+      \item Testoje: \texttt{annuity\_due(qx)} duhet të japë \Sexpr{format(round(a_due, 6), nsmall = 6)}.
+      \item Përdore për primën vjetore: \texttt{100000 * epv\_term(qx) / annuity\_due(qx)}.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjUsh3b}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Cikël apo vektorizim?}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{E njëjta llogaritje me cikël \texttt{for}}
+<<loop-def>>=
+epv_term_loop <- function(qx, i = 0.05, n = length(qx)) {
+  v <- 1 / (1 + i); total <- 0; surv <- 1    # surv = kpx
+  for (k in 0:(n - 1)) {
+    total <- total + v^(k + 1) * surv * qx[k + 1]
+    surv  <- surv * (1 - qx[k + 1])          # move to (k+1)px
+  }
+  total
+}
+all.equal(epv_term_loop(qx), epv_term(qx), check.attributes = FALSE)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Cili është më i shpejtë?}
+<<loop-time>>=
+set.seed(2026)
+q_long <- runif(100, 0.001, 0.2)       # a 100-age table of random q's
+system.time(for (r in 1:20000) epv_term(q_long))["elapsed"]
+system.time(for (r in 1:20000) epv_term_loop(q_long))["elapsed"]
+@
+  \pause
+  \small Kohët ndryshojnë nga kompjuteri në kompjuter. Raporti mes tyre është ajo që ka rëndësi.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Të dy versionet japin \textbf{të njëjtin} numër.
+    \item<2-> Versioni i vektorizuar është më i shkurtër, më i lexueshëm dhe zakonisht më i shpejtë.
+    \item<3-> Cikli nuk është ``i ndaluar'': është i dobishëm kur hapi $k$ varet nga hapi $k-1$
+          në mënyrë më të ndërlikuar.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Simulim}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga vlera e pritur te realiteti}
+  \begin{itemize}
+    \item<1-> $d_x$ në tabelë është numër i \textbf{pritur}.
+    \item<2-> Në një portofol real, numri i vdekjeve është \textbf{i rastësishëm}.
+    \item<3-> Modeli: çdo person i gjallë vdes gjatë vitit me probabilitet $q_x$, në mënyrë të pavarur.
+    \item<4-> Pra: vdekjet në vit $\sim$ Binomiale(të gjallët, $q_x$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi i 1\,000 personave}
+<<sim>>=
+set.seed(2026)                         # reproducible randomness
+alive  <- 1000
+sim_dx <- numeric(5)
+for (k in 1:5) {
+  sim_dx[k] <- rbinom(1, size = alive, prob = qx[k])   # deaths in year k
+  alive     <- alive - sim_dx[k]                       # survivors
+}
+rbind(simulated = sim_dx,
+      expected  = round(1000 * dx / radix, 1))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Vdekjet e simuluara luhaten rreth vlerave të pritura.
+    \item<2-> Me 1\,000 persona, luhatja relative është e madhe.
+    \item<3-> Kjo luhatje është \textbf{rreziku} që mban kompania e sigurimit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}\texttt{set.seed(2026)}: kushdo që ekzekuton kodin merr të njëjtat numra ``të rastësishëm''.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=pyetjeSeed]{Parashiko!}
+  \begin{Parashiko}
+    \begin{enumerate}
+      \item Heq rreshtin \texttt{set.seed(2026)} dhe ekzekuton dy herë. Çfarë ndodh?
+      \item Ndryshon \texttt{alive <- 100000}. Vdekjet e simuluara (pjesëtuar me 100)
+            afrohen apo largohen nga vlerat e pritura?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{zgjSeed}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{50 portofole të simuluara\Zgj}
+<<sim-paths-code, eval=FALSE>>=
+set.seed(2026)
+paths <- NULL
+for (s in 1:50) {                                  # 50 portfolios
+  surv <- 1000
+  for (k in 1:5) surv[k + 1] <- surv[k] - rbinom(1, surv[k], qx[k])
+  paths <- rbind(paths, data.frame(sim = s, age = 40:45, lx = surv))
+}
+ggplot(paths, aes(age, lx, group = sim)) +
+  geom_line(colour = "grey60") +
+  geom_line(data = data.frame(age = 40:45, lx = lx / 100),
+            aes(age, lx), inherit.aes = FALSE, colour = "#D97706", linewidth = 1.2)
+@
+\end{frame}
+
+\begin{frame}[fragile]{50 portofole të simuluara: figura\Zgj}
+<<sim-paths, echo=FALSE, fig.width=6, fig.height=2.8, out.width='0.7\\textwidth'>>=
+library(ggplot2)
+set.seed(2026)
+paths <- NULL
+for (s in 1:50) {
+  surv <- 1000
+  for (k in 1:5) surv[k + 1] <- surv[k] - rbinom(1, surv[k], qx[k])
+  paths <- rbind(paths, data.frame(sim = s, age = 40:45, lx = surv))
+}
+ggplot(paths, aes(age, lx, group = sim)) +
+  geom_line(colour = "grey60", linewidth = 0.4) +
+  geom_line(data = data.frame(age = 40:45, lx = unname(lx) / 100),
+            aes(age, lx), inherit.aes = FALSE, colour = "#D97706", linewidth = 1.2) +
+  labs(x = "Age x", y = "Survivors (out of 1000)") +
+  theme_minimal(base_size = 13)
+@
+  \small Portokalli: $l_x$ i pritur. Gri: 50 histori të mundshme.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{I gjithë laboratori në 10 rreshta}
+<<lab-all>>=
+qx <- c(0.010, 0.012, 0.015, 0.019, 0.024); S <- 100000; i <- 0.05
+n  <- length(qx); v <- 1 / (1 + i)
+lx <- 100000 * c(1, cumprod(1 - qx))           # survivors
+kpx <- c(1, cumprod(1 - qx))[1:n]               # 0px .. (n-1)px
+A  <- sum(v^(1:n) * kpx * qx)                    # term insurance
+a  <- sum(v^(0:(n - 1)) * kpx)                   # annuity-due
+c(NSP = S * A, annuity = a, annual_P = S * A / a)
+@
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse \texttt{lx} ka një element më shumë se \texttt{qx}?
+    \item Çfarë vektori i duhet formulës së $A^1_{x:\overline{n}|}$ në vend të \texttt{tpx}?
+    \item Si e kontrollon që funksioni yt jep rezultatin e saktë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $l_{x+n}$ në fund; (2) \texttt{c(1, tpx[-n])}; (3) me një shembull me përgjigje të njohur.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item $l_x$ = \texttt{radix * c(1, cumprod(1 - qx))}; $d_x$ = \texttt{-diff(lx)}.
+    \item $e_{x:\overline{n}|}=\sum {}_tp_x$; $A^1_{x:\overline{n}|}=\sum v^{k+1}{}_kp_xq_{x+k}$;
+          $\ddot a_{x:\overline{n}|}=\sum v^k{}_kp_x$.
+    \item Prima vjetore nga parimi i ekuivalencës: $P=S\,A/\ddot a$.
+    \item Funksionet: një herë shkruar, testuar, përdorur shumë herë.
+    \item \texttt{set.seed()} + \texttt{rbinom()}: rastësia e riprodhueshme.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Funksionet më thellë, kontrolli i rrjedhës, familja \texttt{apply} dhe kurthet e R.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (kapitulli mbi tabelat e jetës dhe kontratat e sigurimit të jetës).
+    \item K.~Antonio, \emph{Introduction to R for actuaries}, kapitujt mbi funksionet dhe ciklet.
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R},
+          Kotti, 2021 (shpërndarja binomiale, simulimi).
+    \item Të dhënat e laboratorit: \textbf{ilustruese}, të krijuara për këtë orë.
+  \end{itemize}
+\end{frame}

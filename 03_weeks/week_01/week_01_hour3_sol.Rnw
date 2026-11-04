@@ -1,0 +1,78 @@
+% ============================================================
+%  Java 1 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=zgjP43]{Zgjidhja: Parashiko ($p_{43}$, $l_{45}$)}
+  \begin{enumerate}
+    \item $p_{43}=1-q_{43}=1-0.019=0.981$.
+    \item Më i madh. Totali i $q_x$ është $0.080$, pra humbja është $<8\%$:
+          $l_{45}\approx 92\,246 > 90\,000$.
+  \end{enumerate}
+  \small Pse $<8\%$? Çdo $q_x$ zbatohet mbi një grup gjithnjë e më të vogël.
+  \vfill\kthehu{pyetjeP43}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjUsh3a]{Zgjidhja: Radha jote! ($e_{40:\overline{3}|}$)}
+  \begin{itemize}
+    \item ${}_1p_{40}=0.99$, \quad ${}_2p_{40}=0.99\times0.988=0.97812$,
+          \quad ${}_3p_{40}=0.97812\times0.985=0.963448$.
+    \item $e_{40:\overline{3}|}=0.99+0.97812+0.963448=2.931568$.
+  \end{itemize}
+<<sol-e3>>=
+sum(cumprod(1 - c(0.010, 0.012, 0.015)))
+@
+  \vfill\kthehu{ush3a}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjGab3]{Zgjidhja: Gjej gabimin (${}_kp_x$)}
+  \begin{itemize}
+    \item Studenti përdori \texttt{tpx} = $({}_1p_x,\dots,{}_np_x)$ në vend të $({}_0p_x,\dots,{}_{n-1}p_x)$.
+    \item Çdo term shumëzohet me një probabilitet mbijetese \textbf{një vit më të gjatë} $\Rightarrow$ më i vogël.
+  \end{itemize}
+<<sol-gab3>>=
+qx  <- c(0.010, 0.012, 0.015, 0.019, 0.024); v <- 1 / 1.05; n <- 5
+tpx <- cumprod(1 - qx)
+kpx <- c(1, tpx[-n])          # correct: starts at 0px = 1
+100000 * sum(v^(1:n) * kpx * qx)
+@
+  \vfill\kthehu{gjejGab3}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjNdrysho3]{Zgjidhja: Ndrysho parametrin ($i=0\%$, $i=10\%$)}
+<<sol-ndrysho3>>=
+qx  <- c(0.010, 0.012, 0.015, 0.019, 0.024)
+kpx <- c(1, cumprod(1 - qx))[1:5]
+sum(kpx)                             # annuity-due at i = 0
+1 + sum(cumprod(1 - qx)[1:4])        # 1 + e(40:4)
+v10 <- 1 / 1.10
+100000 * sum(v10^(1:5) * kpx * qx) / sum(v10^(0:4) * kpx)   # P at 10%
+@
+  \small Me $i=0$: $\ddot a = 1+e_{40:\overline{4}|}$. Me $i=10\%$ prima vjetore \textbf{zvogëlohet}
+  (1\,482.17 € me 5\%).
+  \vfill\kthehu{ndrysho3}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjUsh3b]{Zgjidhja: Radha jote! (\texttt{annuity\_due})}
+<<sol-ann>>=
+annuity_due <- function(qx, i = 0.05, n = length(qx)) {
+  stopifnot(n <= length(qx))
+  v   <- 1 / (1 + i)
+  kpx <- c(1, cumprod(1 - qx))[1:n]
+  sum(v^(0:(n - 1)) * kpx)
+}
+annuity_due(qx)
+100000 * epv_term(qx) / annuity_due(qx)
+@
+  \vfill\kthehu{ush3b}
+\end{frame}
+
+\begin{frame}[label=zgjSeed]{Zgjidhja: Parashiko (\texttt{set.seed})}
+  \begin{enumerate}
+    \item Pa \texttt{set.seed()}, çdo ekzekutim jep vdekje të \textbf{ndryshme}.
+          Rezultati nuk riprodhohet.
+    \item Me 100\,000 persona, vdekjet e simuluara (/100) \textbf{afrohen} te vlerat e pritura.
+          Ky është ligji i numrave të mëdhenj.
+  \end{enumerate}
+  \small Pasojë praktike: një portofol i madh ka rrezik relativ më të vogël.
+  \vfill\kthehu{pyetjeSeed}
+\end{frame}

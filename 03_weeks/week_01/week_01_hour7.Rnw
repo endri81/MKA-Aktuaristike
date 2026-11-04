@@ -1,0 +1,363 @@
+% ============================================================
+%  Java 1 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm ndjek të njëjtën përzierje:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): pa ndihmën e PC dhe në R.
+      \end{itemize}
+    \item<3-> Punoni vetëm 25 minuta. Pastaj i kontrollojmë bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Çdo ushtrim ka butonin \textbf{Shiko zgjidhjen}. Shtype vetëm pasi ta kesh provuar.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Çfarë do të thotë \termi{vektorizim}{vectorisation} në R?
+    \begin{enumerate}
+      \item[A)] Kodi ekzekutohet paralelisht në disa procesorë.
+      \item[B)] Një veprim zbatohet mbi çdo element të vektorit pa cikël të shkruar nga ne.
+      \item[C)] Çdo objekt shndërrohet në vektor numerik.
+      \item[D)] R rendit vektorin para çdo llogaritjeje.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cili pohim për $q_x$ është i saktë?
+    \begin{enumerate}
+      \item[A)] $q_x$ = numri i vdekjeve në moshën $x$ në popullsi.
+      \item[B)] $q_x$ = probabiliteti që një person i gjallë në moshën $x$ të vdesë para moshës $x+1$.
+      \item[C)] $q_x = l_{x+1}/l_x$.
+      \item[D)] $q_x$ mund të jetë më i madh se 1 në mosha shumë të larta.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU1]{U1 · Ushtrim pa ndihmën e PC}
+  \begin{Ushtrim}[(tabela e jetës)]
+    Jepen: $l_{70}=80\,000$, \; $l_{71}=78\,400$, \; $l_{72}=76\,500$.
+    \begin{enumerate}
+      \item Llogarit $d_{70}$, $d_{71}$.
+      \item Llogarit $q_{70}$ dhe $q_{71}$ (4 shifra pas presjes).
+      \item Llogarit ${}_2p_{70}$ me dy mënyra.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU2]{U2 · Ushtrim pa ndihmën e PC}
+  \begin{Ushtrim}[(prima e vetme neto)]
+    Me tabelën e U1 dhe $i=4\%$:
+    \begin{enumerate}
+      \item Shkruaj formulën e $A^1_{70:\overline{2}|}$ me $d_x$ dhe $l_x$.
+      \item Llogarit primën e vetme neto për $S=50\,000$ €.
+      \item Pa llogaritur: prima do të ishte më e madhe apo më e vogël me $i=6\%$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU3]{U3 · Parashiko rezultatin e kodit}
+  \begin{Parashiko}
+    \ttfamily
+    x <- c(2, 4, 6, 8)\\
+    x[x > 3] * c(1, 10)
+  \end{Parashiko}
+  \normalfont
+  \begin{enumerate}
+    \item Çfarë printon R?
+    \item A shfaqet ndonjë paralajmërim? Pse?
+  \end{enumerate}
+  \shkoTe{sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU4]{U4 · Shkruaj një funksion}
+  \begin{Ushtrim}[(anuiteti i sigurt)]
+    Anuiteti i sigurt i paguar në fillim (\emph{annuity-certain due}):
+    \[
+      \ddot a_{\overline{n}|}=\sum_{k=0}^{n-1}v^k
+    \]
+    \begin{enumerate}
+      \item Shkruaj \texttt{a\_due\_certain(n, i = 0.05)}.
+      \item Testoje: për $n=3$, $i=5\%$ duhet të japë $1+v+v^2$.
+      \item Pse $\ddot a_{40:\overline{3}|}$ i Orës 1 (2.8299) është më i vogël?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU5]{U5 · Të dhëna në R}
+  \begin{Ushtrim}[(portofoli auto, sintetik)]
+    Me \texttt{motor\_portfolio\_synthetic.csv}:
+    \begin{enumerate}
+      \item Llogarit frekuencën e dëmeve sipas karburantit (\texttt{fuel}).
+      \item Llogarit raportin naftë / benzinë.
+      \item Krahasoje me të vërtetën $e^{0.10}$. A është afër?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU6]{U6 · Gjej dhe rregullo gabimet}
+  \begin{Gabim}[(kodi i një studenti)]
+    \ttfamily\small
+    mt <- read.csv("mortality\_table\_synthetic.csv")\\
+    ggplot(mt, aes(age, qx\_female))\\
+    \quad + geom\_line()\\
+    \quad + scale\_y\_log()
+  \end{Gabim}
+  \normalfont Kodi ka \textbf{tre} gabime. Gjeji dhe shkruaj versionin e saktë.
+  \vspace{4pt}
+
+  \shkoTe{sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU7]{U7 · Gompertz pa ndihmën e PC}
+  \begin{Ushtrim}[(vlerësimi i $c$)]
+    Supozo $\mu_x = B\,c^x$. Jepen $\mu_{50}=0.0040$ dhe $\mu_{60}=0.0110$.
+    \begin{enumerate}
+      \item Gjej $c$ (ndihmë: pjesëto $\mu_{60}$ me $\mu_{50}$).
+      \item Gjej $B$.
+      \item Sa është $\mu_{70}$ sipas modelit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=qU8]{U8 · Simulim}
+  \begin{Ushtrim}[(vdekjet në një portofol)]
+    Një portofol ka 1\,000 persona me $q=0.02$, të pavarur.
+    \begin{enumerate}
+      \item Sa është pritja dhe devijimi standard i numrit të vdekjeve? (pa ndihmën e PC)
+      \item Kontrolloje me 10\,000 simulime në R (\texttt{set.seed(2026)}, \texttt{rbinom}).
+      \item Sa është probabiliteti që të ketë më shumë se 30 vdekje?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): matematika}
+  \small
+  \begin{tabular}{@{}p{0.43\textwidth}p{0.5\textwidth}@{}}
+    \toprule
+    Gabimi & Rregulli \\ \midrule
+    $v^{k}$ në vend të $v^{k+1}$ në sigurim & pagesa bëhet në \textbf{fund} të vitit \\
+    ${}_kp_x$ fillon nga ${}_1p_x$ & fillon nga ${}_0p_x=1$: \texttt{c(1, tpx[-n])} \\
+    $q_x$ si ``përqindje e popullsisë'' & probabilitet \textbf{me kusht}: i gjallë në $x$ \\
+    ${}_5q_x/5$ si $q$ vjetor & $1-(1-{}_5q_x)^{1/5}$ \\
+    frekuenca = \texttt{mean(n\_claims)} & dëme / \textbf{ekspozim} \\
+    $R^2$ i lartë = model i saktë & shiko \textbf{mbetjet} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): R}
+  \small
+  \begin{tabular}{@{}p{0.43\textwidth}p{0.5\textwidth}@{}}
+    \toprule
+    Gabimi & Rregulli \\ \midrule
+    \texttt{x == NA} & \texttt{is.na(x)} \\
+    \texttt{0.1 + 0.2 == 0.3} & \texttt{isTRUE(all.equal(a, b))} \\
+    \texttt{for (k in 1:length(x))} & \texttt{seq\_along(x)} \\
+    \texttt{as.numeric(factor)} & \texttt{as.numeric(as.character(f))} \\
+    \texttt{if (vektor)} & \texttt{ifelse()}, \texttt{any()}, \texttt{all()} \\
+    riciklim i heshtur & kontrollo \texttt{length()} \\
+    variabël globale brenda funksionit & çdo hyrje si \textbf{argument} \\
+    \texttt{+} në fillim të rreshtit (ggplot) & \texttt{+} në \textbf{fund} të rreshtit \\
+    rrugë absolute & projekt + rrugë relative \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[label=qGab7]{Gjej gabimin: raundi i shpejtë}
+  \begin{Gabim}[(tre gabime, dy minuta)]
+    \ttfamily\small
+    qx <- c(0.01, 0.012, NA, 0.019)\\
+    v <- 1 / 1.05\\
+    tpx <- cumprod(1 - qx)\\
+    A <- sum(v\^{}(0:3) * c(1, tpx[-4]) * qx)\\
+    if (A == NA) print("missing data")
+  \end{Gabim}
+  \normalfont
+  \shkoTe{sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): R bazë}
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Detyra & Funksioni R \\ \midrule
+    krijo vektor / sekuencë & \Rkey{c()}, \Rkey{seq()}, \Rkey{rep()}, \Rkey{:} \\
+    gjatësi, shumë, mesatare & \Rkey{length()}, \Rkey{sum()}, \Rkey{mean()} \\
+    prodhim / shumë kumulative & \Rkey{cumprod()}, \Rkey{cumsum()} \\
+    diferenca & \Rkey{diff()} \\
+    vlera që mungojnë & \Rkey{is.na()}, \texttt{na.rm = TRUE} \\
+    vendim për çdo element & \Rkey{ifelse()}, \Rkey{pmax()}, \Rkey{pmin()} \\
+    data frame & \Rkey{data.frame()}, \Rkey{str()}, \Rkey{head()}, \texttt{df[r, k]}, \texttt{df\$k} \\
+    lexim i CSV & \Rkey{read.csv()} \\
+    grupim & \Rkey{tapply()}, \Rkey{table()}, \Rkey{cut()} \\
+    zbatim mbi shumë hyrje & \Rkey{sapply()}, \Rkey{vapply()}, \Rkey{Map()} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula $\rightarrow$ R}
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Formula & R (\texttt{qx} nga mosha $x$, \texttt{n} vjet) \\ \midrule
+    $l_x$ & \texttt{radix * c(1, cumprod(1 - qx))} \\
+    $d_x=l_x-l_{x+1}$ & \texttt{-diff(lx)} \\
+    ${}_tp_x$, $t=1..n$ & \texttt{cumprod(1 - qx)} \\
+    ${}_kp_x$, $k=0..n-1$ & \texttt{c(1, cumprod(1 - qx))[1:n]} \\
+    $e_{x:\overline{n}|}=\sum_{t=1}^n{}_tp_x$ & \texttt{sum(cumprod(1 - qx)[1:n])} \\
+    $A^1_{x:\overline{n}|}=\sum v^{k+1}{}_kp_xq_{x+k}$ & \texttt{sum(v\^{}(1:n) * kpx * qx[1:n])} \\
+    $\ddot a_{x:\overline{n}|}=\sum v^{k}{}_kp_x$ & \texttt{sum(v\^{}(0:(n-1)) * kpx)} \\
+    $P=S\,A^1_{x:\overline{n}|}/\ddot a_{x:\overline{n}|}$ & \texttt{S * A / a} \\
+    $q$ vjetor nga ${}_5q_x$ & \texttt{1 - (1 - nqx)\^{}(1/5)} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (3/3): stats, ggplot2, rastësia}
+  \small
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Detyra & Funksioni R \\ \midrule
+    regresion linear & \Rkey{lm(y \~{} x, data)}, \Rkey{coef()}, \Rkey{resid()}, \Rkey{fitted()} \\
+    regresion jo-linear (zgjerim) & \Rkey{nls()} \\
+    krahasim i sigurt & \Rkey{all.equal()}, \Rkey{isTRUE()} \\
+    rastësi e riprodhueshme & \Rkey{set.seed()}, \Rkey{rbinom()}, \Rkey{runif()}, \Rkey{rlnorm()} \\
+    grafik & \Rkey{ggplot(data, aes(x, y))} + \Rkey{geom\_line()} \\
+    shkallë log & \Rkey{scale\_y\_log10()} \\
+    ruaj grafikun & \Rkey{ggsave()} \\
+    kontroll i funksionit & \Rkey{stopifnot()} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 2)}
+  \begin{Ushtrim}[(skript i vetëm, i riprodhueshëm)]
+    Me tabelën \textbf{reale} të Shqipërisë 2011, \textbf{femrat} (HLD, \texttt{TypeLT == 4}):
+    \begin{enumerate}
+      \item Llogarit $q$ vjetor për çdo grup 5-vjeçar 20--84.
+      \item Llogarit primën vjetore neto për një sigurim 10-vjeçar, $S=100\,000$ €, $i=3\%$,
+            për moshat 30, 40, 50 (përdor \texttt{sapply}).
+      \item Vizato $\log q$ sipas moshës dhe vlerëso $c$ me \texttt{lm()} në moshat 40--84.
+      \item Shkruaj 3 fjali interpretimi.
+    \end{enumerate}
+  \end{Ushtrim}
+  \small Kriteri: skripti ekzekutohet pa gabim pas \emph{Session $\rightarrow$ Restart R}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 2}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 2: Analiza e të dhënave, \texttt{stats}, \texttt{tvm}}
+  \begin{itemize}
+    \item<1-> Statistika përshkruese dhe shpërndarjet me \Rkey{stats}. \LO{K1}
+    \item<2-> Përshtatja e shpërndarjeve dhe testet.
+    \item<3-> Vlera në kohë e parasë me paketën \Rkey{tvm}: interesi, anuitetet e sigurta, kreditë, NPV/IRR. \LO{S2}
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja e Javës 2)]
+    Një kredi 50\,000 € për 10 vjet me 6\% në vit: sa është kësti mujor?
+    Sa interes paguan klienti gjithsej?
+  \end{Shembull}}
+\end{frame}
+
+\begin{frame}[fragile]{Përgatitja për Javën 2}
+<<h7-prep, eval=FALSE>>=
+install.packages(c("tvm", "fitdistrplus"))   # once, before next week
+library(tvm)
+library(fitdistrplus)
+@
+  \pause
+  \begin{Keshille}
+    Funksioni \texttt{a\_due\_certain()} i U4 është hapi i parë drejt \Rkey{tvm}.
+    Ruaje në skriptin tënd.
+  \end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Ndërto $l_x$ nga $q_x$ në një rresht R.
+    \item Shpjego pse $A^1_{x:\overline{n}|}$ përdor $v^{k+1}$ dhe $\ddot a_{x:\overline{n}|}$ përdor $v^{k}$.
+    \item Si e kontrollon që një rezultat në R është i saktë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) \texttt{radix * c(1, cumprod(1 - qx))};
+  (2) përfitimi në fund të vitit, prima në fillim; (3) shembull i njohur, dy mënyra, e vërteta e të dhënave sintetike.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 1}
+  \begin{itemize}
+    \item \textbf{Ora 1--2}: pse R; objektet, tipet, vektorët, indeksimi, vektorizimi.
+    \item \textbf{Ora 3}: tabela e jetës, $A^1$, $\ddot a$, prima vjetore dhe \texttt{epv\_term()} nga zero.
+    \item \textbf{Ora 4}: funksione, rrjedha, \texttt{apply}, rastësia, kurthet.
+    \item \textbf{Ora 5}: ggplot2; Gompertz me \texttt{lm()}; Makeham me \texttt{nls()}.
+    \item \textbf{Ora 6}: Shqipëria 1950--2024, portofoli auto, bishti i dëmeve.
+  \end{itemize}
+  \vfill
+  \begin{block}{Rregulli i ditës}
+    Çdo numër kontrollohet: me një shembull të njohur, me dy mënyra, ose me të vërtetën.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09: struktura e provimit (15\% teori, 85\% ushtrime).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021
+          (shpërndarja binomiale).
+    \item K.~Antonio, \emph{Introduction to R for actuaries}.
+    \item Të dhënat e kursit: README (sintetike) dhe HLD / Eurostat (reale).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}

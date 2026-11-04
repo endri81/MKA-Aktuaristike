@@ -1,0 +1,76 @@
+% ============================================================
+%  Java 1 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=zgjScope]{Zgjidhja: Parashiko (\emph{scope})}
+<<sol-scope>>=
+S <- 100000
+g <- function(q) { S <- 50000; S * q }
+g(0.01)
+S
+@
+  \begin{itemize}
+    \item \texttt{g()} përdor \texttt{S} \textbf{lokal} = 50\,000 $\Rightarrow$ 500.
+    \item \texttt{S} global mbetet 100\,000.
+  \end{itemize}
+  \vfill\kthehu{pyetjeScope}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjUsh4a]{Zgjidhja: Radha jote! (zbritja dhe limiti)}
+<<sol-ded>>=
+claims <- c(250, 800, 2600, 7400, 15000)
+pay <- pmin(pmax(claims - 1000, 0), 10000)
+pay
+sum(pay)
+sum(pay == 0)          # claims below the deductible
+@
+  \vfill\kthehu{ush4a}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjGab4a]{Zgjidhja: Gjej gabimin (\texttt{while})}
+  \begin{itemize}
+    \item Me $i=0$, \texttt{fund} mbetet 1\,000 përgjithmonë $\Rightarrow$ \textbf{cikël i pafund}.
+    \item Mbrojtja: një kufi maksimal hapash.
+  \end{itemize}
+<<sol-while>>=
+fund <- 1000; i <- 0; years <- 0
+while (fund < 2000 && years < 200) {     # safety cap
+  fund <- fund * (1 + i); years <- years + 1
+}
+years
+@
+  \vfill\kthehu{gjejGab4a}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjNdrysho4]{Zgjidhja: Ndrysho parametrin ($i=1\%$)}
+<<sol-ndrysho4-setup, include=FALSE>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+epv_term <- function(qx, i = 0.05, n = length(qx)) {
+  v <- 1 / (1 + i); kpx <- c(1, cumprod(1 - qx))[1:n]; sum(v^(1:n) * kpx * qx[1:n]) }
+annuity_due <- function(qx, i = 0.05, n = length(qx)) {
+  v <- 1 / (1 + i); kpx <- c(1, cumprod(1 - qx))[1:n]; sum(v^(0:(n - 1)) * kpx) }
+premium_at <- function(age, n = 10, i = 0.03, S = 100000) {
+  q <- mt$qx_male[mt$age >= age][1:n]; S * epv_term(q, i, n) / annuity_due(q, i, n) }
+@
+<<sol-ndrysho4>>=
+ages <- seq(30, 70, by = 10)
+P3 <- sapply(ages, premium_at, i = 0.03)
+P1 <- sapply(ages, premium_at, i = 0.01)
+round(rbind(P3, P1, ratio = P1 / P3), 3)
+@
+  \small Primat \textbf{rriten} pak me $i=1\%$; ndryshimi relativ më i madh është te mosha 70.
+  Pse i vogël? Në një sigurim me afat, primat dhe përfitimet aktualizohen pothuajse njësoj.
+  \vfill\kthehu{ndrysho4}
+\end{frame}
+
+\begin{frame}[label=zgjGab4b]{Zgjidhja: Gjej gabimin (tre gabime)}
+  \begin{enumerate}
+    \item \texttt{as.numeric(band)} jep \texttt{1 2 3}, jo \texttt{30 40 50}.\\
+          Rregullim: \texttt{as.numeric(as.character(band))}.
+    \item \texttt{1:length(out)} me \texttt{out} bosh jep \texttt{1 0}.\\
+          Rregullim: \texttt{seq\_along(out)} (ose përcakto gjatësinë e duhur).
+    \item \texttt{if (ages >= 40)} me 3 vlera jep gabim.\\
+          Rregullim: \texttt{ifelse(ages >= 40, "old", "young")} ose \texttt{any()}/\texttt{all()}.
+  \end{enumerate}
+  \vfill\kthehu{gjejGab4b}
+\end{frame}

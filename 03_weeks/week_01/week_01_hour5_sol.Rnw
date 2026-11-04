@@ -1,0 +1,61 @@
+% ============================================================
+%  Java 1 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<h5sol-setup, include=FALSE>>=
+library(ggplot2)
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+mt$dx_male   <- mt$lx_male   - c(mt$lx_male[-1],   0)
+mt$dx_female <- mt$lx_female - c(mt$lx_female[-1], 0)
+long <- rbind(
+  data.frame(age = mt$age, sex = "M", qx = mt$qx_male,   lx = mt$lx_male),
+  data.frame(age = mt$age, sex = "F", qx = mt$qx_female, lx = mt$lx_female))
+@
+
+\begin{frame}[fragile,label=zgjMinq]{Zgjidhja: Parashiko ($\min q_x$, $\max d_x$)}
+<<sol-minq>>=
+mt$age[which.min(mt$qx_male)]          # lowest q(x), males
+mt$age[which.max(mt$dx_male)]          # most deaths, males
+mt$age[which.max(mt$dx_female)]        # most deaths, females
+@
+  \small Në këto të dhëna sintetike, $q_x$ minimal është te mosha 1 (pas vitit të parë të jetës).
+  Në tabelat reale ai zakonisht bie rreth moshës 10.
+  \vfill\kthehu{pyetjeMinq}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjUsh5a]{Zgjidhja: Radha jote! ($l_x$)}
+<<sol-lx, fig.width=6, fig.height=2, out.width='0.48\\textwidth'>>=
+ggplot(long, aes(age, lx, colour = sex)) + geom_line() +
+  labs(x = "Age x", y = "l(x)", colour = NULL) + theme_minimal() +
+  scale_colour_manual(values = c(M = "#2C5AA0", F = "#D97706"))
+min(mt$age[mt$lx_male < 50000])        # first age with l(x) below 50000
+@
+  \vfill\kthehu{ush5a}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjGab5]{Zgjidhja: Gjej gabimin (të gjitha moshat)}
+  \begin{itemize}
+    \item \textbf{Jo.} Më shumë të dhëna nuk ndihmojnë nëse modeli është i gabuar për to.
+    \item Në moshat e reja $\mu_x\approx A$ (e sheshtë): vija Gompertz ``tërhiqet'' poshtë $\Rightarrow$ $\hat c=1.081$, shumë larg 1.105.
+    \item Zgjidhja: zgjidh moshat ku modeli vlen, ose përdor modelin e plotë (Makeham).
+  \end{itemize}
+<<sol-gab5>>=
+all <- mt[mt$age >= 1 & mt$age <= 109, ]
+exp(coef(lm(log(-log(1 - qx_male)) ~ age, data = all)))[2]
+@
+  \vfill\kthehu{gjejGab5}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjNdrysho5]{Zgjidhja: Ndrysho parametrin}
+<<sol-ndrysho5>>=
+c_hat <- function(col, from, to) {
+  s <- mt[mt$age >= from & mt$age <= to, ]
+  unname(exp(coef(lm(log(-log(1 - s[[col]])) ~ s$age)))[2])
+}
+round(c(male_70_100   = c_hat("qx_male",   70, 100),
+        female_40_90  = c_hat("qx_female", 40,  90)), 4)
+@
+  \small Moshat 70--100: $\hat c$ afrohet te 1.105, sepse atje $A$ ka peshë të vogël.
+  Femrat: $\hat c$ nën 1.112, për të njëjtën arsye.
+  \vfill\kthehu{ndrysho5}
+\end{frame}

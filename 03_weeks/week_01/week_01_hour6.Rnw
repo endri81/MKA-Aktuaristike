@@ -1,0 +1,413 @@
+% ============================================================
+%  Java 1 · Ora 6 — Rast studimi (Zgjerim)
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi\Zgj}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<h6-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+sexcol <- scale_colour_manual(values = c(M = "#2C5AA0", F = "#D97706"))
+epv_term <- function(qx, i = 0.05, n = length(qx)) {
+  v <- 1 / (1 + i); kpx <- c(1, cumprod(1 - qx))[1:n]; sum(v^(1:n) * kpx * qx[1:n]) }
+annuity_due <- function(qx, i = 0.05, n = length(qx)) {
+  v <- 1 / (1 + i); kpx <- c(1, cumprod(1 - qx))[1:n]; sum(v^(0:(n - 1)) * kpx) }
+@
+
+% ------------------------------------------------------------
+\subsection{Tri pyetje}
+% ------------------------------------------------------------
+
+\begin{frame}{Rasti: një sigurues shqiptar pyet}
+  \begin{enumerate}
+    \item<1-> \textbf{Jeta}: si ka ndryshuar jetëgjatësia në Shqipëri? A mund ta përdorim tabelën kombëtare për tarifim?
+    \item<2-> \textbf{Auto}: a kanë shoferët në Tiranë më shumë dëme se të tjerët?
+    \item<3-> \textbf{Dëmet}: sa ``të rënda'' janë dëmet e mëdha?
+  \end{enumerate}
+  \onslide<4->{
+  \begin{Keshille}Asnjë model i ri sot. Vetëm mjetet e Orëve 1--5: \texttt{read.csv}, indeksim, \texttt{tapply}, ggplot2.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Të dhënat e rastit}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Skedari & Lloji & Burimi \\ \midrule
+    \texttt{albania\_lifetables\_HLD\_1950\_2011.csv} & \textbf{reale} & Human Life-Table Database \\
+    \texttt{albania\_life\_expectancy\_eurostat...csv} & \textbf{reale} & Eurostat, \texttt{demo\_mlexpec} \\
+    \texttt{motor\_portfolio\_synthetic.csv} & sintetike & simuluar (parametra të njohur) \\
+    \texttt{individual\_claims\_synthetic.csv} & sintetike & simuluar (parametra të njohur) \\
+    \bottomrule
+  \end{tabular}
+  \pause
+  \begin{Gabim}Mos i paraqit kurrë të dhënat sintetike si reale. Shkruaje llojin në çdo grafik dhe tabelë.\end{Gabim}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Jetëgjatësia në Shqipëri}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tabelat e jetës për Shqipërinë (reale, HLD)}
+<<h6-hld>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"),
+                check.names = FALSE)          # keep names like "q(x)"
+dim(hld)
+table(hld$Year1, hld$TypeLT)
+@
+  \pause
+  \small Viti 1960 ka \textbf{tre} lloje tabelash. Pse ka rëndësi?
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: tabela të dyfishta}
+<<h6-dup>>=
+e0_all <- hld[hld$Age == 0 & hld$Year1 == 1960, c("TypeLT", "Sex", "e(x)")]
+e0_all
+@
+  \pause
+  \small Pa filtër, ``$e_0$ për 1960'' ka disa vlera të ndryshme.
+  \begin{Keshille}Mbajmë vetëm \texttt{TypeLT == 4} (tabela e shkurtuar, \emph{abridged}): e njëjta për të gjitha vitet.\end{Keshille}
+\end{frame}
+
+\begin{frame}[fragile]{Tabela e shkurtuar: grupe 5-vjeçare}
+<<h6-abr>>=
+alb <- hld[hld$TypeLT == 4, c("Year1", "Sex", "Age", "AgeInt", "q(x)", "l(x)", "L(x)", "T(x)", "e(x)")]
+names(alb) <- c("year", "sex", "age", "n", "nqx", "lx", "Lx", "Tx", "ex")
+alb$sex <- ifelse(alb$sex == 1, "M", "F")      # HLD: 1 = male, 2 = female
+head(alb[alb$year == 2011 & alb$sex == "M", ], 5)
+@
+  \pause
+  \small \texttt{nqx} = ${}_nq_x$: probabiliteti i vdekjes \textbf{brenda $n$ vjetëve} (zakonisht 5), jo brenda një viti.
+\end{frame}
+
+\begin{frame}[fragile]{$e_0$ nga 1950 në 2011}
+<<h6-e0>>=
+e0 <- alb[alb$age == 0, c("year", "sex", "ex")]
+reshape(e0, idvar = "year", timevar = "sex", direction = "wide")
+@
+  \pause
+  \small Në 61 vjet: $+24$ vjet për meshkujt, $+29$ për femrat.
+\end{frame}
+
+\begin{frame}[fragile]{Shtojmë Eurostat: 2013--2024 (reale)}
+<<h6-euro>>=
+eu <- read.csv(file.path(DATA, "albania_life_expectancy_eurostat_demo_mlexpec.csv"))
+eu0 <- eu[eu$age == "Y_LT1" & eu$sex %in% c("M", "F"), ]    # e(0)
+eu0 <- data.frame(year = eu0$time, sex = eu0$sex, ex = eu0$value)
+eu0[eu0$year %in% c(2019, 2020, 2021, 2024), ]
+@
+\end{frame}
+
+\begin{frame}[fragile]{Figura: jetëgjatësia në lindje, Shqipëri 1950--2024}
+<<h6-e0plot, echo=FALSE, fig.width=6.4, fig.height=2.7, out.width='0.74\\textwidth'>>=
+e0all <- rbind(cbind(e0[, c("year", "sex", "ex")], source = "HLD"),
+               cbind(eu0, source = "Eurostat"))
+ggplot(e0all, aes(year, ex, colour = sex)) +
+  geom_line(aes(group = interaction(sex, source)), linewidth = 0.9) +
+  geom_point(aes(shape = source), size = 1.8) +
+  labs(x = "Year", y = "e(0), years", colour = NULL, shape = NULL) + th + sexcol
+@
+  \small\textcolor{gray}{Reale: HLD (1950--2011), Eurostat \texttt{demo\_mlexpec} (2013--2024; 2023 mungon).}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Rritja më e shpejtë: 1950--1960, rreth $+10$ vjet në një dekadë.
+    \item<2-> 2020--2021: rënie e dukshme ($-4$ vjet te meshkujt në 2021), pastaj rimëkëmbje.
+    \item<3-> Dy burime të ndryshme $\Rightarrow$ kujdes me krahasimin në pikën e bashkimit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Për pensionet: një rritje e jetëgjatësisë = pagesa për më shumë vite = rezerva më të larta.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=pyetjeCovid]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Rënia e 2020--2021 a duhet të ulë jetëgjatësinë që përdor një fond pensioni për 20 vitet e ardhshme?
+    Jep një argument \textbf{pro} dhe një \textbf{kundër}.
+  \end{Ushtrim}
+  \shkoTe{zgjCovid}{Shiko një përgjigje}
+\end{frame}
+
+\begin{frame}{Kontroll: a i rillogarisim dot $e_x$?}
+  \begin{Definicion}[(nga tabela e shkurtuar)]
+    \[
+      T_x=\sum_{y\ge x} {}_nL_y \qquad\qquad e_x=\frac{T_x}{l_x}
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item ${}_nL_x$: vite-jetë të jetuara nga grupi midis moshave $x$ dhe $x+n$.
+    \item $T_x$: të gjitha vitet-jetë që i mbeten grupit nga mosha $x$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Rillogaritja në R}
+<<h6-recalc>>=
+t11 <- alb[alb$year == 2011 & alb$sex == "M", ]
+t11$Tx_calc <- rev(cumsum(rev(t11$Lx)))       # sum of L from age x upwards
+t11$ex_calc <- t11$Tx_calc / t11$lx
+t11[t11$age %in% c(0, 40, 65, 85), c("age", "ex", "ex_calc")]
+max(abs(t11$ex - t11$ex_calc))
+@
+  \pause
+  \small Përputhje deri në rrumbullakim (HLD publikon $L_x$ si numra të plotë). \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}{Nga ${}_5q_x$ te $q_x$ vjetor}
+  \begin{itemize}
+    \item<1-> Për tarifim na duhen probabilitete \textbf{vjetore}.
+    \item<2-> Supozim: brenda grupit 5-vjeçar, $q$ vjetor është konstant.
+    \item<3-> Atëherë $(1-q)^5 = 1-{}_5q_x$, pra:
+      \[
+        q = 1-(1-{}_5q_x)^{1/5}
+      \]
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}${}_5q_x/5$ është vetëm përafrim. Për ${}_5q_x$ të mëdha gabimi rritet.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Shqipëria 2011 vs tabela sintetike}
+<<h6-annual>>=
+m11 <- t11[t11$n == 5, ]                        # 5-year groups only
+m11$q_annual <- 1 - (1 - m11$nqx)^(1 / 5)
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+cmp <- data.frame(age = m11$age, albania_2011 = round(m11$q_annual, 5),
+                  synthetic = mt$qx_male[match(m11$age, mt$age)])
+cmp[cmp$age %in% c(20, 40, 60, 80), ]
+@
+\end{frame}
+
+\begin{frame}[fragile]{Figura: $q_x$ vjetor, meshkuj}
+<<h6-cmpplot, echo=FALSE, fig.width=6.4, fig.height=2.7, out.width='0.72\\textwidth'>>=
+cl <- rbind(data.frame(age = cmp$age, q = cmp$albania_2011, table = "Albania 2011 (real, HLD)"),
+            data.frame(age = mt$age[mt$age %in% 5:90], q = mt$qx_male[mt$age %in% 5:90],
+                       table = "Synthetic (GM)"))
+ggplot(cl, aes(age, q, colour = table)) +
+  geom_line(linewidth = 0.9) + geom_point(data = cl[cl$table != "Synthetic (GM)", ], size = 1.4) +
+  scale_y_log10() + scale_colour_manual(values = c("#D97706", "#2C5AA0")) +
+  labs(x = "Age x", y = "annual q(x), log", colour = NULL) + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Çmimi: Shqipëria 2011 vs tabela sintetike}
+<<h6-price>>=
+q_alb <- rep(m11$q_annual[m11$age == 40], 5)   # ages 40-44: constant in the band
+q_syn <- mt$qx_male[mt$age %in% 40:44]
+P <- function(q) 100000 * epv_term(q, 0.03) / annuity_due(q, 0.03)
+round(c(albania_2011 = P(q_alb), synthetic = P(q_syn)), 2)
+@
+  \pause
+  \small Mashkull 40 vjeç, 5 vjet, $S=100\,000$ €, $i=3\%$. Tabela ``e huaj'' do ta nënvlerësonte çmimin.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Tabela kombëtare 2011 jep vdekshmëri më të lartë se tabela sintetike në pothuajse çdo moshë.
+    \item<2-> Prima ndryshon shumë sipas tabelës: \textbf{zgjedhja e tabelës është vendim aktuarial}.
+    \item<3-> Tabela e popullsisë $\neq$ tabela e të siguruarve: të siguruarit zakonisht jetojnë më gjatë (\emph{selection}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=ush6a]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    \begin{enumerate}
+      \item Llogarit $q$ vjetor për \textbf{femrat} 40--44 në 2011.
+      \item Llogarit primën vjetore për 5 vjet ($S=100\,000$ €, $i=3\%$).
+      \item Sa \% më e lirë se për meshkujt?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjUsh6a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Portofoli auto}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Portofoli auto (sintetik)}
+<<h6-motor>>=
+mp <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+str(mp)
+@
+  \small\textcolor{gray}{Të dhëna \textbf{sintetike}. E vërteta: $\log\lambda = -2.3 + \dots + 0.25\cdot[\text{Tiranë}] + 0.10\cdot[\text{naftë}] + \log(\text{ekspozimi})$.}
+\end{frame}
+
+\begin{frame}{Frekuenca e dëmeve: përkufizimi}
+  \begin{Definicion}[(frekuenca, \emph{claim frequency})]
+    \[
+      \hat\lambda=\frac{\text{numri i dëmeve}}{\text{ekspozimi (vite-policë)}}=\frac{\sum_j N_j}{\sum_j e_j}
+    \]
+  \end{Definicion}
+  \pause
+  \begin{Gabim}
+    \texttt{mean(n\_claims)} injoron ekspozimin. Një policë 3-mujore dhe një 12-mujore nuk peshojnë njësoj.
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Frekuenca: gjithsej dhe sipas rajonit}
+<<h6-freq>>=
+sum(mp$n_claims) / sum(mp$exposure)            # overall frequency
+mean(mp$n_claims)                              # wrong: ignores exposure
+freq <- tapply(mp$n_claims, mp$region, sum) / tapply(mp$exposure, mp$region, sum)
+round(sort(freq, decreasing = TRUE), 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Figura: frekuenca sipas rajonit}
+<<h6-freqplot, echo=FALSE, fig.width=6.4, fig.height=2.7, out.width='0.72\\textwidth'>>=
+fr <- data.frame(region = names(freq), freq = as.numeric(freq))
+fr$region <- reorder(fr$region, fr$freq)
+ggplot(fr, aes(region, freq, fill = region == "Tirane")) +
+  geom_col() + coord_flip() +
+  geom_hline(yintercept = sum(mp$n_claims) / sum(mp$exposure), linetype = 2) +
+  scale_fill_manual(values = c("grey70", "#D97706"), guide = "none") +
+  labs(x = NULL, y = "Claims per policy-year (synthetic)") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Tirana vs të tjerët: vlerësimi vs e vërteta}
+<<h6-tirana>>=
+tir <- mp$region == "Tirane"
+n1 <- sum(mp$n_claims[tir]);  n0 <- sum(mp$n_claims[!tir])
+ratio <- (n1 / sum(mp$exposure[tir])) / (n0 / sum(mp$exposure[!tir]))
+se <- sqrt(1 / n1 + 1 / n0)                    # approx. s.e. of log(ratio)
+round(c(estimate = ratio, lower95 = exp(log(ratio) - 1.96 * se),
+        upper95 = exp(log(ratio) + 1.96 * se), truth = exp(0.25)), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Vlerësimi i thjeshtë: Tirana $\approx 12\%$ më shumë dëme. E vërteta: $e^{0.25}\approx 28\%$.
+    \item<2-> Intervali 95\% \textbf{e përfshin} të vërtetën: me $\approx 770$ dëme, pasiguria është e madhe.
+    \item<3-> Raporti i thjeshtë përzien efektet: mosha e shoferit, mosha e makinës, karburanti.
+    \item<4-> Zgjidhja e duhur: modeli Poisson GLM me \texttt{glm()} (Java 3).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Frekuenca sipas moshës së shoferit}
+<<h6-ageband>>=
+mp$band <- cut(mp$driver_age, breaks = c(17, 25, 30, 40, 50, 65, 79))
+fb <- tapply(mp$n_claims, mp$band, sum) / tapply(mp$exposure, mp$band, sum)
+round(fb, 3)
+@
+  \pause
+  \small E vërteta: $+0.02$ në $\log\lambda$ për çdo vit nën 30, dhe $+0.01$ për çdo vit mbi 65 $\Rightarrow$ formë ``U''.
+\end{frame}
+
+\begin{frame}[label=pyetjeSev]{Parashiko!}
+  \begin{Parashiko}
+    Ashpërsia e vërtetë e një dëmi auto: Gamma me mesatare 900 €.\\
+    Nga të dhënat: shuma e dëmeve / numri i dëmeve. A do të dalë saktësisht 900? Më shumë apo më pak?
+  \end{Parashiko}
+  \shkoTe{zgjSev}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Dëmet individuale}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Shumat e dëmeve (sintetike)}
+<<h6-claims>>=
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+summary(cl$amount_eur)
+quantile(cl$amount_eur, c(0.5, 0.9, 0.99))
+@
+  \small\textcolor{gray}{Sintetike. E vërteta: 95\% Lognormale($\mu=7,\sigma=0.9$); 5\% Pareto($\alpha=1.8$) mbi 20\,000 €.}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mesatarja ($\approx 3\,790$ €) është më shumë se \textbf{3 herë} mediana ($\approx 1\,145$ €).
+    \item<2-> Pak dëme shumë të mëdha (maksimumi $>600\,000$ €) e tërheqin mesataren lart.
+    \item<3-> Për rezervat: mesatarja ka rëndësi. Për ``dëmin tipik'': mediana.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Histogrami në shkallë log}
+<<h6-hist, fig.width=6.4, fig.height=2.5, out.width='0.7\\textwidth'>>=
+ggplot(cl, aes(amount_eur)) +
+  geom_histogram(bins = 60, fill = "#2C5AA0", colour = "white") +
+  scale_x_log10() + geom_vline(xintercept = 20000, linetype = 2, colour = "#D97706") +
+  labs(x = "Claim amount (EUR, log scale)", y = "Count") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Pjesa e dëmeve të mëdha: vlerësimi vs e vërteta}
+<<h6-tail>>=
+big <- cl$amount_eur > 20000
+mean(big)                                       # share above 20000 (truth: about 5%)
+sum(cl$amount_eur[big]) / sum(cl$amount_eur)     # share of total cost
+mean(cl$amount_eur[!big])                       # mean of the "normal" claims
+exp(7 + 0.9^2 / 2)                              # lognormal mean (truth)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Rreth 5\% e dëmeve përbëjnë rreth \Sexpr{round(100 * sum(cl$amount_eur[big]) / sum(cl$amount_eur))}\% të kostos totale.
+    \item<2-> Pjesa ``normale'' ka mesatare afër mesatares lognormale të vërtetë.
+    \item<3-> Kjo është arsyeja për \textbf{risigurimin} dhe për modelet e bishtit (Java 3).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=ndrysho6]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    Ndrysho pragun nga 20\,000 € në 10\,000 € dhe 50\,000 €.
+    \begin{enumerate}
+      \item Si ndryshon pjesa e dëmeve mbi prag?
+      \item Si ndryshon pjesa e kostos totale?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjNdrysho6}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{Raporti i shkurtër për drejtorin}
+  \begin{enumerate}
+    \item<1-> \textbf{Jeta}: $e_0$ në Shqipëri u rrit nga 51 në 78--82 vjet (1950--2024).
+          Tabela kombëtare jep prima më të larta se tabela sintetike (+13\% për 40 vjeç, 5 vjet).
+    \item<2-> \textbf{Auto}: Tirana ka frekuencë më të lartë; vlerësimi i thjeshtë është i pasigurt dhe i përzier.
+          Duhet GLM.
+    \item<3-> \textbf{Dëmet}: 5\% e dëmeve bëjnë rreth 60\% të kostos. Bishti duhet modeluar veçmas.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse filtrojmë \texttt{TypeLT == 4} në tabelat HLD?
+    \item Pse frekuenca nuk llogaritet me \texttt{mean(n\_claims)}?
+    \item Pse mesatarja e dëmeve është shumë më e madhe se mediana?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) një tabelë për çdo vit/gjini; (2) duhet pjesëtuar me ekspozimin; (3) bishti i rëndë.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item Të dhëna reale: filtro, riemërto, kontrollo ($e_x$ i rillogaritur = $e_x$ i publikuar).
+    \item ${}_5q_x \rightarrow q$ vjetor: $1-(1-{}_5q_x)^{1/5}$.
+    \item Frekuenca = dëme / ekspozim. Raportet e thjeshta janë të zhurmshme dhe të përziera.
+    \item Dëmet: mesatare $\gg$ mediana; 5\% e dëmeve, rreth 60\% e kostos.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, ushtrime, gabimet e zakonshme, fletë-kujtesë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item Human Life-Table Database (lifetable.de): Shqipëria, tabela të shkurtuara 1950--2011 (\textbf{reale}).
+    \item Eurostat, \texttt{demo\_mlexpec}: jetëgjatësia sipas moshës dhe gjinisë, Shqipëri 2013--2024 (\textbf{reale}).
+    \item README i të dhënave të kursit: \texttt{motor\_portfolio\_synthetic.csv},
+          \texttt{individual\_claims\_synthetic.csv} (sintetike, parametrat e vërtetë).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (tabelat e jetës; frekuenca dhe ashpërsia e dëmeve).
+  \end{itemize}
+\end{frame}

@@ -1,0 +1,191 @@
+% ============================================================
+%  Metoda Kompjuterike në Aktuaristikë — Java 1
+%  Bazuar në template-in Beamer (Singapore) të kursit
+%  FIMIF · UPT  |  Assoc. Prof. Endri Raço, PhD
+%  Kompilim: knitr -> pdflatex (2 herë)
+% ============================================================
+\PassOptionsToPackage{dvipsnames,table}{xcolor}
+\documentclass[aspectratio=169,10pt]{beamer}
+
+% ---------- Tema ----------
+\usetheme{Singapore}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% ---------- Ngjyrat (blu UPT + ngjyra theksi) ----------
+\definecolor{uptblue}{HTML}{1E325A}
+\definecolor{uptmid}{HTML}{2C5AA0}
+\definecolor{uptlight}{HTML}{E8EEF7}
+\definecolor{accent}{HTML}{D97706}
+\definecolor{okgreen}{HTML}{15803D}
+\definecolor{warnred}{HTML}{B91C1C}
+\definecolor{codebg}{HTML}{F6F8FA}
+
+\setbeamercolor{palette primary}{bg=uptblue,fg=white}
+\setbeamercolor{palette secondary}{bg=uptmid,fg=white}
+\setbeamercolor{palette tertiary}{bg=uptblue,fg=white}
+\setbeamercolor{section in head/foot}{bg=uptlight,fg=uptblue}
+\setbeamercolor{frametitle}{fg=uptblue,bg=white}
+\setbeamercolor{title}{fg=uptblue}
+\setbeamercolor{structure}{fg=uptmid}
+\setbeamercolor{item}{fg=accent}
+\setbeamercolor{block title}{bg=uptmid,fg=white}
+\setbeamercolor{block body}{bg=uptlight}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+
+% ---------- Paketat ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc,trees}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=uptmid,urlcolor=uptmid}
+
+% ---------- Kutitë pedagogjike ----------
+\newtcolorbox{Definicion}[1][]{colback=uptlight,colframe=uptblue,fonttitle=\bfseries,title={Definicion #1},boxrule=0.6pt,arc=2pt,left=4pt,right=4pt,top=2pt,bottom=2pt}
+\newtcolorbox{Teoreme}[1][]{colback=white,colframe=uptmid,fonttitle=\bfseries,title={Teoremë #1},boxrule=0.6pt,arc=2pt}
+\newtcolorbox{Shembull}[1][]{colback=green!4,colframe=okgreen,fonttitle=\bfseries,title={Shembull #1},boxrule=0.6pt,arc=2pt}
+\newtcolorbox{Ushtrim}[1][]{colback=orange!5,colframe=accent,fonttitle=\bfseries,title={Radha jote! #1},boxrule=0.6pt,arc=2pt}
+\newtcolorbox{Gabim}[1][]{colback=red!4,colframe=warnred,fonttitle=\bfseries,title={Gabim i zakonshëm #1},boxrule=0.6pt,arc=2pt}
+\newtcolorbox{Keshille}[1][]{colback=yellow!6,colframe=yellow!50!black,fonttitle=\bfseries,title={Këshillë #1},boxrule=0.6pt,arc=2pt}
+\newtcolorbox{Parashiko}[1][]{colback=purple!4,colframe=purple!70!black,fonttitle=\bfseries,title={Parashiko para se ta ekzekutosh #1},boxrule=0.6pt,arc=2pt}
+
+% ---------- Stili i kodit R ----------
+\lstdefinestyle{Rstyle}{
+  language=R,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{uptmid}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{okgreen},
+  showstringspaces=false,
+  frame=single, rulecolor=\color{uptlight},
+  breaklines=true, columns=fullflexible,
+  numbers=left, numberstyle=\tiny\color{gray}, numbersep=6pt,
+  xleftmargin=12pt, framexleftmargin=12pt,
+  literate={ë}{{\"e}}1 {Ë}{{\"E}}1 {ç}{{\c c}}1 {Ç}{{\c C}}1 {<-}{{$\leftarrow$}}1
+}
+\lstset{style=Rstyle}
+\lstdefinestyle{Rout}{columns=fixed,keepspaces=true,basicstyle=\ttfamily\footnotesize\color{uptblue},backgroundcolor=\color{white},frame=leftline,rulecolor=\color{accent},numbers=none,xleftmargin=8pt}
+
+% ---------- Komanda ndihmëse ----------
+\newcommand{\Rkey}[1]{\texttt{\textcolor{uptmid}{#1}}}
+\newcommand{\termi}[2]{\textbf{#1} (\emph{#2})}
+\newcommand{\shkoTe}[2]{\hyperlink{#1}{\beamergotobutton{#2}}}
+\newcommand{\kthehu}[1]{\hyperlink{#1}{\beamerreturnbutton{Kthehu}}}
+% Etiketa për materialin jashtë bërthamës së syllabusit (mund të shkurtohet)
+\newcommand{\Zgj}{\;\textcolor{accent}{\normalsize[Zgjerim]}}
+% Etiketa e rezultateve të të nxënit
+\newcommand{\LO}[1]{\colorbox{uptlight}{\textcolor{uptblue}{\scriptsize\bfseries #1}}}
+
+% ---------- Logo (vend-mbajtës nëse mungon skedari) ----------
+\newcommand{\logoUPT}{%
+  \IfFileExists{../../01_template/logos/logo_upt.png}{\includegraphics[height=0.9cm]{../../01_template/logos/logo_upt.png}}{%
+  \tikz{\node[draw=uptblue,thick,rounded corners=2pt,minimum width=1.6cm,minimum height=0.8cm,font=\scriptsize\bfseries,text=uptblue]{UPT};}}}
+\newcommand{\logoFIMIF}{%
+  \IfFileExists{../../01_template/logos/logo_fimif.png}{\includegraphics[height=0.9cm]{../../01_template/logos/logo_fimif.png}}{%
+  \tikz{\node[draw=uptmid,thick,rounded corners=2pt,minimum width=1.6cm,minimum height=0.8cm,font=\scriptsize\bfseries,text=uptmid]{FIMIF};}}}
+
+% ---------- Informacioni i leksionit ----------
+\newcommand{\javaNr}{1}
+\newcommand{\temaJaves}{Bazat e R në aktuaristikë}
+\title[MKA · Java \javaNr]{Metoda Kompjuterike në Aktuaristikë}
+\subtitle{Java \javaNr: \temaJaves}
+\author{Assoc. Prof. Endri Raço, PhD}
+\institute{Fakulteti i Inxhinierisë Matematike dhe Inxhinierisë Fizike\\Universiteti Politeknik i Tiranës}
+\date{Workshop 7-orësh}
+\titlegraphic{\logoUPT\hspace{0.6cm}\logoFIMIF}
+
+<<setup, include=FALSE>>=
+library(knitr)
+# Code -> Rstyle listing, output -> Rout listing (template styles)
+knit_hooks$set(
+  source = function(x, options)
+    paste0("\\begin{lstlisting}\n", paste(x, collapse = "\n"), "\n\\end{lstlisting}\n"),
+  output = function(x, options)
+    paste0("\\begin{lstlisting}[style=Rout]\n", x, "\\end{lstlisting}\n"),
+  warning = function(x, options)
+    paste0("\\begin{lstlisting}[style=Rout]\n", x, "\\end{lstlisting}\n"),
+  message = function(x, options)
+    paste0("\\begin{lstlisting}[style=Rout]\n", x, "\\end{lstlisting}\n"),
+  chunk = function(x, options) x,
+  error = function(x, options)
+    paste0("\\begin{lstlisting}[style=Rout]\n", x, "\\end{lstlisting}\n"),
+  plot = knitr::hook_plot_tex
+)
+set_header(highlight = "", framed = "", tikz = "")
+opts_chunk$set(comment = NA, fig.path = "figure/w01-", dev = "pdf",
+               fig.align = "center", results = "hold", out.width = "0.72\\textwidth",
+               fig.width = 7, fig.height = 3.6, message = FALSE)
+options(width = 70, digits = 6, scipen = 5)
+attach(list(DATA = "../../02_data"), name = "mka_paths")   # survives rm(list = ls())
+@
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\begin{frame}{Plani i ditës (7 orë)}
+  \begin{columns}[T]
+    \column{0.48\textwidth}\tableofcontents[hidesubsections,sections={1-4}]
+    \column{0.48\textwidth}\tableofcontents[hidesubsections,sections={5-7}]
+  \end{columns}
+\end{frame}
+
+<<hour1, child='week_01_hour1.Rnw'>>=
+@
+
+<<hour2, child='week_01_hour2.Rnw'>>=
+@
+
+<<hour3, child='week_01_hour3.Rnw'>>=
+@
+
+<<hour4, child='week_01_hour4.Rnw'>>=
+@
+
+<<hour5, child='week_01_hour5.Rnw'>>=
+@
+
+<<hour6, child='week_01_hour6.Rnw'>>=
+@
+
+<<hour7, child='week_01_hour7.Rnw'>>=
+@
+
+% ===================== SHTOJCA =====================
+\appendix
+\section*{Zgjidhjet}
+
+<<hour1sol, child='week_01_hour1_sol.Rnw'>>=
+@
+
+<<hour2sol, child='week_01_hour2_sol.Rnw'>>=
+@
+
+<<hour3sol, child='week_01_hour3_sol.Rnw'>>=
+@
+
+<<hour4sol, child='week_01_hour4_sol.Rnw'>>=
+@
+
+<<hour5sol, child='week_01_hour5_sol.Rnw'>>=
+@
+
+<<hour6sol, child='week_01_hour6_sol.Rnw'>>=
+@
+
+<<hour7sol, child='week_01_hour7_sol.Rnw'>>=
+@
+
+\end{document}

@@ -1,0 +1,25 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# knitr intermediate output (regenerated from .Rnw)
+03_weeks/*/figure/
+03_weeks/*/week_*_main.tex
+03_weeks/*/week_*_main.pdf
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+
+# OS
+.DS_Store
+Thumbs.db

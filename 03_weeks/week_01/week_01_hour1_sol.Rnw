@@ -1,0 +1,54 @@
+% ============================================================
+%  Java 1 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=zgjMCQ1]{Zgjidhja: të dhëna sintetike}
+  \textbf{B)} Sepse e njeh të vërtetën dhe mund të testojë nëse metoda e gjen atë.
+  \begin{itemize}
+    \item A) Gabim: të dhënat reale kanë zhurmë, jo domosdoshmërisht gabime.
+    \item C) Gabim: R lexon çdo CSV, real apo sintetik.
+  \end{itemize}
+  \vfill\kthehu{pyetjeMCQ1}
+\end{frame}
+
+\begin{frame}[label=zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $d_{40}=1000-990=10$, \quad $d_{41}=990-978=12$, \quad $d_{42}=978-963=15$.
+    \item $q_{41}=d_{41}/l_{41}=12/990=0.0121$.
+    \item ${}_3p_{40}=l_{43}/l_{40}=963/1000=0.963$.
+  \end{enumerate}
+  \vfill\kthehu{ush1}
+\end{frame}
+
+\begin{frame}[label=zgjV]{Zgjidhja: Parashiko!}
+  \textbf{B)} Zvogëlohet. Interes më i lartë $\Rightarrow$ 1 € në të ardhmen vlen më pak sot.
+  \[
+    v^3=\frac{1}{1.06^3}=0.839619 \;<\; 0.863838=\frac{1}{1.05^3}
+  \]
+  \vfill\kthehu{pyetjeV}
+\end{frame}
+
+\begin{frame}[label=zgjGab1]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item Studenti përdori $v^{k}$ në vend të $v^{k+1}$.
+    \item Kjo do të thotë: pagesa në \textbf{fillim} të vitit të vdekjes, para se të ketë vdekur klienti.
+    \item Çdo pagesë aktualizohet një vit më pak $\Rightarrow$ vlera sot del më e madhe:
+          $3\,503.40 > 3\,336.57$.
+  \end{itemize}
+  \vfill\kthehu{gjejGab1}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjNdrysho1]{Zgjidhja: Ndrysho parametrin}
+<<sol-ndrysho>>=
+lx <- c(1000, 990, 978, 963)
+dx <- -diff(lx)
+i  <- 0.03                     # lower interest rate
+v  <- 1 / (1 + i)
+100000 * sum(v^(1:3) * dx / lx[1])
+@
+  \begin{itemize}
+    \item Prima \textbf{rritet}: 3\,474.70 € $>$ 3\,336.57 €.
+    \item Pse? Interes më i ulët $\Rightarrow$ aktualizim më i vogël $\Rightarrow$ pagesat e ardhshme vlejnë më shumë sot.
+  \end{itemize}
+  \vfill\kthehu{ndrysho1}
+\end{frame}

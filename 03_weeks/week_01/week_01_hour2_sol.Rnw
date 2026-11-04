@@ -1,0 +1,69 @@
+% ============================================================
+%  Java 1 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=zgjAssign]{Zgjidhja: Parashiko (caktimi)}
+<<sol-assign>>=
+a <- 3
+b <- a
+a <- 10
+b
+@
+  \textbf{A) 3}. \texttt{b <- a} kopjon \textbf{vlerën} e \texttt{a} në atë çast.
+  Ndryshimi i mëvonshëm i \texttt{a} nuk prek \texttt{b}.
+  \vfill\kthehu{pyetjeAssign}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjClass]{Zgjidhja: \texttt{class(c(1, "a", TRUE))}}
+<<sol-class>>=
+c(1, "a", TRUE)
+class(c(1, "a", TRUE))
+@
+  \textbf{C)}. Një vektor mban një tip. \texttt{"a"} është tekst, ndaj gjithçka bëhet tekst.
+  \vfill\kthehu{pyetjeClass}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjUsh2a]{Zgjidhja: Radha jote! (vektorët)}
+<<sol-vec>>=
+ages <- seq(40, 60, by = 5)
+ages
+pay <- rep(1179.03, times = 5)
+sum(pay)
+@
+  \vfill\kthehu{ush2a}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjGab2]{Zgjidhja: Gjej gabimin (indeksimi)}
+  \begin{itemize}
+    \item Studenti llogariti $l_{x+1}-l_x$. Por $d_x=l_x-l_{x+1}$.
+  \end{itemize}
+<<sol-gab2>>=
+lx <- c(1000, 990, 978, 963)
+dx <- lx[1:3] - lx[2:4]
+dx
+@
+  \small Më e sigurt: \texttt{-diff(lx)} ose \texttt{lx[-length(lx)] - lx[-1]}: punon për çdo gjatësi.
+  \vfill\kthehu{gjejGab2}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjRecyc]{Zgjidhja: Parashiko (riciklimi)}
+<<sol-recyc>>=
+c(100, 200, 300, 400, 500, 600) * c(1, 0)
+@
+  \begin{itemize}
+    \item \texttt{c(1, 0)} riciklohet në \texttt{1 0 1 0 1 0}.
+    \item Gjatësia 6 është shumëfish i 2 $\Rightarrow$ \textbf{pa} paralajmërim.
+  \end{itemize}
+  \vfill\kthehu{pyetjeRecyc}
+\end{frame}
+
+\begin{frame}[fragile,label=zgjUsh2b]{Zgjidhja: Radha jote! (data frame)}
+<<sol-df>>=
+lt <- data.frame(x = 40:43, lx = c(1000, 990, 978, 963))
+lt$dx <- c(-diff(lt$lx), NA)
+lt$qx <- lt$dx / lt$lx
+lt[!is.na(lt$qx) & lt$qx > 0.012, ]
+@
+  \small Pse \texttt{!is.na()}? Pa të, rreshti me \texttt{NA} kthehet si rresht bosh me \texttt{NA}.
+  \vfill\kthehu{ush2b}
+\end{frame}

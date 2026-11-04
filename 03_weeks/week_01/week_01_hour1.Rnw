@@ -1,0 +1,789 @@
+% ============================================================
+%  Java 1 · Ora 1 — Motivimi
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Problemi}
+% ------------------------------------------------------------
+
+\begin{frame}{Një pyetje nga kompania e sigurimit}
+  \begin{itemize}
+    \item<1-> Je aktuar i ri në një shoqëri sigurimesh jete në Tiranë.
+    \item<2-> Drejtori të pyet:
+  \end{itemize}
+  \onslide<3->{
+  \begin{Shembull}[(pyetja e ditës)]
+    \centering\large
+    ``Sa duhet të paguajë \textbf{sot} një klient \textbf{40 vjeç}\\
+    për një sigurim jete \textbf{3-vjeçar} me shumë \textbf{100\,000 €}?''
+  \end{Shembull}}
+  \onslide<4->{
+  \begin{Keshille}
+    Mbaje mend këtë pyetje. Do t'i përgjigjemi \textbf{pa ndihmën e PC} në këtë orë,
+    dhe \textbf{me R} në 6 rreshta kodi.
+  \end{Keshille}}
+\end{frame}
+
+\begin{frame}{Çfarë na duhet për t'iu përgjigjur?}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      box/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,
+                  minimum width=3.2cm,minimum height=1.2cm,align=center,font=\small}]
+    \node[box] (a) at (0,1.6) {Probabilitetet\\e vdekjes};
+    \node[box] (b) at (0,0) {Interesi\\(vlera në kohë)};
+    \node[box] (c) at (0,-1.6) {Kontrata\\(shuma, kohëzgjatja)};
+    \node[box,fill=accent!15,draw=accent,minimum width=2.6cm] (p) at (5.2,0)
+          {\textbf{Çmimi}\\(prima neto)};
+    \foreach \n in {a,b,c} \draw[->,thick,uptmid] (\n.east) -- (p.west);
+    \pause
+    \node[font=\scriptsize,text=gray,left=0.15cm of a.west,anchor=east]
+          {tabela e jetës};
+    \node[font=\scriptsize,text=gray,left=0.15cm of b.west,anchor=east]
+          {$v=1/(1+i)$};
+    \node[font=\scriptsize,text=gray,left=0.15cm of c.west,anchor=east]
+          {flukset e parasë};
+  \end{tikzpicture}\par
+  \vspace{4pt}
+  \onslide<2->{\small Tre përbërës. \textbf{Asnjë} prej tyre nuk është i ri për ju.}
+\end{frame}
+
+\begin{frame}{Pse jo vetëm Excel?}
+  \begin{itemize}
+    \item<1-> Një formulë e gabuar në një qelizë \textbf{nuk duket}.
+    \item<2-> Nuk ka histori: kush ndryshoi çfarë, kur?
+    \item<3-> 10\,000 polica $\times$ 1\,000 skenarë: Excel ngadalësohet.
+    \item<4-> Auditori pyet: ``Si e llogaritët?'' Përgjigja duhet të jetë \textbf{e riprodhueshme}.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}
+    Një skript R \textbf{është} dokumentimi i llogaritjes.
+  \end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=tps1]{Mendo -- diskuto me shokun -- ndaj (\emph{think--pair--share})}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item \textbf{Mendo} (1 min): kujto një rast kur një tabelë Excel të dha rezultat të gabuar.
+      \item \textbf{Diskuto} (1 min): me shokun ngjitur — ku ishte gabimi?
+      \item \textbf{Ndaj} (1 min): dy çifte tregojnë para klasës.
+    \end{enumerate}
+  \end{Ushtrim}
+  \pause
+  \small Pse? Sepse e njëjta lloj gabimi në një kompani sigurimi
+  kushton para dhe besueshmëri.
+\end{frame}
+
+\begin{frame}{Ku përdoret R në praktikën aktuariale?}
+  \begin{itemize}
+    \item<1-> \textbf{Tarifimi} (\emph{pricing}): sa kushton një policë?
+    \item<2-> \textbf{Rezervat teknike} (\emph{technical reserves}): sa para duhet të mbajmë për dëmet e ardhshme?
+    \item<3-> \textbf{Solvency II}: sa kapital duhet për skenarë të këqij?
+    \item<4-> \textbf{IFRS 17}: si raportohen kontratat e sigurimit në bilanc?
+    \item<5-> \textbf{Raportimi te rregullatori}: në Shqipëri, Autoriteti i Mbikëqyrjes Financiare (AMF).
+  \end{itemize}
+  \onslide<6->{\small\textcolor{gray}{Në të gjitha rastet: të dhëna $\rightarrow$ model $\rightarrow$ numër $\rightarrow$ vendim.}}
+\end{frame}
+
+\begin{frame}{Rrjedha e punës së aktuarit në R}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      st/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,
+                 minimum width=2.4cm,minimum height=1cm,font=\small\bfseries,align=center},
+      fn/.style={font=\scriptsize\ttfamily,text=uptmid,align=center}]
+    \node[st] (i) at (0,0)   {Importo};
+    \node[st] (t) at (3.2,0) {Pastro};
+    \node[st] (m) at (6.4,0) {Modelo};
+    \node[st,fill=accent!15,draw=accent] (k) at (9.6,0) {Komuniko};
+    \draw[->,thick,uptmid] (i) -- (t);
+    \draw[->,thick,uptmid] (t) -- (m);
+    \draw[->,thick,uptmid] (m) -- (k);
+    \draw[->,thick,gray,dashed] (m.north) to[bend right=35] node[above,font=\scriptsize]{përsërit} (t.north);
+    \pause
+    \node[fn,below=0.3cm of i] {read.csv()\\str()};
+    \node[fn,below=0.3cm of t] {subset()\\is.na()};
+    \node[fn,below=0.3cm of m] {lm()\\funksionet tona};
+    \node[fn,below=0.3cm of k] {ggplot()\\raport PDF};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \onslide<2->{\small Sot prekim të katër hapat, në versionin më të thjeshtë.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Objektivat}
+% ------------------------------------------------------------
+
+\begin{frame}{Objektivat e ditës}
+  Në fund të ditës do të jesh në gjendje:
+  \begin{enumerate}
+    \item<1-> të punosh në RStudio me një \termi{projekt}{project} të riprodhueshëm; \LO{S2}
+    \item<2-> të krijosh dhe indeksosh vektorë dhe \termi{korniza të dhënash}{data frames}; \LO{K1}
+    \item<3-> të shkruash funksionin tënd të parë aktuarial; \LO{S2}
+    \item<4-> të llogaritësh $l_x$, $d_x$, ${}_tp_x$ dhe një vlerë aktuale nga zero; \LO{S2}
+    \item<5-> të vizatosh kurba me \Rkey{ggplot2}; \LO{S2}
+    \item<6-> të përdorësh \Rkey{lm()} nga libraria \Rkey{stats}. \LO{K1}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Objektivat e kësaj ore}
+  \begin{enumerate}
+    \item<1-> Të kuptosh \textbf{pse} R në punën aktuariale.
+    \item<2-> Të njohësh kursin: temat, vlerësimin, literaturën, të dhënat.
+    \item<3-> Të rifreskosh: $l_x$, $d_x$, $q_x$, $p_x$, ${}_tp_x$, $v$.
+    \item<4-> Të llogaritësh \textbf{pa ndihmën e PC} çmimin e një sigurimi 3-vjeçar.
+    \item<5-> Të shohësh të njëjtin rezultat në R.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e kursit: 12 javë}
+  \centering\small
+  \begin{tikzpicture}[
+      wk/.style={draw=uptmid,rounded corners=2pt,minimum width=2.15cm,minimum height=0.95cm,
+                 align=center,font=\scriptsize},
+      now/.style={wk,fill=accent!20,draw=accent,thick}]
+    \node[now] at (0,0)    {\textbf{J1}\\Bazat e R};
+    \node[wk]  at (2.3,0)  {\textbf{J2}\\stats, TVM};
+    \node[wk]  at (4.6,0)  {\textbf{J3}\\Jo-jetë: actuar};
+    \node[wk]  at (6.9,0)  {\textbf{J4}\\Rezervat, kredib.};
+    \node[wk]  at (9.2,0)  {\textbf{J5}\\lifecontingencies};
+    \node[wk]  at (11.5,0) {\textbf{J6}\\Tabela aktuariale};
+    \node[wk]  at (0,-1.3)    {\textbf{J7}\\Sigurime, anuitete};
+    \node[wk]  at (2.3,-1.3)  {\textbf{J8}\\Financë, put--call};
+    \node[wk]  at (4.6,-1.3)  {\textbf{J9}\\Opsionet};
+    \node[wk]  at (6.9,-1.3)  {\textbf{J10}\\Black--Scholes};
+    \node[wk]  at (9.2,-1.3)  {\textbf{J11}\\Cox--Ross--Rubinstein};
+    \node[wk]  at (11.5,-1.3) {\textbf{J12}\\Përsëritje};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \begin{itemize}
+    \item Javët 3--4: sigurimet e jo-jetës. Javët 5--7: sigurimet e jetës. Javët 8--11: financa.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Si vlerësohet lënda}
+  \begin{itemize}
+    \item<1-> \textbf{Kolegium} me shkrim: java 10 ose 11.
+    \item<2-> \textbf{Detyrë kursi}: një detyrë për sigurimet e jetës + një për jo-jetën (javët 10--12).
+    \item<3-> \textbf{Provimi përfundimtar} me shkrim, 2.5 orë:
+      \begin{itemize}
+        \item 15\% pyetje teorike (nga leksionet);
+        \item 85\% ushtrime (nga seminaret dhe shembujt e leksioneve).
+      \end{itemize}
+    \item<4-> \textbf{Frekuentimi}: seminare 75\%, detyra e kursit 100\%.
+  \end{itemize}
+  \onslide<5->{\small\textcolor{gray}{Peshat e secilit komponent do t'ju njoftohen zyrtarisht nga titullari.}}
+\end{frame}
+
+\begin{frame}{Literatura}
+  \textbf{Bazë (e detyrueshme)}
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika
+          Matematike me ilustrime në gjuhën R}, Kotti, 2021.
+  \end{itemize}
+  \pause
+  \textbf{Materiale mbështetëse (të hapura)}
+  \begin{itemize}
+    \item K.~Antonio, \emph{Introduction to R for actuaries} (libër online).
+    \item Vinjetat e paketave: \Rkey{lifecontingencies}, \Rkey{actuar}, \Rkey{ChainLadder}, \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=dataset1]{Të dhënat e kursit}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Skedari & Lloji & Përdorimi \\ \midrule
+    \texttt{mortality\_table\_synthetic.csv} & sintetike & tabela e jetës (sot!) \\
+    \texttt{motor\_portfolio\_synthetic.csv} & sintetike & portofoli auto \\
+    \texttt{individual\_claims\_synthetic.csv} & sintetike & shumat e dëmeve \\
+    \texttt{albania\_lifetables\_HLD\_1950\_2011.csv} & reale & tabelat e jetës, Shqipëri \\
+    \texttt{albania\_life\_expectancy\_eurostat...csv} & reale & jetëgjatësia, Shqipëri \\
+    \bottomrule
+  \end{tabular}
+  \pause
+  \begin{Keshille}
+    Për të dhënat \textbf{sintetike} ne i dimë parametrat e vërtetë.
+    Kështu krahasojmë gjithmonë \emph{vlerësimin} me \emph{të vërtetën}.
+  \end{Keshille}
+\end{frame}
+
+\begin{frame}[label=pyetjeMCQ1]{Pyetje e shpejtë}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Pse një aktuar do të përdorte të dhëna \textbf{sintetike}, kur ka të dhëna reale?
+    \begin{enumerate}
+      \item[A)] Sepse të dhënat reale janë gjithmonë të gabuara.
+      \item[B)] Sepse e njeh të vërtetën dhe mund të testojë nëse metoda e gjen atë.
+      \item[C)] Sepse R nuk lexon dot të dhëna reale.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{zgjMCQ1}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Tabela e jetës: ideja}
+  \begin{itemize}
+    \item<1-> Imagjino një grup prej 1\,000 personash, të gjithë \textbf{40 vjeç} sot.
+    \item<2-> Çdo vit, disa prej tyre vdesin.
+    \item<3-> Tabela e jetës tregon \textbf{sa mbeten gjallë} në çdo moshë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}
+    Tabela e jetës është thjesht një \textbf{numërim}: sa hyjnë, sa dalin.
+  \end{Keshille}}
+\end{frame}
+
+\begin{frame}{Përkufizimet: $l_x$ dhe $d_x$}
+  \begin{Definicion}[(të gjallët dhe të vdekurit)]
+    \begin{itemize}
+      \item $l_x$ = numri i të gjallëve në moshën e saktë $x$.
+      \item $d_x$ = numri i atyre që vdesin midis moshës $x$ dhe $x+1$.
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \[
+    d_x \;=\; l_x - l_{x+1}
+  \]
+  \pause
+  \small Pse? Kush ishte gjallë në $x$ dhe nuk është më në $x+1$, ka vdekur gjatë vitit.
+\end{frame}
+
+\begin{frame}{Përkufizimet: $q_x$ dhe $p_x$}
+  \begin{Definicion}[(probabilitetet njëvjeçare)]
+    \[
+      q_x=\frac{d_x}{l_x}
+      \qquad\qquad
+      p_x = 1-q_x=\frac{l_{x+1}}{l_x}
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $q_x$: probabiliteti që një person $x$ vjeç të vdesë brenda vitit.
+    \item $p_x$: probabiliteti që të mbijetojë deri në $x+1$.
+  \end{itemize}
+  \pause
+  \begin{Gabim}
+    $q_x$ \textbf{nuk} është ``përqindja e vdekjeve në popullsi''.
+    Është probabilitet \emph{me kusht}: personi është gjallë në moshën $x$.
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}{Mbijetesa për $t$ vjet: ${}_tp_x$}
+  \begin{Definicion}
+    ${}_tp_x$ = probabiliteti që një person $x$ vjeç të jetë gjallë në moshën $x+t$.
+  \end{Definicion}
+  \begin{align*}
+    {}_tp_x &= \frac{l_{x+t}}{l_x} \\
+    \onslide<2->{&= \frac{l_{x+1}}{l_x}\cdot\frac{l_{x+2}}{l_{x+1}}\cdots\frac{l_{x+t}}{l_{x+t-1}}\\}
+    \onslide<3->{&= p_x\,p_{x+1}\cdots p_{x+t-1}}
+  \end{align*}
+  \onslide<4->{\small Pse? Për të mbijetuar 3 vjet, duhet të mbijetosh \textbf{çdo} vit, një nga një.}
+\end{frame}
+
+\begin{frame}{Shembulli ynë: 1\,000 persona 40 vjeç}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=0.72\textwidth,height=0.58\textheight,ybar,bar width=18pt,
+      xlabel={Mosha $x$},ylabel={$l_x$},ymin=940,ymax=1010,
+      xtick={40,41,42,43},enlarge x limits=0.2,
+      nodes near coords,nodes near coords style={font=\scriptsize},
+      grid=major,grid style={gray!20},
+      /pgf/number format/1000 sep={}]
+      \addplot[fill=uptmid!70,draw=uptblue] coordinates {(40,1000) (41,990) (42,978) (43,963)};
+    \end{axis}
+  \end{tikzpicture}\par
+  \pause
+  \small\textcolor{warnred}{Kujdes:} boshti vertikal fillon te 940, që diferencat të duken.
+\end{frame}
+
+\begin{frame}[label=ush1]{Radha jote!}
+  \begin{Ushtrim}[(2 minuta, me letër)]
+    Nga grafiku: $l_{40}=1000$, $l_{41}=990$, $l_{42}=978$, $l_{43}=963$.
+    \begin{enumerate}
+      \item Llogarit $d_{40}$, $d_{41}$, $d_{42}$.
+      \item Llogarit $q_{41}$ me 4 shifra pas presjes.
+      \item Llogarit ${}_3p_{40}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjUsh1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Vlera në kohë e parasë}
+  \begin{itemize}
+    \item<1-> 100 € sot vlejnë më shumë se 100 € pas një viti.
+    \item<2-> Pse? Sepse 100 € sot, të investuara me interes $i$, bëhen $100(1+i)$.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Definicion}[(faktori i aktualizimit, \emph{discount factor})]
+    \[
+      v=\frac{1}{1+i}
+      \qquad\Rightarrow\qquad
+      \text{vlera sot e 1 € pas } t \text{ vitesh} = v^t
+    \]
+  \end{Definicion}}
+\end{frame}
+
+\begin{frame}{Vija kohore e pagesave (\emph{cash-flow timeline})}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick,uptblue] (0,0) -- (10.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/0,3/1,6/2,9/3}{
+      \draw[thick,uptblue] (\t,0.12) -- (\t,-0.12);
+      \node[below=4pt,font=\small] at (\t,0) {\lab};
+    }
+    \foreach \t in {3,6,9}{
+      \draw[->,thick,accent] (\t,1.4) -- (\t,0.2);
+      \node[above,font=\small] at (\t,1.4) {100 €};
+    }
+    \pause
+    \draw[->,dashed,okgreen] (3,0.7) -- (0.15,0.7) node[midway,above,font=\scriptsize]{$\times v$};
+    \pause
+    \draw[->,dashed,okgreen] (6,-0.9) -- (0.15,-0.9) node[midway,below,font=\scriptsize]{$\times v^2$};
+    \pause
+    \draw[->,dashed,okgreen] (9,-1.6) -- (0.15,-1.6) node[midway,below,font=\scriptsize]{$\times v^3$};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Me numra: $i=5\%$}
+  \centering
+  \begin{tabular}{@{}cccc@{}}
+    \toprule
+    Viti $t$ & $v^t$ & Pagesa & Vlera sot \\ \midrule
+    1 & 0.952381 & 100 € & 95.24 € \\
+    \pause
+    2 & 0.907029 & 100 € & 90.70 € \\
+    \pause
+    3 & 0.863838 & 100 € & 86.38 € \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \pause
+  {\begin{Keshille}Sa më larg në kohë, aq më pak vlen sot pagesa.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=pyetjeV]{Parashiko!}
+  \begin{Parashiko}
+    Interesi rritet nga 5\% në 6\%. Çfarë ndodh me $v^3$?
+    \begin{enumerate}
+      \item[A)] Rritet.
+      \item[B)] Zvogëlohet.
+      \item[C)] Nuk ndryshon.
+    \end{enumerate}
+    Pastaj: llogarit $v^3$ për $i=6\%$.
+  \end{Parashiko}
+  \shkoTe{zgjV}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Vlera aktuale e pritshme: ideja}
+  \begin{itemize}
+    \item<1-> Kompania paguan 100\,000 € \textbf{vetëm nëse} klienti vdes.
+    \item<2-> Pagesa bëhet në \textbf{fund} të vitit të vdekjes.
+    \item<3-> Pra, për çdo vit $k$ pyesim:
+      \begin{itemize}
+        \item sa është probabiliteti i vdekjes \textbf{në atë vit}?
+        \item sa vlen sot pagesa e atij viti?
+      \end{itemize}
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}
+    Çmimi = shuma e (probabilitet $\times$ aktualizim $\times$ shumë), për çdo vit.
+  \end{Keshille}}
+\end{frame}
+
+\begin{frame}{Sigurimi i jetës me afat (\emph{term life insurance})}
+  \begin{Definicion}[(vlera aktuale e pritshme, \emph{EPV})]
+    Për 1 € të paguar në fund të vitit të vdekjes, brenda $n$ vitesh:
+    \[
+      A^{1}_{x:\overline{n}|}=\sum_{k=0}^{n-1} v^{\,k+1}\;\frac{d_{x+k}}{l_x}
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $k$: viti i vdekjes (0 = viti i parë).
+    \item $\dfrac{d_{x+k}}{l_x}$: probabiliteti që vdekja të ndodhë pikërisht në vitin $k+1$.
+    \item $v^{\,k+1}$: pagesa ndodh në \textbf{fund} të atij viti.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pse $d_{x+k}/l_x$?}
+  \begin{align*}
+    \Pr(\text{vdes në vitin } k+1)
+    &= \Pr(\text{gjallë në } x+k)\cdot\Pr(\text{vdes brenda vitit}\mid\text{gjallë}) \\
+    \onslide<2->{&= {}_kp_x \cdot q_{x+k} \\}
+    \onslide<3->{&= \frac{l_{x+k}}{l_x}\cdot\frac{d_{x+k}}{l_{x+k}} \\}
+    \onslide<4->{&= \frac{d_{x+k}}{l_x}}
+  \end{align*}
+  \onslide<5->{\small Shënim: kjo probabilitet shkruhet edhe ${}_{k|}q_x$ (vdekje e shtyrë).}
+\end{frame}
+
+\begin{frame}{Pagesat e mundshme: figura}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick,uptblue] (0,0) -- (10.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/40,3/41,6/42,9/43}{
+      \draw[thick,uptblue] (\t,0.12) -- (\t,-0.12);
+      \node[below=4pt,font=\small] at (\t,0) {mosha \lab};
+    }
+    \foreach \t/\d/\k in {3/10/1,6/12/2,9/15/3}{
+      \draw[->,thick,accent] (\t,1.5) -- (\t,0.2);
+      \node[above,font=\scriptsize,align=center] at (\t,1.5) {100\,000 €\\me prob. $\frac{\d}{1000}$};
+      \node[font=\scriptsize,okgreen] at (\t-0.5,-1.0) {$v^{\k}$};
+    }
+  \end{tikzpicture}\par
+  \vspace{4pt}
+  \pause
+  \small Tre pagesa të mundshme. Vetëm \textbf{njëra} mund të ndodhë.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Tabela jonë e vogël}
+  \centering
+  \begin{tabular}{@{}ccccc@{}}
+    \toprule
+    $x$ & $l_x$ & $d_x$ & $q_x$ & $p_x$ \\ \midrule
+    40 & 1000 & 10 & 0.010000 & 0.990000 \\
+    41 & 990  & 12 & 0.012121 & 0.987879 \\
+    42 & 978  & 15 & 0.015337 & 0.984663 \\
+    43 & 963  & -- & -- & -- \\
+    \bottomrule
+  \end{tabular}
+  \vspace{8pt}
+  \pause
+  \begin{itemize}
+    \item Interesi: $i=5\%$. Shuma e siguruar: $S=100\,000$ €.
+    \item Klienti: $x=40$. Afati: $n=3$ vjet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=parashikoP3]{Hapi 1: mbijetesa 3-vjeçare}
+  \begin{Parashiko}
+    Para se ta llogarisim: ${}_3p_{40}$ është afër 0.90, 0.96, apo 0.99?
+  \end{Parashiko}
+  \pause
+  \[
+    {}_3p_{40}=\frac{l_{43}}{l_{40}}=\frac{963}{1000}=0.963
+  \]
+  \pause
+  \small Kontroll: $0.99\times0.987879\times0.984663 = 0.963$. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}{Hapi 2: faktorët e aktualizimit}
+  \centering
+  \begin{tabular}{@{}cccc@{}}
+    \toprule
+    Viti & $k$ & $v^{\,k+1}$ & $d_{40+k}/l_{40}$ \\ \midrule
+    1 & 0 & 0.952381 & 0.010 \\
+    2 & 1 & 0.907029 & 0.012 \\
+    3 & 2 & 0.863838 & 0.015 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{6pt}
+  \pause
+  \begin{Gabim}
+    Eksponenti është $k+1$, jo $k$: pagesa bëhet në \textbf{fund} të vitit.
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}{Hapi 3: shumëzo dhe mblidh}
+  \begin{align*}
+    A^{1}_{40:\overline{3}|}
+    &= 0.952381\cdot0.010 + 0.907029\cdot0.012 + 0.863838\cdot0.015 \\
+    \onslide<2->{&= 0.009524 + 0.010884 + 0.012958 \\}
+    \onslide<3->{&= 0.033366}
+  \end{align*}
+  \onslide<4->{
+  \[
+    \text{Prima e vetme neto}=S\cdot A^{1}_{40:\overline{3}|}
+    =100\,000\times0.033366\approx\boxed{3\,336.57\text{ €}}
+  \]}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Klienti paguan \textbf{sot} rreth 3\,337 € për mbulim 100\,000 €.
+    \item<2-> Pse kaq pak? Probabiliteti i vdekjes në 3 vjet është vetëm $1-0.963=3.7\%$.
+    \item<3-> Pse më pak se $3.7\% \times 100\,000 = 3\,700$? Sepse pagesa vjen në të ardhmen: aktualizimi.
+    \item<4-> Kjo është prima \textbf{neto}: pa shpenzime, pa marzh fitimi.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Gjithmonë bëj një \textbf{kontroll të arsyeshmërisë}: a ka kuptim numri?\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=gjejGab1]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \[
+      A^{1}_{40:\overline{3}|} = 1\cdot0.010 + 0.952381\cdot0.012 + 0.907029\cdot0.015 = 0.035034
+    \]
+    \[
+      \Rightarrow \text{prima} = 3\,503.40 \text{ €}
+    \]
+  \end{Gabim}
+  \begin{enumerate}
+    \item Ku është gabimi?
+    \item Pse rezultati është \textbf{më i madh} se 3\,336.57 €?
+  \end{enumerate}
+  \shkoTe{zgjGab1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Nga prima e vetme te prima vjetore\Zgj}
+  \begin{itemize}
+    \item<1-> Klientët zakonisht paguajnë \textbf{çdo vit}, në fillim të vitit, nëse janë gjallë.
+    \item<2-> Vlera aktuale e 1 € në vit (\emph{annuity-due}):
+      \[
+        \ddot a_{40:\overline{3}|}=\frac{l_{40}+l_{41}v+l_{42}v^2}{l_{40}}
+        =\frac{1000+942.86+887.07}{1000}=2.829932
+      \]
+    \item<3-> Prima vjetore neto:
+      \[
+        P=\frac{3\,336.57}{2.829932}\approx 1\,179.03 \text{ €}
+      \]
+  \end{itemize}
+  \onslide<4->{\small\textcolor{gray}{Këtë do ta formalizojmë në Javën 7.}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pamje e parë e R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{E njëjta llogaritje në R}
+<<toy-code, eval=FALSE>>=
+lx <- c(1000, 990, 978, 963)  # survivors at ages 40..43
+dx <- -diff(lx)               # deaths in each year
+i  <- 0.05                    # interest rate
+v  <- 1 / (1 + i)             # discount factor
+A  <- sum(v^(1:3) * dx / lx[1])   # EPV of 1 paid at end of year of death
+100000 * A                    # net single premium
+@
+  \pause
+  \small Gjashtë rreshta. Çdo rresht = një hap nga llogaritja pa ndihmën e PC.
+\end{frame}
+
+\begin{frame}[fragile]{Rezultati}
+<<toy-run, echo=FALSE>>=
+lx <- c(1000, 990, 978, 963)
+dx <- -diff(lx)
+i  <- 0.05
+v  <- 1 / (1 + i)
+A  <- sum(v^(1:3) * dx / lx[1])
+dx
+100000 * A
+@
+  \pause
+  \begin{itemize}
+    \item $d_x = (10, 12, 15)$: njësoj si në llogaritjen pa ndihmën e PC. \textcolor{okgreen}{$\checkmark$}
+    \item Prima $= 3\,336.57$ €: njësoj si në llogaritjen pa ndihmën e PC. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \Rkey{diff()} llogarit $l_{x+1}-l_x$ për \textbf{të gjitha} moshat njëherësh.
+    \item<2-> \Rkey{v\^{}(1:3)} jep $v, v^2, v^3$ me një komandë.
+    \item<3-> Kjo quhet \termi{vektorizim}{vectorisation}: pa cikle, pa qeliza.
+    \item<4-> Me 100 mosha, kodi mbetet \textbf{po aq i shkurtër}.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Vektorizimi është ideja më e rëndësishme e sotme. E shohim në detaje në Orën 2.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=ndrysho1]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    \begin{enumerate}
+      \item Ndrysho rreshtin \texttt{i <- 0.05} në \texttt{i <- 0.03}.
+      \item Parashiko: prima rritet apo zvogëlohet?
+      \item Ekzekuto kodin. Sa del prima?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{zgjNdrysho1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Një shije e Orës 5: tabela e plotë (të dhëna sintetike)}
+<<lx-preview-code, eval=FALSE>>=
+library(ggplot2)
+mt <- read.csv("week_01_data/mortality_table_synthetic.csv")
+ggplot(mt, aes(x = age)) +
+  geom_line(aes(y = lx_male,   colour = "Male")) +
+  geom_line(aes(y = lx_female, colour = "Female")) +
+  labs(x = "Age x", y = "l(x)", colour = NULL)
+@
+  \small\textcolor{gray}{Të dhëna \textbf{sintetike} (Gompertz--Makeham, parametra të njohur).}
+\end{frame}
+
+\begin{frame}[fragile]{Kurba $l_x$: meshkuj dhe femra}
+<<lx-preview, echo=FALSE, out.width='0.78\\textwidth', fig.width=6, fig.height=3>>=
+library(ggplot2)
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+ggplot(mt, aes(x = age)) +
+  geom_line(aes(y = lx_male,   colour = "Male"),   linewidth = 1) +
+  geom_line(aes(y = lx_female, colour = "Female"), linewidth = 1) +
+  scale_colour_manual(values = c(Male = "#2C5AA0", Female = "#D97706")) +
+  labs(x = "Age x", y = "l(x)", colour = NULL) +
+  theme_minimal(base_size = 13) + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kurba fillon te 100\,000 dhe bie ngadalë deri rreth moshës 60.
+    \item<2-> Pas 60 vjetësh bie shpejt: vdekshmëria rritet me moshën.
+    \item<3-> Kurba e femrave qëndron \textbf{mbi} atë të meshkujve.
+    \item<4-> Pyetje për Orën 5: si e matim sa shpejt rritet $q_x$?
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Mjedisi i punës}
+% ------------------------------------------------------------
+
+\begin{frame}{R dhe RStudio: cili është ndryshimi?}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \begin{block}{R}
+        \begin{itemize}
+          \item Gjuha dhe \textbf{motori} i llogaritjes.
+          \item Falas, \emph{open source}.
+          \item Shkarkohet nga CRAN.
+        \end{itemize}
+      \end{block}
+    \column{0.48\textwidth}
+      \begin{block}{RStudio}
+        \begin{itemize}
+          \item \textbf{Paneli i komandimit} rreth R.
+          \item Editor, grafikë, ndihmë.
+          \item Nuk punon pa R.
+        \end{itemize}
+      \end{block}
+  \end{columns}
+  \vspace{6pt}
+  \pause
+  \small Analogji: R është motori i makinës; RStudio është timoni dhe paneli.
+\end{frame}
+
+\begin{frame}{Katër panelet e RStudio}
+  \centering
+  \begin{tikzpicture}[
+      pn/.style={draw=uptblue,fill=uptlight,minimum width=5.2cm,minimum height=2.1cm,
+                 align=center,font=\small}]
+    \node[pn] (s) at (0,1.4)  {\textbf{Skripti}\\kodi që ruan};
+    \node[pn] (c) at (0,-1.4) {\textbf{Konsola}\\ku ekzekutohet kodi};
+    \node[pn] (e) at (5.4,1.4)  {\textbf{Mjedisi}\\objektet në memorie};
+    \node[pn] (f) at (5.4,-1.4) {\textbf{Skedarët / Grafikët}\\Ndihma, paketat};
+    \pause
+    \draw[->,very thick,accent] (s.south) -- node[left,font=\scriptsize\bfseries,text=accent]{Ctrl+Enter} (c.north);
+  \end{tikzpicture}\par
+  \vspace{4pt}
+  \onslide<2->{\small Shkruaj gjithmonë në \textbf{skript}, jo direkt në konsolë.}
+\end{frame}
+
+\begin{frame}{Projekti në RStudio: një dosje për çdo punë}
+  \centering
+  \begin{tikzpicture}[grow via three points={one child at (0.5,-0.6) and two children at (0.5,-0.6) and (0.5,-1.2)},
+      edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)},
+      every node/.style={anchor=west,font=\small\ttfamily}]
+    \node {mka\_java01/}
+      child {node {mka\_java01.Rproj} }
+      child {node {data/ \textrm{\textcolor{gray}{(CSV-të, nuk ndryshohen)}}}}
+      child {node {R/ \textrm{\textcolor{gray}{(skriptet)}}}}
+      child {node {output/ \textrm{\textcolor{gray}{(grafikë, tabela)}}}};
+  \end{tikzpicture}\par
+  \vspace{4pt}
+  \pause
+  \begin{Keshille}
+    Me projekt, rrugët janë \textbf{relative}: \texttt{"data/file.csv"}.
+    Kodi punon njësoj në çdo kompjuter.
+  \end{Keshille}
+\end{frame}
+
+\begin{frame}[fragile]{Koka e çdo skripti}
+<<script-header, eval=FALSE>>=
+# ------------------------------------------------
+# MKA - Week 1 - Toy life table
+# Author: <your name>     Date: 2026-11-04
+# Purpose: net single premium of a 3-year term policy
+# ------------------------------------------------
+set.seed(2026)     # makes any random result reproducible
+library(ggplot2)   # load packages at the top, once
+@
+  \pause
+  \small Kush e lexon skriptin pas 6 muajsh? \textbf{Ti vetë.} Shkruaj për atë person.
+\end{frame}
+
+\begin{frame}{Tri shkurtore që kursejnë orë}
+  \centering
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Shkurtorja & Çfarë bën \\ \midrule
+    \texttt{Ctrl + Enter} & ekzekuton rreshtin (ose zgjedhjen) \\
+    \texttt{Ctrl + Shift + S} & ekzekuton të gjithë skriptin \\
+    \texttt{Ctrl + Shift + C} & komenton / çkomenton rreshtat \\
+    \bottomrule
+  \end{tabular}
+  \vspace{6pt}
+  \begin{itemize}
+    \item Në Mac: \texttt{Cmd} në vend të \texttt{Ctrl}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm në ditën e parë}
+  \begin{Gabim}
+    \begin{itemize}
+      \item Puna bëhet në konsolë dhe nuk ruhet askund.
+      \item Rruga absolute: \texttt{"C:/Users/Ana/Desktop/data.csv"}.
+      \item Rifillimi i R nuk bëhet kurrë: objekte të vjetra fshehin gabime.
+    \end{itemize}
+  \end{Gabim}
+  \pause
+  \begin{Keshille}
+    Test i thjeshtë: \emph{Session $\rightarrow$ Restart R}, pastaj ekzekuto gjithë skriptin.
+    Nëse punon, puna jote është e riprodhueshme.
+  \end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse eksponenti i $v$ në $A^{1}_{x:\overline{n}|}$ është $k+1$ dhe jo $k$?
+    \item Nëse $l_{50}=900$ dhe $l_{52}=870$, sa është ${}_2p_{50}$?
+    \item Pse një aktuar punon me skript dhe jo direkt në konsolë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) pagesa në fund të vitit; (2) $870/900=0.9667$; (3) riprodhueshmëria.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Çmimi = probabilitet $\times$ aktualizim $\times$ shumë, i mbledhur mbi vitet.
+    \item $d_x=l_x-l_{x+1}$, $q_x=d_x/l_x$, ${}_tp_x=l_{x+t}/l_x$, $v=1/(1+i)$.
+    \item Shembulli: prima e vetme neto $= 3\,336.57$ € (pa ndihmën e PC = me R).
+    \item R: \textbf{skript} + \textbf{projekt} + \textbf{vektorizim}.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Gjuha R nga brenda: objektet, tipet, vektorët, indeksimi.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT, 2025--2026.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (kapitulli mbi tabelat e jetës dhe sigurimet e jetës).
+    \item K.~Antonio, \emph{Introduction to R for actuaries}, kapitujt 1--2 (R dhe RStudio).
+    \item README i të dhënave të kursit: \texttt{mortality\_table\_synthetic.csv}
+          (sintetike, Gompertz--Makeham).
+  \end{itemize}
+\end{frame}
