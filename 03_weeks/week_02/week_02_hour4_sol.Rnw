@@ -1,0 +1,57 @@
+% ============================================================
+%  Java 2 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w2zgjRate]{Zgjidhja: cila depozitë jep më shumë?}
+<<w2s4-rate>>=
+round(100 * c(A = 0.061, B = (1 + 0.06 / 12)^12 - 1, C = (1 + 0.0605 / 4)^4 - 1), 4)
+@
+  \textbf{C)}: 6.05\% nominale tremujore $\approx$ 6.19\% efektive. Krahaso gjithmonë normat \textbf{efektive}.
+  \vfill\kthehu{w2pyetjeRate}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjUsh4a]{Zgjidhja: Radha jote! ($n=5$, $i=5\%$)}
+  \begin{itemize}
+    \item $a_{\overline{5}|}=(1-0.783526)/0.05=4.329477$; \quad $\ddot a_{\overline{5}|}=1.05\times4.329477=4.545951$.
+    \item Pensioni: $600\,000\times4.329477\approx2\,597\,686$ lekë.
+  \end{itemize}
+<<w2s4-ann>>=
+a5 <- (1 - 1.05^-5) / 0.05
+round(c(a = a5, a_due = 1.05 * a5, pension_pv = 600000 * a5), 4)
+@
+  \vfill\kthehu{w2ush4a}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjHalf]{Zgjidhja: Parashiko (borxhi në gjysmë të afatit)}
+  \[
+    B_{60}=P\,a_{\overline{60}|0.5\%}
+  \]
+<<w2s4-half>>=
+P   <- 5e6 * 0.005 / (1 - 1.005^-120)
+B60 <- P * (1 - 1.005^-60) / 0.005
+round(c(P = P, B60 = B60, share_repaid = 1 - B60 / 5e6), 4)
+@
+  \small Vetëm $\approx43\%$ e principalit është kthyer: në vitet e para kësti paguan kryesisht interes.
+  \vfill\kthehu{w2pyetjeHalf}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjNPV]{Zgjidhja: Parashiko (NPV me 12\%)}
+<<w2s4-npv>>=
+-1e6 + 4e5 * (1 - 1.12^-3) / 0.12
+@
+  \small Negative: 12\% $>$ IRR (9.70\%). Me normë kërkese 12\% projekti refuzohet.
+  \vfill\kthehu{w2pyetjeNPV}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjGab4]{Zgjidhja: Gjej gabimin (\texttt{pmt})}
+  \begin{itemize}
+    \item Studenti llogariti këstin \textbf{vjetor} për 10 \textbf{vjet} me 6\% efektive vjetore.
+    \item Për këste mujore: \texttt{maturity = 120}, \texttt{rate = 0.06 / 12}.
+  \end{itemize}
+<<w2s4-gab>>=
+library(tvm)
+c(wrong_annual = pmt(amt = 5e6, maturity = 10, rate = 0.06),
+  monthly      = pmt(amt = 5e6, maturity = 120, rate = 0.06 / 12))
+@
+  \vfill\kthehu{w2gjejGab4}
+\end{frame}

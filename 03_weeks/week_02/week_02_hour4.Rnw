@@ -1,0 +1,447 @@
+% ============================================================
+%  Java 2 · Ora 4 — Teoria II: vlera në kohë e parasë
+% ============================================================
+\section{Teoria II}
+
+\begin{frame}{Ora 4 · Vlera në kohë e parasë}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Normat e interesit}
+% ------------------------------------------------------------
+
+\begin{frame}{Tri mënyra për të shprehur të njëjtin interes}
+  \begin{Definicion}
+    \begin{itemize}
+      \item $i$: norma \termi{efektive vjetore}{annual effective rate}.
+      \item $i^{(m)}$: norma \termi{nominale}{nominal rate}, e kapitalizuar $m$ herë në vit.
+      \item $j=i^{(m)}/m$: norma për periudhë (p.sh.\ mujore për $m=12$).
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \[
+    1+i=\Big(1+\frac{i^{(m)}}{m}\Big)^{m}
+  \]
+  \pause
+  \small Pse? Një lek i investuar për një vit duhet të rritet njësoj, cilado mënyrë të shprehim normën.
+\end{frame}
+
+\begin{frame}{6\% nominale: sa është në vit?}
+  \centering
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Kapitalizimi & $m$ & $j$ & $i$ efektive \\ \midrule
+    vjetor & 1 & 6\% & 6.0000\% \\
+    \pause
+    tremujor & 4 & 1.5\% & \Sexpr{format(round(100 * ((1 + 0.06/4)^4 - 1), 4), nsmall = 4)}\% \\
+    \pause
+    mujor & 12 & 0.5\% & \Sexpr{format(round(100 * ((1 + 0.06/12)^12 - 1), 4), nsmall = 4)}\% \\
+    \pause
+    i vazhdueshëm & $\infty$ & -- & $e^{0.06}-1=\Sexpr{format(round(100 * (exp(0.06) - 1), 4), nsmall = 4)}\%$ \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  {\small Sa më shpesh kapitalizohet, aq më e madhe norma efektive. Por ndryshimi është i vogël.}
+\end{frame}
+
+\begin{frame}{Intensiteti i interesit dhe norma e skontos}
+  \begin{Definicion}
+    \begin{itemize}
+      \item Intensiteti (\emph{force of interest}): $\delta=\ln(1+i)$, pra $v^t=e^{-\delta t}$.
+      \item Norma e skontos (\emph{discount rate}): $d=i\,v=\dfrac{i}{1+i}$.
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $\delta$ është ``vëllai'' i $\mu_x$ të Javës 1: intensitet i vazhdueshëm.
+    \item $d$: interesi i paguar \textbf{në fillim} të periudhës. Na duhet për $\ddot a$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeRate]{Pyetje e shpejtë}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cila ofertë depozite jep më shumë pas një viti?
+    \begin{enumerate}
+      \item[A)] 6.10\% efektive vjetore
+      \item[B)] 6.00\% nominale, kapitalizim mujor
+      \item[C)] 6.05\% nominale, kapitalizim tremujor
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjRate}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Anuitetet e sigurta}
+% ------------------------------------------------------------
+
+\begin{frame}{Anuiteti me pagesa në fund (\emph{annuity-immediate})}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick,uptblue] (0,0) -- (10.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/0,2.4/1,4.8/2,9.6/n}{
+      \draw[thick,uptblue] (\t,0.12) -- (\t,-0.12);
+      \node[below=4pt,font=\small] at (\t,0) {\lab};
+    }
+    \node[font=\small] at (7.2,-0.35) {$\cdots$};
+    \foreach \t in {2.4,4.8,9.6} {\draw[->,thick,accent] (\t,1.2) -- (\t,0.2); \node[above,font=\small] at (\t,1.2) {1};}
+    \pause
+    \node[draw=okgreen,fill=okgreen!10,rounded corners=2pt,font=\small] at (0,1.2) {$a_{\overline{n}|}$};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \begin{Definicion}
+    $a_{\overline{n}|}$ = vlera sot e 1 lek në \textbf{fund} të çdo periudhe, për $n$ periudha.
+  \end{Definicion}
+\end{frame}
+
+\begin{frame}{Formula: hap pas hapi}
+  \begin{align*}
+    a_{\overline{n}|} &= v+v^2+\dots+v^n \\
+    \onslide<2->{&= v\,(1+v+\dots+v^{n-1}) \\}
+    \onslide<3->{&= v\,\frac{1-v^n}{1-v} \qquad \text{(varg gjeometrik)}\\}
+    \onslide<4->{&= \frac{1-v^n}{i} \qquad \text{sepse } \frac{v}{1-v}=\frac{1/(1+i)}{i/(1+i)}=\frac1i}
+  \end{align*}
+\end{frame}
+
+\begin{frame}{Anuiteti me pagesa në fillim (\emph{annuity-due})}
+  \begin{align*}
+    \ddot a_{\overline{n}|} &= 1+v+\dots+v^{n-1} \\
+    \onslide<2->{&= \frac{1-v^n}{1-v}=\frac{1-v^n}{d}\\}
+    \onslide<3->{&= (1+i)\,a_{\overline{n}|}}
+  \end{align*}
+  \onslide<4->{
+  \begin{itemize}
+    \item Çdo pagesë vjen një periudhë më herët $\Rightarrow$ vlen $(1+i)$ herë më shumë.
+    \item Primat e sigurimit paguhen zakonisht \textbf{në fillim}: $\ddot a$.
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}{Vlera e akumuluar}
+  \[
+    s_{\overline{n}|}=(1+i)^{n-1}+\dots+(1+i)+1=\frac{(1+i)^n-1}{i}=(1+i)^n\,a_{\overline{n}|}
+  \]
+  \pause
+  \begin{itemize}
+    \item $s_{\overline{n}|}$: sa ke në fund, nëse depoziton 1 lek në fund të çdo periudhe.
+    \item P.sh.\ një fond pensioni që mbledh kontribute mujore.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: $n=3$, $i=10\%$}
+  \begin{enumerate}
+    \item<1-> $v^3=1/1.331=0.751315$.
+    \item<2-> $a_{\overline{3}|}=(1-0.751315)/0.1=2.486852$.
+    \item<3-> $\ddot a_{\overline{3}|}=1.1\times2.486852=2.735537$.
+    \item<4-> $s_{\overline{3}|}=(1.331-1)/0.1=3.31$.
+  \end{enumerate}
+  \onslide<5->{
+  \begin{Keshille}Kontroll: $\ddot a_{\overline{3}|}=1+v+v^2=1+0.909091+0.826446=2.735537$. \textcolor{okgreen}{$\checkmark$}\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w2ush4a]{Radha jote!}
+  \begin{Ushtrim}[(3 minuta, pa ndihmën e PC)]
+    $n=5$, $i=5\%$, $v^5=0.783526$.
+    \begin{enumerate}
+      \item Llogarit $a_{\overline{5}|}$ dhe $\ddot a_{\overline{5}|}$.
+      \item Një pension pagon 600\,000 lekë në fund të çdo viti për 5 vjet. Sa vlen sot?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjUsh4a}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Përjetësia (\emph{perpetuity})\Zgj}
+  \[
+    a_{\overline{\infty}|}=\lim_{n\to\infty}\frac{1-v^n}{i}=\frac1i
+  \]
+  \pause
+  \begin{itemize}
+    \item Me $i=5\%$: 1 lek në vit përgjithmonë vlen sot 20 lekë.
+    \item Përdorim: vlerësimi i një prone që jep qira të qëndrueshme.
+    \item Edhe një anuitet 50-vjeçar është afër: $a_{\overline{50}|}=\Sexpr{round((1 - 1.05^-50) / 0.05, 2)}$ me 5\%.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Lidhja me Javën 1}
+  \begin{itemize}
+    \item<1-> Java 1: $\ddot a_{40:\overline{3}|}=2.8299$ me $i=5\%$ (anuitet \textbf{jete}).
+    \item<2-> Sot: $\ddot a_{\overline{3}|}=1+v+v^2=\Sexpr{round(1 + 1/1.05 + 1/1.05^2, 4)}$ (anuitet i \textbf{sigurt}).
+    \item<3-> Gjithmonë: $\ddot a_{x:\overline{n}|}\le\ddot a_{\overline{n}|}$. Pse?
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Anuiteti i jetës = anuiteti i sigurt, ku çdo pagesë shumëzohet me ${}_kp_x\le1$.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kreditë}
+% ------------------------------------------------------------
+
+\begin{frame}{Kësti i kredisë: parimi i ekuivalencës}
+  \[
+    L=P\,a_{\overline{n}|j}\qquad\Longrightarrow\qquad P=\frac{L}{a_{\overline{n}|j}}=\frac{L\,j}{1-(1+j)^{-n}}
+  \]
+  \pause
+  \begin{itemize}
+    \item $L$: shuma e kredisë; $n$: numri i kësteve; $j$: norma \textbf{për periudhë}.
+    \item Kësti $P$ është i njëjtë çdo periudhë: \termi{amortizimi francez}{French amortisation}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Borxhi i mbetur pas $k$ kësteve}
+  \begin{Teoreme}[(dy mënyra, i njëjti rezultat)]
+    \begin{itemize}
+      \item \textbf{Prospektive}: $B_k=P\,a_{\overline{n-k}|}$ \quad (vlera sot e kësteve që mbeten).
+      \item \textbf{Retrospektive}: $B_k=L(1+j)^k-P\,s_{\overline{k}|}$ \quad (borxhi i rritur minus pagesat e rritura).
+    \end{itemize}
+  \end{Teoreme}
+  \pause
+  \small E njëjta logjikë si \textbf{rezervat matematike} në sigurimin e jetës (Java 7): vlera e detyrimeve të ardhshme minus vlera e primave të ardhshme.
+\end{frame}
+
+\begin{frame}{Interesi dhe principali brenda këstit}
+  \begin{align*}
+    I_k &= j\,B_{k-1} && \text{(interesi i periudhës } k)\\
+    \onslide<2->{C_k &= P-I_k && \text{(principali i kthyer)}\\}
+    \onslide<3->{B_k &= B_{k-1}-C_k && \text{(borxhi i ri)}\\}
+    \onslide<4->{C_{k+1} &= C_k\,(1+j) && \text{(principali rritet gjeometrikisht)}}
+  \end{align*}
+  \onslide<5->{\small Pse rritet $C_k$? Borxhi bie $\Rightarrow$ interesi bie $\Rightarrow$ pjesa e principalit në këstin e njëjtë rritet.}
+\end{frame}
+
+\begin{frame}{Tabela e amortizimit: 300\,000 lekë, 3 vjet, 10\%}
+  \centering
+  \begin{tabular}{@{}crrrr@{}}
+    \toprule
+    $k$ & Kësti $P$ & Interesi $I_k$ & Principali $C_k$ & Borxhi $B_k$ \\ \midrule
+    0 & & & & 300\,000.00 \\
+    \pause
+    1 & 120\,634.44 & 30\,000.00 & 90\,634.44 & 209\,365.56 \\
+    \pause
+    2 & 120\,634.44 & 20\,936.56 & 99\,697.89 & 109\,667.67 \\
+    \pause
+    3 & 120\,634.44 & 10\,966.77 & 109\,667.67 & 0.00 \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  {\small Kontroll: $90\,634.44\times1.1=99\,697.89$ \; dhe \; $99\,697.89\times1.1=109\,667.67$. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}{Figura: si ndahet kësti}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[ybar stacked,width=0.62\textwidth,height=0.55\textheight,bar width=28pt,
+      xlabel={Viti $k$},ylabel={Lekë},xtick={1,2,3},ymin=0,ymax=135000,
+      legend style={at={(1.02,0.5)},anchor=west,font=\scriptsize},
+      scaled y ticks=false,yticklabel style={/pgf/number format/fixed,/pgf/number format/1000 sep={\,}}]
+      \addplot[fill=uptmid!70,draw=uptblue] coordinates {(1,90634) (2,99698) (3,109668)};
+      \addplot[fill=accent!60,draw=accent] coordinates {(1,30000) (2,20937) (3,10967)};
+      \legend{Principali,Interesi}
+    \end{axis}
+  \end{tikzpicture}\par
+  \small E njëjta lartësi çdo vit (kësti); pjesa e interesit tkurret.
+\end{frame}
+
+\begin{frame}[label=w2pyetjeHalf]{Parashiko!}
+  \begin{Parashiko}
+    Kredia e klientit: 5\,000\,000 lekë, 120 muaj, $j=0.5\%$.\\
+    Pas 60 kësteve (gjysma e afatit):
+    \begin{enumerate}
+      \item A është kthyer gjysma e principalit? Më shumë apo më pak?
+      \item Shkruaj formulën për $B_{60}$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjHalf}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Alternativa: principal konstant\Zgj}
+  \begin{itemize}
+    \item<1-> \termi{Amortizimi gjerman}{German amortisation}: $C_k=L/n$ çdo periudhë.
+    \item<2-> Kësti $P_k=C+j\,B_{k-1}$ zvogëlohet me kohën.
+    \item<3-> Shembulli: 300\,000 lekë, 3 vjet, 10\%: $C=100\,000$.
+      \begin{itemize}
+        \item Interesi: 30\,000 + 20\,000 + 10\,000 = \textbf{60\,000} lekë.
+        \item Francez: \textbf{61\,903} lekë. Pse më shumë?
+      \end{itemize}
+  \end{itemize}
+  \onslide<4->{\small Te francezi principali kthehet më ngadalë në fillim, ndaj borxhi mesatar është më i lartë.}
+\end{frame}
+
+\begin{frame}{Kostoja reale e kredisë: komisionet}
+  \begin{itemize}
+    \item<1-> Banka mban 1\% komision në fillim: klienti merr $L-0.01L$, por paguan këste mbi $L$.
+    \item<2-> Norma reale $j^*$ zgjidh ekuacionin
+      \[
+        0.99\,L=P\,a_{\overline{n}|j^*}
+      \]
+    \item<3-> $j^*>j$: komisioni e bën kredinë më të shtrenjtë se norma e shpallur.
+    \item<4-> Kjo është ide e \emph{kostos totale efektive}. Në R: \texttt{tvm::cft()} (Ora 5).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{NPV dhe IRR}
+% ------------------------------------------------------------
+
+\begin{frame}{Vlera aktuale neto (\emph{NPV})}
+  \begin{Definicion}
+    Për flukse $CF_0, CF_1,\dots,CF_n$ (negative = dalje, pozitive = hyrje):
+    \[
+      \mathrm{NPV}(i)=\sum_{t=0}^n CF_t\,v^t
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item NPV $>0$: projekti krijon vlerë me normën $i$.
+    \item NPV $<0$: më mirë investimi alternativ me normë $i$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull: investimi i siguruesit}
+  \begin{Shembull}
+    Investim: $-1\,000\,000$ lekë sot; $+400\,000$ lekë në fund të çdo viti për 3 vjet. $i=8\%$.
+  \end{Shembull}
+  \begin{align*}
+    \onslide<2->{\mathrm{NPV} &= -1\,000\,000+400\,000\,a_{\overline{3}|8\%}\\}
+    \onslide<3->{&= -1\,000\,000+400\,000\times2.577097\\}
+    \onslide<4->{&\approx +30\,839 \text{ lekë}}
+  \end{align*}
+  \onslide<5->{\small Pozitive: projekti kthen më shumë se 8\%.}
+\end{frame}
+
+\begin{frame}{Figura: NPV si funksion i normës}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=0.72\textwidth,height=0.55\textheight,
+      xlabel={Norma $i$},ylabel={NPV (lekë)},xmin=0,xmax=0.2,domain=0.001:0.2,samples=100,
+      grid=major,grid style={gray!20},scaled y ticks=false,
+      xticklabel style={/pgf/number format/fixed},yticklabel style={/pgf/number format/fixed,/pgf/number format/1000 sep={\,}}]
+      \addplot[uptmid,very thick]{-1000000+400000*(1-(1+x)^(-3))/x};
+      \addplot[gray,thin] coordinates {(0,0) (0.2,0)};
+      \addplot[only marks,mark=*,accent] coordinates {(0.0970,0)};
+      \node[accent,font=\scriptsize,anchor=south west] at (axis cs:0.1,10000) {IRR $\approx9.70\%$};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small NPV bie kur norma rritet. Pika ku pret zeron: \textbf{IRR}.
+\end{frame}
+
+\begin{frame}{Norma e brendshme e kthimit (\emph{IRR})}
+  \begin{Definicion}
+    IRR është norma $i^*$ për të cilën $\mathrm{NPV}(i^*)=0$.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Nuk ka formulë të mbyllur për $n\ge 3$ në përgjithësi: zgjidhet numerikisht.
+    \item Në R: \texttt{uniroot()} nga \Rkey{stats}, ose \texttt{tvm::irr()}.
+    \item Rregulli: prano projektin nëse IRR $>$ norma e kërkuar.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{IRR me \texttt{uniroot()}}
+<<w2h4-irr>>=
+npv_fun <- function(i) -1e6 + 4e5 * (1 - (1 + i)^-3) / i
+npv_fun(0.08)                                        # NPV at 8%
+uniroot(npv_fun, interval = c(0.01, 0.3), tol = 1e-10)$root   # IRR
+@
+  \pause
+  \small \texttt{uniroot()} kërkon një interval ku funksioni ndryshon shenjë.
+\end{frame}
+
+\begin{frame}[label=w2pyetjeNPV]{Parashiko!}
+  \begin{Parashiko}
+    Për të njëjtin investim:
+    \begin{enumerate}
+      \item NPV me $i=12\%$ do të jetë pozitive apo negative? (Shiko figurën.)
+      \item Përafërsisht sa?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjNPV}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}{Kurth: më shumë se një IRR\Zgj}
+  \begin{itemize}
+    \item<1-> Flukse: $-100$, $+230$, $-132$ (shenja ndryshon \textbf{dy} herë).
+    \item<2-> $\mathrm{NPV}(10\%)=0$ \textbf{dhe} $\mathrm{NPV}(20\%)=0$.
+    \item<3-> Rregulli i Descartes: numri i IRR-ve pozitive $\le$ numri i ndryshimeve të shenjës.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Me flukse që ndryshojnë shenjë disa herë, IRR mund të mos jetë e vetme. Përdor NPV.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Lidhja me sigurimet}
+  \begin{itemize}
+    \item<1-> \textbf{Rezervat}: vlera aktuale e flukseve të ardhshme (dëme, shpenzime) minus primat e ardhshme.
+    \item<2-> \textbf{IFRS 17}: detyrimet e kontratave aktualizohen me kurbë interesi.
+    \item<3-> \textbf{Solvency II}: kurba e normave pa rrezik e publikuar nga EIOPA.
+    \item<4-> Formula është gjithmonë e njëjta: $\sum CF_t\,v^t$. Ndryshojnë $CF_t$ dhe $v^t$.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kurthe}
+% ------------------------------------------------------------
+
+\begin{frame}{Gabimet më të shpeshta në llogaritjet financiare}
+  \begin{Gabim}
+    \begin{enumerate}
+      \item Normë vjetore me periudha mujore (ose anasjelltas).
+      \item Nominale e trajtuar si efektive.
+      \item Pagesa në fillim të trajtuar si pagesa në fund ($\ddot a$ vs $a$).
+      \item Shenjat e flukseve: hyrje (+) dhe dalje (--) të ngatërruara te NPV.
+      \item Rrumbullakimi i këstit para se të ndërtohet tabela.
+    \end{enumerate}
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}[label=w2gjejGab4]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily
+    \# 5 000 000 ALL, 10 years, 6\% per year, monthly payments\\
+    pmt(amt = 5000000, maturity = 10, rate = 0.06)\\[2pt]
+    \#\# [1] 679339.8
+  \end{Gabim}
+  \normalfont
+  \begin{enumerate}
+    \item Çfarë llogariti në të vërtetë studenti?
+    \item Rregulloje.
+  \end{enumerate}
+  \shkoTe{w2zgjGab4}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj $a_{\overline{n}|}$ dhe $\ddot a_{\overline{n}|}$ si formula të mbyllura.
+    \item Pse principali i kthyer rritet nga kësti në këst?
+    \item Çfarë do të thotë NPV $<0$ me normën 8\%?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $(1-v^n)/i$, \; $(1-v^n)/d$; (2) interesi bie me borxhin; (3) projekti kthen më pak se 8\%.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item $1+i=(1+i^{(m)}/m)^m$; \; $\delta=\ln(1+i)$; \; $d=i/(1+i)$.
+    \item $a_{\overline{n}|}=(1-v^n)/i$, \; $\ddot a_{\overline{n}|}=(1+i)a_{\overline{n}|}$, \; $s_{\overline{n}|}=((1+i)^n-1)/i$.
+    \item Kredia: $P=L/a_{\overline{n}|j}$; \; $I_k=jB_{k-1}$, \; $C_{k+1}=C_k(1+j)$.
+    \item NPV $=\sum CF_tv^t$; \; IRR: NPV $=0$, zgjidhet numerikisht.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator II: \Rkey{fitdistrplus}, testet e përshtatjes dhe \Rkey{tvm} (\texttt{loan}, \texttt{cft}, \texttt{npv}, \texttt{irr}).
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015
+          (matematika financiare bazë).
+    \item Dokumentacioni i paketës \Rkey{tvm}: \texttt{?pmt}, \texttt{?loan}, \texttt{?npv}, \texttt{?irr}.
+    \item Dokumentacioni i R: \texttt{?uniroot}.
+    \item Shembujt e kredive: \textbf{ilustrues}; normat dhe komisionet reale ndryshojnë sipas bankës.
+  \end{itemize}
+\end{frame}
