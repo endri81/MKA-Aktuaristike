@@ -1,0 +1,61 @@
+% ============================================================
+%  Java 2 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w2s3-setup, include=FALSE>>=
+library(ggplot2)
+x3 <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))$amount_eur
+b3 <- x3[x3 <= 20000]
+@
+
+\begin{frame}[fragile,label=w2zgjShare]{Zgjidhja: Parashiko (sa dëme në bisht?)}
+<<w2s3-share>>=
+c(expected = 0.05 * 3000, observed = sum(x3 > 20000))
+sqrt(3000 * 0.05 * 0.95)          # binomial sd of the count
+@
+  \small Prisnim 150; vrojtuam 152. Numri është i rastit: Binomiale(3000, 0.05), me devijim $\approx 12$.
+  \vfill\kthehu{w2pyetjeShare}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjUsh3a]{Zgjidhja: Radha jote! (MLE mbi të gjitha dëmet)}
+<<w2s3-all>>=
+la <- log(x3)
+round(rbind(all  = c(mu = mean(la), sigma = sqrt(mean((la - mean(la))^2))),
+            body = c(mean(log(b3)), sqrt(mean((log(b3) - mean(log(b3)))^2)))), 4)
+@
+  \small $\hat\sigma$ rritet shumë (rreth 1.16): 5\% e dëmeve nga bishti Pareto shtrijnë shpërndarjen.
+  Një lognormale e vetme do ta nënvlerësonte bishtin \textbf{dhe} do ta mbivlerësonte trupin.
+  \vfill\kthehu{w2ush3a}
+\end{frame}
+
+\begin{frame}[label=w2zgjGab3]{Zgjidhja: Gjej gabimin (\texttt{optim})}
+  \begin{itemize}
+    \item \texttt{optim()} \textbf{minimizon}. Studenti i dha $\ell$ (pa minus).
+    \item Minimumi i $\ell$ nuk ekziston: algoritmi ``vrapon'' drejt parametrave absurdë ku $\ell\to-\infty$.
+    \item Rregullimi: \texttt{-sum(dlnorm(..., log = TRUE))}, ose \texttt{control = list(fnscale = -1)}.
+  \end{itemize}
+  \vfill\kthehu{w2gjejGab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjQQ]{Zgjidhja: Parashiko (QQ për gamën)}
+<<w2s3-qq, fig.width=6, fig.height=2.2, out.width='0.52\\textwidth'>>=
+g <- exp(optim(c(0, -7), function(p)                 # gamma MLE, as in Hour 3
+  -sum(dgamma(b3, shape = exp(p[1]), rate = exp(p[2]), log = TRUE)))$par)
+ggplot(data.frame(t = qgamma(ppoints(length(b3)), g[1], g[2]), d = sort(b3)),
+       aes(t, d)) + geom_point(size = 0.5) + geom_abline(colour = "#D97706") + theme_minimal()
+@
+  \small Pikat e fundit janë \textbf{mbi} vijën: të dhënat kanë dëme më të mëdha nga sa pret gama.
+  Bishti i gamës është më i lehtë se ai i lognormales.
+  \vfill\kthehu{w2pyetjeQQ}
+\end{frame}
+
+\begin{frame}[fragile,label=w2zgjNdrysho3]{Zgjidhja: Ndrysho parametrin ($\sigma=0.5$)}
+<<w2s3-sig>>=
+set.seed(2026)
+sh <- function(n, s) { ly <- log(rlnorm(n, 7, s)); sqrt(mean((ly - mean(ly))^2)) }
+sd09 <- sd(replicate(500, sh(100, 0.9))); sd05 <- sd(replicate(500, sh(100, 0.5)))
+round(c(sd_sigma0.9 = sd09, sd_sigma0.5 = sd05, ratio0.9 = sd09 / 0.9, ratio0.5 = sd05 / 0.5), 4)
+@
+  \small \texttt{sd} bie, por raporti \texttt{sd}$/\sigma\approx1/\sqrt{2n}\approx0.07$ mbetet i njëjtë: gabimi \textbf{relativ} varet nga $n$, jo nga $\sigma$.
+  \vfill\kthehu{w2ndrysho3}
+\end{frame}

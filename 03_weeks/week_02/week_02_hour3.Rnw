@@ -1,0 +1,428 @@
+% ============================================================
+%  Java 2 · Ora 3 — Laborator R I: vlerësimi nga zero
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w2h3-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+@
+
+% ------------------------------------------------------------
+\subsection{Detyra}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyra e laboratorit}
+  \begin{Shembull}[(pyetja)]
+    3\,000 dëme (sintetike). E vërteta për 95\% të tyre: Lognormale($\mu=7$, $\sigma=0.9$).\\
+    A i gjejmë $\mu$ dhe $\sigma$ nga të dhënat, \textbf{pa e ditur} të vërtetën?
+  \end{Shembull}
+  \pause
+  Vetëm me R bazë (\Rkey{stats}) dhe ggplot2: \LO{K1}
+  \begin{enumerate}
+    \item<2-> metoda e momenteve;
+    \item<3-> MLE me formulë;
+    \item<4-> MLE numerike me \texttt{optim()};
+    \item<5-> grafikë diagnostikë: histogram, QQ, ECDF.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Plani: shtatë hapa}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      st/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                 minimum height=0.85cm,align=center,font=\small}]
+    \node[st] (a) at (0,0)     {1. Lexo};
+    \node[st] (b) at (3.3,0)   {2. Trupi / bishti};
+    \node[st] (c) at (6.6,0)   {3. MoM};
+    \node[st] (d) at (9.9,0)   {4. MLE formulë};
+    \node[st] (e) at (0,-1.5)  {5. \texttt{optim()}};
+    \node[st] (f) at (3.3,-1.5){6. Diagnoza};
+    \node[st,fill=accent!15,draw=accent] (g) at (6.6,-1.5) {7. Sa të dhëna?};
+    \draw[->,thick,uptmid] (a) -- (b); \draw[->,thick,uptmid] (b) -- (c);
+    \draw[->,thick,uptmid] (c) -- (d);
+    \draw[->,thick,uptmid] (d.south) -- ++(0,-0.35) -| (e.north);
+    \draw[->,thick,uptmid] (e) -- (f); \draw[->,thick,uptmid] (f) -- (g);
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \small Pas çdo vlerësimi: \textbf{vlerësimi vs e vërteta}.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 0: skripti}
+<<w2h3-header, eval=FALSE>>=
+# ------------------------------------------------
+# MKA - Week 2 - Lab 1: fitting claim severity from scratch
+# Data: 02_data/individual_claims_synthetic.csv (synthetic)
+# Truth (body): lognormal(mu = 7, sigma = 0.9)
+# ------------------------------------------------
+library(ggplot2)
+set.seed(2026)
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 1--2: të dhënat}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Hapi 1: lexo dhe përshkruaj}
+<<w2h3-read>>=
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+x  <- cl$amount_eur
+length(x)
+summary(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Histogrami në shkallë normale}
+<<w2h3-hist1, fig.width=6, fig.height=2.5, out.width='0.66\\textwidth'>>=
+ggplot(cl, aes(amount_eur)) +
+  geom_histogram(bins = 60, fill = "#2C5AA0", colour = "white") +
+  labs(x = "Claim amount (EUR)", y = "Count") + th
+@
+  \small Pothuajse çdo gjë në një shtyllë: disa dëme gjigante e ``shtypin'' grafikun.
+\end{frame}
+
+\begin{frame}[fragile]{Histogrami i $\log x$}
+<<w2h3-hist2, fig.width=6, fig.height=2.5, out.width='0.66\\textwidth'>>=
+ggplot(cl, aes(log(amount_eur))) +
+  geom_histogram(bins = 60, fill = "#2C5AA0", colour = "white") +
+  geom_vline(xintercept = log(20000), linetype = 2, colour = "#D97706") +
+  labs(x = "log(claim amount)", y = "Count") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në shkallë log: një ``këmbanë'' (normale) $\Rightarrow$ lognormale. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Djathtas vijës portokalli ($\log 20\,000\approx 9.9$): një grup i dytë.
+    \item<3-> Të dhënat janë një \termi{përzierje}{mixture}: trupi + bishti.
+    \item<4-> Strategjia: modelojmë \textbf{trupin} sot; bishtin në Javën 3.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2pyetjeShare]{Parashiko!}
+  \begin{Parashiko}
+    E vërteta: 5\% e dëmeve vijnë nga bishti (Pareto mbi 20\,000 €).
+    \begin{enumerate}
+      \item Sa dëme pret mbi 20\,000 € nga 3\,000?
+      \item Do të jetë saktësisht ky numër? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjShare}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2: ndaj trupin nga bishti}
+<<w2h3-split>>=
+u <- 20000                       # threshold between body and tail
+x_body <- x[x <= u]
+x_tail <- x[x >  u]
+c(n_body = length(x_body), n_tail = length(x_tail))
+mean(x > u)                      # share of claims in the tail
+@
+  \pause
+  \small Lognormalja e trupit kalon 20\,000 € vetëm me probabilitet $\approx\Sexpr{signif(plnorm(20000, 7, 0.9, lower.tail = FALSE), 2)}$: prerja është e papërfillshme për trupin.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 3--4: MoM dhe MLE}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Hapi 3: metoda e momenteve}
+<<w2h3-mom>>=
+m  <- mean(x_body); s2 <- var(x_body)
+sigma2_mom <- log(1 + s2 / m^2)
+mom <- c(mu = log(m) - sigma2_mom / 2, sigma = sqrt(sigma2_mom))
+round(mom, 4)
+@
+  \pause
+  \small Formulat e Orës 2, pa asnjë paketë.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 4: MLE me formulë}
+<<w2h3-mle>>=
+lb  <- log(x_body)
+mle <- c(mu = mean(lb), sigma = sqrt(mean((lb - mean(lb))^2)))   # divide by n
+round(mle, 4)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi vs e vërteta}
+<<w2h3-cmp>>=
+round(rbind(MoM = mom, MLE = mle, truth = c(7, 0.9)), 4)
+@
+  \pause
+  \begin{itemize}
+    \item Të dyja metodat janë afër të vërtetës.
+    \item Me 2\,848 vrojtime, gabimi është në shifrën e dytë pas presjes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> MLE e $\mu$ është afër 7. MoM e $\mu$ është afër gjithashtu, por varet nga $s^2$.
+    \item<2-> $s^2$ është e ndjeshme ndaj dëmeve të mëdha të trupit (deri në 20\,000 €).
+    \item<3-> MLE punon me $\log x$: më e qëndrueshme për shpërndarje të anuara.
+    \item<4-> Në praktikë aktuariale: MLE është zgjedhja standarde; MoM shërben si vlerë fillestare.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2ush3a]{Radha jote!}
+  \begin{Ushtrim}[(3 minuta)]
+    Llogarit MLE të lognormales mbi \textbf{të gjitha} 3\,000 dëmet (edhe bishtin).
+    \begin{enumerate}
+      \item Si ndryshojnë $\hat\mu$ dhe $\hat\sigma$?
+      \item Pse $\hat\sigma$ rritet?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjUsh3a}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 5: \texttt{optim()}}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse na duhet MLE numerike?}
+  \begin{itemize}
+    \item<1-> Lognormalja ka formulë të mbyllur. \textbf{Gama dhe Weibull nuk kanë.}
+    \item<2-> Zgjidhja: shkruajmë $-\ell(\theta)$ si funksion R dhe e minimizojmë numerikisht.
+    \item<3-> \texttt{optim()} \textbf{minimizon}. Prandaj i japim log-përgjasinë me shenjë minus.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Truk: optimizo $\log\sigma$ në vend të $\sigma$. Kështu $\sigma=e^{\theta_2}>0$ gjithmonë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Log-përgjasia negative si funksion R}
+<<w2h3-nll>>=
+# negative log-likelihood; par = c(mu, log(sigma))
+nll_lnorm <- function(par, x) {
+  -sum(dlnorm(x, meanlog = par[1], sdlog = exp(par[2]), log = TRUE))
+}
+nll_lnorm(c(7, log(0.9)), x_body)     # at the true parameters
+nll_lnorm(c(6, log(1.5)), x_body)     # at a worse guess: larger
+@
+  \pause
+  \small \texttt{log = TRUE}: R jep $\log f$ drejtpërdrejt, me saktësi numerike më të mirë.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{optim()} në punë}
+<<w2h3-optim>>=
+fit <- optim(par = c(6, 0), fn = nll_lnorm, x = x_body, hessian = TRUE)
+fit$par                                  # mu and log(sigma)
+c(mu = fit$par[1], sigma = exp(fit$par[2]))
+fit$convergence                          # 0 = converged
+@
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll: \texttt{optim()} vs formula}
+<<w2h3-check>>=
+round(rbind(optim   = c(fit$par[1], exp(fit$par[2])),
+            formula = mle), 5)
+all.equal(unname(c(fit$par[1], exp(fit$par[2]))), unname(mle), tolerance = 1e-3)
+@
+  \pause
+  \small Dy rrugë krejt të ndryshme, i njëjti rezultat (deri në tolerancën e algoritmit). \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=w2gjejGab3]{Gjej gabimin}
+  \begin{Gabim}[(nga një student)]
+    \ttfamily\small
+    ll <- function(par, x)\\
+    \quad sum(dlnorm(x, par[1], exp(par[2]), log = TRUE))\\
+    optim(c(6, 0), ll, x = x\_body)\$par\\[2pt]
+    \#\# [1] -436.3264 -345.1665
+  \end{Gabim}
+  \normalfont Pse rezultati është absurd? Si rregullohet?
+  \vspace{4pt}
+
+  \shkoTe{w2zgjGab3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[fragile]{E njëjta rrugë për gamën}
+<<w2h3-gamma>>=
+nll_gamma <- function(par, x)                  # par = log(shape), log(rate)
+  -sum(dgamma(x, shape = exp(par[1]), rate = exp(par[2]), log = TRUE))
+fit_g <- optim(c(0, -7), nll_gamma, x = x_body)
+c(shape = exp(fit_g$par[1]), rate = exp(fit_g$par[2]))
+c(loglik_lognormal = -fit$value, loglik_gamma = -fit_g$value)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> E njëjta strukturë kodi punon për \textbf{çdo} shpërndarje: ndrysho vetëm \texttt{d...()}.
+    \item<2-> Log-përgjasia e lognormales është më e lartë $\Rightarrow$ të dhënat ``preferojnë'' lognormalen.
+    \item<3-> Të dyja kanë 2 parametra, ndaj krahasimi është i drejtë.
+    \item<4-> Me numër të ndryshëm parametrash: AIC $=2k-2\ell$ (Ora 5).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Gabimet standarde nga Hessiani\Zgj}
+<<w2h3-se>>=
+se <- sqrt(diag(solve(fit$hessian)))      # inverse observed information
+round(c(se_mu = se[1], se_logsigma = se[2]), 4)
+round(fit$par[1] + c(-1, 1) * 1.96 * se[1], 3)   # 95% CI for mu
+@
+  \pause
+  \small Intervali 95\% për $\mu$ përmban vlerën e vërtetë 7. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 6: diagnoza}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Histogrami i $\log x$ me dendësinë e vlerësuar}
+<<w2h3-fitplot, fig.width=6, fig.height=2.3, out.width='0.6\\textwidth'>>=
+ggplot(data.frame(lb), aes(lb)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 50,
+                 fill = "grey80", colour = "white") +
+  stat_function(fun = dnorm, args = list(mean = mle[1], sd = mle[2]),
+                colour = "#D97706", linewidth = 1) +
+  labs(x = "log(claim), body", y = "Density") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Grafiku QQ, i ndërtuar vetë}
+<<w2h3-qq, fig.width=6, fig.height=2.4, out.width='0.6\\textwidth'>>=
+n  <- length(lb)
+qq <- data.frame(theory = qnorm(ppoints(n), mle[1], mle[2]),   # model quantiles
+                 data   = sort(lb))                           # data quantiles
+ggplot(qq, aes(theory, data)) + geom_point(size = 0.6, colour = "#2C5AA0") +
+  geom_abline(colour = "#D97706") + labs(x = "Model quantile", y = "Data quantile") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Pikat mbi vijën $y=x$ $\Rightarrow$ modeli përputhet me të dhënat.
+    \item<2-> \texttt{ppoints(n)} jep $(i-0.5)/n$: probabilitetet ``teorike'' të çdo vrojtimi të renditur.
+    \item<3-> Shmangiet në skaje: normale me kaq shumë pika; shqetësim vetëm kur janë sistematike.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Grafiku QQ është testi vizual më i fortë për bishtin: shiko gjithmonë pikat e fundit.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{ECDF vs CDF e modelit}
+<<w2h3-ecdf, fig.width=6, fig.height=2.3, out.width='0.6\\textwidth'>>=
+Fn <- ecdf(lb)                               # empirical CDF
+D  <- max(abs(Fn(sort(lb)) - pnorm(sort(lb), mle[1], mle[2])))
+ggplot(data.frame(lb), aes(lb)) + stat_ecdf(colour = "#2C5AA0") +
+  stat_function(fun = pnorm, args = list(mean = mle[1], sd = mle[2]),
+                colour = "#D97706", linetype = 2) + labs(x = "log(claim)", y = "F") + th
+@
+  \small Distanca maksimale midis dy kurbave: $D\approx\Sexpr{round(D, 4)}$ (statistika Kolmogorov--Smirnov, Ora 5).
+\end{frame}
+
+\begin{frame}[label=w2pyetjeQQ]{Parashiko!}
+  \begin{Parashiko}
+    Ndërtojmë grafikun QQ për modelin \textbf{gama} (në shkallën origjinale, jo log).
+    \begin{enumerate}
+      \item Pikat e fundit (dëmet më të mëdha të trupit) do të jenë mbi apo nën vijën?
+      \item Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w2zgjQQ}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 7: sa të dhëna duhen?}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Simulim: saktësia e $\hat\sigma$ sipas $n$}
+<<w2h3-simcode>>=
+set.seed(2026)
+sigma_hat <- function(n) {                  # one MLE of sigma from n claims
+  ly <- log(rlnorm(n, 7, 0.9)); sqrt(mean((ly - mean(ly))^2))
+}
+ns  <- c(20, 100, 500, 3000)
+sim <- do.call(rbind, lapply(ns, function(n)
+  data.frame(n = n, est = replicate(500, sigma_hat(n)))))
+round(tapply(sim$est, sim$n, sd), 4)       # spread of the estimates
+@
+\end{frame}
+
+\begin{frame}[fragile]{Figura: vlerësimet e $\sigma$ sipas $n$}
+<<w2h3-simplot, echo=FALSE, fig.width=6, fig.height=2.5, out.width='0.66\\textwidth'>>=
+ggplot(sim, aes(factor(n), est)) +
+  geom_boxplot(fill = "#E8EEF7", colour = "#2C5AA0", outlier.size = 0.5) +
+  geom_hline(yintercept = 0.9, colour = "#D97706", linetype = 2) +
+  labs(x = "Sample size n", y = "MLE of sigma (500 simulations)") + th
+@
+  \small Vija portokalli: $\sigma=0.9$ e vërtetë.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me $n=20$, $\hat\sigma$ mund të jetë 0.6 ose 1.2: shumë i pasigurt.
+    \item<2-> Shpërndarja e vlerësimeve ngushtohet si $1/\sqrt n$.
+    \item<3-> Me $n=20$ vlerësimet janë pak \textbf{poshtë} 0.9: MLE e $\sigma$ me $n$ është e zhvendosur në mostra të vogla.
+    \item<4-> Pasojë praktike: një degë e re me pak dëme ka nevojë për kredibilitet (Java 4).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w2ndrysho3]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(në kompjuter)]
+    \begin{enumerate}
+      \item Ndrysho $\sigma$ të vërtetë nga 0.9 në 0.5 te \texttt{sigma\_hat()}.
+      \item Si ndryshon \texttt{sd} e vlerësimeve për $n=100$?
+      \item Krahaso raportin \texttt{sd}$/\sigma$ për të dy rastet.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w2zgjNdrysho3}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{I gjithë laboratori në 10 rreshta}
+<<w2h3-all, eval=FALSE>>=
+x    <- read.csv("../../02_data/individual_claims_synthetic.csv")$amount_eur
+x_body <- x[x <= 20000]; lb <- log(x_body)
+mle  <- c(mu = mean(lb), sigma = sqrt(mean((lb - mean(lb))^2)))
+nll  <- function(p, x) -sum(dlnorm(x, p[1], exp(p[2]), log = TRUE))
+fit  <- optim(c(6, 0), nll, x = x_body, hessian = TRUE)
+c(fit$par[1], exp(fit$par[2]))                  # same as mle
+qq <- data.frame(t = qnorm(ppoints(length(lb)), mle[1], mle[2]), d = sort(lb))
+ggplot(qq, aes(t, d)) + geom_point() + geom_abline()
+@
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse optimizojmë $\log\sigma$ dhe jo $\sigma$?
+    \item Çfarë duhet të kthejë funksioni që i japim \texttt{optim()}: $\ell$ apo $-\ell$?
+    \item Çfarë tregon një grafik QQ me pika në vijë të drejtë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) që $\sigma>0$ pa kufizime; (2) $-\ell$, sepse \texttt{optim} minimizon; (3) që modeli përputhet me të dhënat.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item Trupi (lognormale) dhe bishti ndahen te 20\,000 €.
+    \item MoM dhe MLE: të dyja afër $\mu=7$, $\sigma=0.9$; MLE më e qëndrueshme.
+    \item \texttt{optim()} + $-\ell$: e njëjta metodë për çdo shpërndarje (gama, Weibull, \dots).
+    \item Diagnoza: histogram + dendësi, QQ, ECDF.
+    \item Saktësia rritet si $\sqrt n$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria II: vlera në kohë e parasë, anuitetet e sigurta, kreditë, NPV dhe IRR.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur): vlerësimi i shpërndarjeve të ashpërsisë.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R},
+          Kotti, 2021 (përgjasia maksimale).
+    \item Dokumentacioni i R: \texttt{?optim}, \texttt{?ecdf}, \texttt{?ppoints}.
+    \item README i të dhënave: \texttt{individual\_claims\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
