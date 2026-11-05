@@ -25,7 +25,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 | 02 | Analiza e të dhënave, `stats`, `tvm` | ✅ gati (277 slide) |
 | 03 | Libraritë për jo-jetën (`actuar`) | ✅ gati (314 slide) |
 | 04 | Rezervat (`ChainLadder`), kredibiliteti | ✅ gati (248 slide) |
-| 05 | `lifecontingencies`, tabelat e vdekshmërisë | 🔄 Ora 1–2 |
+| 05 | `lifecontingencies`, tabelat e vdekshmërisë | 🔄 Ora 1–3 |
 | 06 | Tabela aktuariale, funksione të përziera, SOA | ⏳ |
 | 07 | Sigurime rritëse/zbritëse, anuitete | ⏳ |
 | 08 | R në financë, put–call parity | ⏳ |

@@ -1,0 +1,372 @@
+% ============================================================
+%  Java 5 · Ora 3 — Laborator R I: tabela nga zero dhe Makeham
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w5h3-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> Tabela e plotë nga zero: $l_x$, $d_x$, $p_x$, $e_x$, $\mathring e_x$, $L_x$, $T_x$.
+    \item<2-> \textbf{Vlerësimi kundrejt së vërtetës}: $\mathring e_0$ kundrejt README.
+    \item<3-> Gompertz me \texttt{lm()} dhe Makeham me \texttt{nls()}.
+    \item<4-> Vdekje të simuluara: sa mirë i rigjejmë $A$, $B$, $c$?
+    \item<5-> Makeham mbi tabelën reale të Shqipërisë 1960.
+  \end{enumerate}
+  \onslide<6->{\small Vetëm \textbf{base R} dhe \Rkey{ggplot2}. \Rkey{lifecontingencies} vjen në Orën 5.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabela e plotë nga zero}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{A përputhen $q_x$ dhe $l_x$?}
+<<w5h3-check>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+x  <- mt$age; qx <- mt$qx_male; lx <- mt$lx_male
+lx_rebuilt <- 100000 * cumprod(c(1, 1 - qx[-length(qx)]))
+c(max_abs_diff = max(abs(lx - lx_rebuilt)), omega = max(x) + 1)
+@
+  \begin{itemize}
+    \item<2-> $l_{x+1}=l_x\,(1-q_x)$: \texttt{cumprod()} e ndërton gjithë kolonën me një rresht.
+    \item<3-> Diferenca është vetëm rrumbullakimi i CSV-së (një decimal).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Moshat dhe indekset}
+<<w5h3-idx>>=
+L  <- function(age) lx[age + 1]            # l_x for age x
+tp <- function(age, t) L(age + t) / L(age) # t p_x
+c(l40 = L(40), wrong_l40 = lx[40], p10_60 = tp(60, 10), p20_40 = tp(40, 20))
+@
+  \begin{itemize}
+    \item<2-> Në R, \texttt{lx[1]} është $l_0$: mosha $x$ është në pozicionin $x+1$.
+    \item<3-> Një funksion i vogël \texttt{L()} shmang gabimin e indeksit përgjithmonë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Jetëgjatësia e pritur, e vektorizuar}
+<<w5h3-ex>>=
+ex  <- (rev(cumsum(rev(lx))) - lx) / lx    # curtate: sum_{k>=1} l_{x+k} / l_x
+eox <- ex + 0.5                            # complete, deaths mid-year
+round(rbind(curtate = ex[c(0, 40, 65, 80) + 1],
+            complete = eox[c(0, 40, 65, 80) + 1]), 2)
+@
+  \small \texttt{rev(cumsum(rev(lx)))} jep $\sum_{k\ge0}l_{x+k}$ për çdo $x$ njëherësh; zbresim $l_x$ për $k\ge1$.
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi kundrejt së vërtetës: $\mathring e_0$}
+<<w5h3-e0>>=
+lxF  <- mt$lx_female
+exF  <- (rev(cumsum(rev(lxF))) - lxF) / lxF
+rbind(table = c(M = eox[1], F = exF[1] + 0.5), readme = c(76.3, 81.2))
+@
+  \begin{itemize}
+    \item<2-> Përputhen deri në decimalin e parë. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> Kujdes: pa $+0.5$ do të dilnin 75.8 dhe 80.7 (Gabim i zakonshëm i Orës 2).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{I njëjti rezultat me rekursion}
+<<w5h3-rec>>=
+px <- 1 - qx
+e_rec <- numeric(length(lx))               # e_omega = 0
+for (k in (length(lx) - 1):1) e_rec[k] <- px[k] * (1 + e_rec[k + 1])
+c(max_diff = max(abs(e_rec - ex)))
+@
+  \small $e_x=p_x(1+e_{x+1})$, nga mosha 109 drejt 0. Diferenca: vetëm rrumbullakimi i $l_x$ në CSV.
+\end{frame}
+
+\begin{frame}[fragile]{Tabela e plotë}
+<<w5h3-table>>=
+dx  <- lx - c(lx[-1], 0)
+Lx  <- (lx + c(lx[-1], 0)) / 2             # trapezoidal
+Tx  <- rev(cumsum(rev(Lx)))
+lt  <- data.frame(x, lx = round(lx), dx = round(dx), qx = round(qx, 5),
+                  Lx = round(Lx), Tx = round(Tx), ex = round(Tx / lx, 2))
+lt[c(1, 2, 41, 66, 101, 111), ]
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> E njëjta strukturë si kolonat e Human Life-Table Database: $l_x$, $d_x$, $q_x$, $L_x$, $T_x$, $e_x$.
+    \item<2-> Kolona \texttt{ex} këtu është $\mathring e_x=T_x/l_x$ (e plotë).
+    \item<3-> $T_0=\Sexpr{fmt(Tx[1])}$: vitet totale që jeton kohorta prej 100\,000.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Me \texttt{write.csv(lt, ...)} tabela del gati për raport ose për Excel.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{$\mathring e_x$ sipas moshës}
+<<w5h3-explot, echo=FALSE, fig.height=3.1>>=
+de <- rbind(data.frame(x = x, e = eox, sex = "Meshkuj"),
+            data.frame(x = x, e = exF + 0.5, sex = "Femra"))
+ggplot(de, aes(x, e, colour = sex)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#C0392B", "#2C5AA0")) +
+  labs(x = "mosha x", y = "jetegjatesia e mbetur (vite)", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\mathring e_x$ bie pothuajse linearisht deri rreth 60 vjeç, pastaj ngadalësohet.
+    \item<2-> Diferenca M--F: $\approx\Sexpr{fmt(exF[1] - ex[1], 1)}$ vite në lindje, $\approx\Sexpr{fmt(exF[66] - ex[66], 1)}$ vite në 65 vjeç.
+    \item<3-> $x+\mathring e_x$ (mosha e pritur e vdekjes) \textbf{rritet} me moshën: kush mbijeton, pret të jetojë më gjatë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w5ush3a]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Me funksionet \texttt{L()} dhe \texttt{tp()}:
+    \begin{enumerate}
+      \item llogarit ${}_{20}q_{45}$ për meshkuj dhe femra;
+      \item llogarit $\mathring e_{65}$ për të dy gjinitë; sa herë më i madh është kosti i një pensioni të femrës, nëse kosti $\propto\mathring e_{65}$?
+      \item në cilën moshë $\mathring e_x$ e meshkujve bie nën 10 vite?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjUsh3a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përshtatja e ligjeve}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Gompertz me \texttt{lm()}}
+  Nga $\mu_{x+1/2}\approx-\log(1-q_x)$ dhe $\log\mu_x=\log B+x\log c$:
+<<w5h3-gomp>>=
+ages <- 40:100
+mu   <- -log(1 - qx[ages + 1])
+g    <- lm(log(mu) ~ ages)
+c(B = exp(coef(g)[[1]]), c = exp(coef(g)[[2]]))
+@
+  \small E vërteta: $B=0.000022$, $c=1.105$ (plus $A=0.0005$, që Gompertz e injoron).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\hat c$ është afër 1.105: pjerrësia e vijës është kapur mirë.
+    \item<2-> $\hat B$ ndryshon nga e vërteta: Gompertz duhet ta ``fshehë'' $A$ brenda $Bc^x$.
+    \item<3-> Gjithashtu, $-\log(1-q_x)$ është $\mu$ në mes të vitit, jo në $x$: kjo zhvendos $B$ me faktorin $c^{1/2}$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pse?}
+    Një model i thjeshtë mbi të dhëna nga një model më i pasur jep parametra ``të shtrembëruar''. Na duhet modeli i plotë: Makeham me \texttt{nls()}.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Makeham me \texttt{nls()}}
+<<w5h3-nls>>=
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+q30  <- qx[30:100 + 1]; a30 <- 30:100
+fit0 <- nls(q30 ~ gm_q(a30, A, B, c),
+            start = list(A = 0.001, B = 0.0001, c = 1.1))
+signif(coef(fit0), 6)
+@
+  \begin{itemize}
+    \item<2-> Rikthehen saktësisht $A=0.0005$, $B=0.000022$, $c=1.105$.
+    \item<3-> Pa befasi: tabela sintetike \textbf{është} Makeham. Me të dhëna reale ka gjithmonë zhurmë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w5gab3]{Gjej gabimin}
+<<w5h3-bug>>=
+try(nls(q30 ~ gm_q(a30, A, B, c),
+        start = list(A = 0.001, B = 0.001, c = 2)))
+@
+  \begin{enumerate}
+    \item Pse dështon \texttt{nls()}?
+    \item Si zgjedhim vlera fillestare të arsyeshme për $B$ dhe $c$?
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjGab3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vdekje të simuluara}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga tabela te të dhënat}
+  \begin{itemize}
+    \item<1-> Në praktikë nuk kemi $q_x$, por \textbf{vdekje} $D_x$ dhe \textbf{ekspozim} $E_x$ (persona-vite).
+    \item<2-> Vlerësimi i thjeshtë: $\hat q_x=D_x/E_x$.
+    \item<3-> Simulojmë: $E_x=5\,000$ për çdo moshë 30--100, $D_x\sim\text{Bin}(E_x,q_x)$ me $q_x$ e vërtetë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pyetja}
+    Me \Sexpr{fmt(5000 * 71)} persona-vite, sa mirë i rigjejmë $A$, $B$, $c$?
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi}
+<<w5h3-sim>>=
+set.seed(2026)
+Ex <- rep(5000, length(a30))
+Dx <- rbinom(length(a30), size = Ex, prob = q30)
+qh <- Dx / Ex
+head(data.frame(age = a30, Ex, Dx, q_hat = qh, q_true = round(q30, 5)), 4)
+c(total_deaths = sum(Dx))
+@
+\end{frame}
+
+\begin{frame}[fragile]{$\hat q_x$ kundrejt së vërtetës}
+<<w5h3-simplot, echo=FALSE, fig.height=3.1>>=
+ggplot(data.frame(age = a30, qh = qh, q = q30)) +
+  geom_point(aes(age, qh, colour = "vrojtuar D/E"), size = 1.5) +
+  geom_line(aes(age, q, colour = "e verteta"), linewidth = 1) +
+  scale_y_log10() + scale_colour_manual(values = c("#C0392B", "#2C5AA0")) +
+  labs(x = "mosha", y = "q(x), shkalla log", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+  \small Në moshat e reja ka pak vdekje (5--10): $\hat q_x$ luhatet shumë. Në moshat e larta ka qindra.
+\end{frame}
+
+\begin{frame}[fragile]{Makeham mbi të dhënat me zhurmë}
+<<w5h3-fitsim>>=
+w   <- Ex / (qh * (1 - qh))                 # inverse binomial variance
+fit <- nls(qh ~ gm_q(a30, A, B, c), weights = w,
+           start = list(A = 0.001, B = 0.0001, c = 1.1),
+           algorithm = "port", lower = c(0, 1e-8, 1))
+est <- summary(fit)$coefficients[, 1:2]
+signif(est, 4)
+@
+  \small \texttt{algorithm = "port"} me \texttt{lower}: $A\ge0$, sepse një forcë vdekshmërie negative nuk ka kuptim.
+\end{frame}
+
+\begin{frame}{Vlerësimi kundrejt së vërtetës}
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+    Parametri & Vlerësimi & SE & E vërteta & (vl. $-$ e v.)/SE \\
+    \midrule
+    $A$ & \Sexpr{signif(est[1, 1], 3)} & \Sexpr{signif(est[1, 2], 3)} & 0.0005 & \Sexpr{fmt((est[1, 1] - 5e-4) / est[1, 2], 2)} \\
+    $B$ & \Sexpr{signif(est[2, 1], 3)} & \Sexpr{signif(est[2, 2], 3)} & 0.000022 & \Sexpr{fmt((est[2, 1] - 2.2e-5) / est[2, 2], 2)} \\
+    $c$ & \Sexpr{signif(est[3, 1], 5)} & \Sexpr{signif(est[3, 2], 3)} & 1.105 & \Sexpr{fmt((est[3, 1] - 1.105) / est[3, 2], 2)} \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> $B$ dhe $c$: vlerësime të sakta, brenda 1 SE nga e vërteta.
+    \item<3-> $A$: vlerësimi ndalet në kufirin 0, dhe e vërteta është \Sexpr{fmt(abs((est[1, 1] - 5e-4) / est[1, 2]), 1)} SE larg. Në kufi, SE e \texttt{nls()} nuk është e besueshme: me këto të dhëna $A$ \textbf{nuk identifikohet mirë}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: parametri $A$}
+  \begin{Gabim}
+    ``\texttt{nls()} dha $\hat A=\Sexpr{signif(est[1, 1], 2)}$, pra aksidentet nuk kanë rëndësi.''
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item $A$ ndikon vetëm kur $Bc^x$ është i vogël: moshat e reja, ku ka pak vdekje.
+    \item Me 5\,000 persona për moshë, në 30 vjeç presim vetëm $\approx\Sexpr{fmt(5000 * q30[1], 1)}$ vdekje.
+    \item<3-> $\hat A=0$ do të thotë ``nuk mund ta dallojmë nga 0'', jo ``është 0''.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w5ndr3]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(5 minuta)]
+    Përsërit simulimin me $E_x=50\,000$ (10 herë më shumë ekspozim).
+    \begin{enumerate}
+      \item Si ndryshojnë SE-të e $\hat B$ dhe $\hat c$? Me sa faktor pret?
+      \item A identifikohet tani $A$?
+      \item Po me $E_x=50\,000$ vetëm për moshat 30--50?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjNdr3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shqipëria 1960}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Makeham mbi tabelën reale}
+<<w5h3-hld>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+h60 <- subset(hld, Year1 == 1960 & TypeLT == 1 & Sex == 1 & Age >= 30 & Age <= 90)
+fit60 <- nls(q.x. ~ gm_q(Age, A, B, c), data = h60,
+             start = list(A = 0.001, B = 0.0001, c = 1.1))
+rbind(Albania_1960 = coef(fit60), synthetic = c(0.0005, 0.000022, 1.105))
+@
+  \small \textbf{Reale}: Human Life-Table Database, Shqipëria 1960, meshkuj, tabelë e plotë, moshat 30--90.
+\end{frame}
+
+\begin{frame}[fragile]{Përshtatja mbi të dhënat reale}
+<<w5h3-hldplot, echo=FALSE, fig.height=3.1>>=
+ggplot(h60, aes(Age, q.x.)) +
+  geom_point(aes(colour = "HLD 1960"), size = 1.5) +
+  geom_line(aes(y = fitted(fit60), colour = "Makeham i pershtatur"), linewidth = 1) +
+  scale_y_log10() + scale_colour_manual(values = c("#2C5AA0", "#C0392B")) +
+  labs(x = "mosha", y = "q(x), shkalla log", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Makeham përshkruan mirë vdekshmërinë e Shqipërisë 1960 në moshat 30--90.
+    \item<2-> $\hat A_{1960}\approx\Sexpr{signif(coef(fit60)[1], 2)}$: rreth \Sexpr{fmt(coef(fit60)[1] / 0.0005, 1)} herë më i madh se në tabelën sintetike. Rreziqet ``jo nga plakja'' ishin shumë më të larta.
+    \item<3-> $\hat c_{1960}\approx\Sexpr{fmt(coef(fit60)[3], 3)}$: ritmi i plakjes ndryshon pak.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Interpretimi}
+    Përmirësimi i jetëgjatësisë në shekullin XX vjen kryesisht nga ulja e $A$ dhe e vdekshmërisë foshnjore, jo nga ndryshimi i $c$.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w5par3]{Parashiko}
+  \begin{Parashiko}
+    Me parametrat e Shqipërisë 1960 dhe me $A=0$ (pa rreziqet ``jo nga plakja''):
+    \begin{enumerate}
+      \item $\mathring e_{30}$ do të rritet apo do të bjerë? Sa, përafërsisht?
+      \item Po $\mathring e_{80}$?
+      \item Pse efekti është shumë më i madh në njërën moshë?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w5zgjPar3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si ndërtohet $l_x$ nga $q_x$ me një rresht R?
+    \item Si llogaritet $e_x$ për të gjitha moshat pa cikël?
+    \item Pse $\hat A$ ka SE të madh kur të dhënat fillojnë në 30 vjeç?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) \texttt{100000 * cumprod(c(1, 1 - qx[-n]))}; (2) \texttt{(rev(cumsum(rev(lx))) - lx) / lx};
+  (3) $A$ ndikon vetëm në moshat ku $Bc^x$ është i vogël, ku ka pak vdekje.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item Tabela e plotë në pak rreshta: \texttt{cumprod()}, \texttt{rev(cumsum(rev()))}, \texttt{L(age)}.
+    \item $\mathring e_0$: \Sexpr{fmt(eox[1], 1)} (M), \Sexpr{fmt(exF[1] + 0.5, 1)} (F): si README. \textcolor{okgreen}{$\checkmark$}
+    \item Gompertz me \texttt{lm()} shtrembëron $B$; Makeham me \texttt{nls()} rikthen parametrat.
+    \item Me zhurmë binomiale: $B$, $c$ të sakta; $A$ jo i identifikueshëm.
+    \item Shqipëria 1960: $A$ shumë më i lartë, $c$ i ngjashëm.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria: dota e pastër, sigurimet $A_x$, anuitetet $\ddot a_x$ dhe prima neto.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për tabelat e jetës).
+    \item Human Life-Table Database (lifetable.de): Shqipëria 1960.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

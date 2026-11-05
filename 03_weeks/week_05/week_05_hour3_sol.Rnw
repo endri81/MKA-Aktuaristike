@@ -1,0 +1,67 @@
+% ============================================================
+%  Java 5 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w5s3-setup, include=FALSE>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+@
+
+\begin{frame}[fragile,label=w5zgjUsh3a]{Zgjidhja: Radha jote!}
+<<w5s3-ush>>=
+eo <- function(l) (rev(cumsum(rev(l))) - l) / l + 0.5     # complete e_x
+lM <- mt$lx_male; lF <- mt$lx_female
+q20_45 <- function(l) 1 - l[65 + 1] / l[45 + 1]
+eM <- eo(lM); eF <- eo(lF)
+c(q20_45_M = q20_45(lM), q20_45_F = q20_45(lF),
+  e65_M = eM[66], e65_F = eF[66], ratio_F_M = eF[66] / eM[66],
+  first_age_M_below_10 = which(eM < 10)[1] - 1)
+@
+  \small Një pension i femrës kushton rreth \Sexpr{fmt(100 * (eo(mt$lx_female)[66] / eo(mt$lx_male)[66] - 1))}\% më shumë (pa skontim).
+  \vfill\kthehu{w5ush3a}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjGab3]{Zgjidhja: Gjej gabimin (\texttt{nls})}
+  \begin{enumerate}
+    \item Me $c=2$, $c^x$ për $x=100$ është $\approx10^{30}$: $q_x=1$ për pothuajse të gjitha moshat,
+          dhe gradienti nuk ndryshon me parametrat (``singular gradient'').
+    \item Vlerat fillestare nga Gompertz me \texttt{lm()}: $B\approx e^{\text{intercept}}$, $c\approx e^{\text{slope}}$, $A$ i vogël.
+  \end{enumerate}
+<<w5s3-gab>>=
+a <- 40:100; g <- lm(log(-log(1 - mt$qx_male[a + 1])) ~ a)
+start <- list(A = 1e-4, B = exp(coef(g)[[1]]), c = exp(coef(g)[[2]]))
+signif(unlist(start), 4)
+@
+  \vfill\kthehu{w5gab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjNdr3]{Zgjidhja: Ndrysho parametrin ($E_x$)}
+<<w5s3-ndr>>=
+fit_E <- function(E, ages = 30:100, seed = 2026) {
+  set.seed(seed); q <- mt$qx_male[ages + 1]
+  qh <- rbinom(length(ages), E, q) / E
+  f <- nls(qh ~ gm_q(ages, A, B, c), weights = E / (qh * (1 - qh)),
+           start = list(A = 0.001, B = 0.0001, c = 1.1),
+           algorithm = "port", lower = c(0, 1e-8, 1))
+  summary(f)$coefficients[, 2]                      # standard errors
+}
+signif(rbind(E5000 = fit_E(5000), E50000 = fit_E(50000)), 3)
+@
+  \small SE bien rreth $\sqrt{10}\approx3.2$ herë. $A$ identifikohet më mirë, por mbetet parametri më i vështirë: informacioni për të vjen nga moshat e reja.
+  \vfill\kthehu{w5ndr3}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjPar3]{Zgjidhja: Parashiko ($A=0$)}
+<<w5s3-par>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+h60 <- subset(hld, Year1 == 1960 & TypeLT == 1 & Sex == 1 & Age >= 30 & Age <= 90)
+cf <- coef(nls(q.x. ~ gm_q(Age, A, B, c), data = h60,
+               start = list(A = 0.001, B = 0.0001, c = 1.1)))
+e_mk <- function(x, A, B, c) integrate(function(t)
+  exp(-A * t - B * c^x * (c^t - 1) / log(c)), 0, 120)$value
+rbind(with_A = c(e30 = e_mk(30, cf[1], cf[2], cf[3]), e80 = e_mk(80, cf[1], cf[2], cf[3])),
+      A_zero = c(e30 = e_mk(30, 0, cf[2], cf[3]),     e80 = e_mk(80, 0, cf[2], cf[3])))
+@
+  \small $\mathring e_{30}$ rritet shumë më tepër: $A$ vepron gjatë gjithë jetës së mbetur, kurse në 80 vjeç dominon $Bc^x$.
+  \vfill\kthehu{w5par3}
+\end{frame}
