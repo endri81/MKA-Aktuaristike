@@ -1,0 +1,290 @@
+% ============================================================
+%  Java 6 · Ora 3 — Laborator R I: tabela aktuariale nga zero
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w6h3-setup, include=FALSE>>=
+suppressMessages(library(lifecontingencies))
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+data(soa08Act)
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> Funksioni \texttt{commute()}: $D$, $N$, $S$, $C$, $M$, $R$ nga $l_x$ dhe $i$.
+    \item<2-> \textbf{Vlerësimi kundrejt së vërtetës}: kolonat tona kundrejt \texttt{soa08Act}.
+    \item<3-> Funksionet aktuariale nga komutimet, kundrejt \texttt{axn()}, \texttt{Axn()}, \texttt{IAxn()}.
+    \item<4-> Tabela aktuariale e printueshme për tabelën sintetike.
+    \item<5-> Tri tabela në krahasim: SOA, sintetike, Shqipëria 2011.
+  \end{enumerate}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kolonat nga zero}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksioni \texttt{commute()}}
+<<w6h3-fun>>=
+commute <- function(x, lx, i) {
+  v  <- 1 / (1 + i)
+  dx <- lx - c(lx[-1], 0)                  # everyone dies by the last age
+  D  <- v^x * lx;       N <- rev(cumsum(rev(D))); S <- rev(cumsum(rev(N)))
+  C  <- v^(x + 1) * dx; M <- rev(cumsum(rev(C))); R <- rev(cumsum(rev(M)))
+  data.frame(x, lx, dx, Dx = D, Nx = N, Sx = S, Cx = C, Mx = M, Rx = R)
+}
+@
+  \begin{itemize}
+    \item<2-> \texttt{rev(cumsum(rev(.)))}: shuma ``nga $x$ deri në fund'' për të gjitha moshat njëherësh (Java 5, Ora 3).
+    \item<3-> Gjashtë kolona në gjashtë rreshta kodi.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Mbi tabelën e SOA}
+<<w6h3-soa>>=
+ct  <- commute(soa08Act@x, soa08Act@lx, soa08Act@interest)
+pkg <- as(soa08Act, "data.frame")
+signif(ct[ct$x %in% c(0, 65), c("x", "Dx", "Nx", "Cx", "Mx", "Rx")], 6)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi kundrejt së vërtetës}
+<<w6h3-cmp>>=
+cols <- c("Dx", "Nx", "Cx", "Mx", "Rx")
+sapply(cols, function(k) max(abs(ct[[k]] - pkg[[k]]) / pmax(pkg[[k]], 1e-300)))
+@
+  \begin{itemize}
+    \item<2-> Diferenca \textbf{relative} maksimale: në nivelin e gabimit të rrumbullakimit të kompjuterit ($10^{-15}$).
+    \item<3-> Kolonat tona janë identike me ato të paketës, për të 141 moshat. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \Rkey{lifecontingencies} përdor saktësisht përkufizimet e Orës 2.
+    \item<2-> Krahasimi është \textbf{relativ}: në moshën 140, $D_x\approx10^{-93}$; diferenca absolute nuk do të tregonte asgjë.
+    \item<3-> Kolona $S_x$ nuk është në paketë; e kemi vetëm ne.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kur një kod nga zero dhe një paketë japin të njëjtat numra, dy gabime të ndryshme që anulojnë njëra-tjetrën janë shumë të pamundura.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile,label=w6gab3]{Gjej gabimin}
+<<w6h3-bug>>=
+commute_bad <- function(x, lx, i) {
+  v <- 1 / (1 + i); dx <- lx - c(lx[-1], 0)
+  C <- v^x * dx; M <- rev(cumsum(rev(C)))
+  D <- v^x * lx
+  M / D
+}
+A_bad <- commute_bad(soa08Act@x, soa08Act@lx, 0.06)
+c(A65_bad = A_bad[66], A65_true = Axn(soa08Act, 65), ratio = A_bad[66] / Axn(soa08Act, 65))
+@
+  Cili është gabimi? Pse raporti është saktësisht një numër i njohur?
+  \vfill\shkoTe{w6zgjGab3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Funksionet nga komutimet}
+<<w6h3-funs>>=
+r <- function(age) ct[ct$x == age, ]
+r65 <- r(65); r85 <- r(85)
+rbind(commutation = c(a65 = r65$Nx / r65$Dx, A65 = r65$Mx / r65$Dx, P65 = r65$Mx / r65$Nx,
+                      IA65 = r65$Rx / r65$Dx, A1_65_20 = (r65$Mx - r85$Mx) / r65$Dx),
+      package     = c(axn(soa08Act, 65), Axn(soa08Act, 65),
+                      Axn(soa08Act, 65) / axn(soa08Act, 65),
+                      IAxn(soa08Act, 65), Axn(soa08Act, 65, 20)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Pesë funksione, dy rrugë, të njëjtat numra. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> $(IA)_{65}=\Sexpr{fmt(r65$Rx / r65$Dx, 3)}$ me \texttt{IAxn()}: sigurimet rritëse i trajtojmë plotësisht në Javën 7.
+    \item<3-> $P_{65}=M_{65}/N_{65}$: emëruesi $D_{65}$ thjeshtohet, si në Orën 2.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabela e printueshme}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tabela aktuariale e tabelës sintetike}
+<<w6h3-table>>=
+cs <- commute(mt$age, mt$lx_male, 0.05)
+cs$qx <- cs$dx / cs$lx; cs$ax <- cs$Nx / cs$Dx; cs$Ax <- cs$Mx / cs$Dx
+tab <- cs[cs$x %in% seq(20, 90, 10), c("x", "lx", "qx", "Dx", "Nx", "Mx", "ax", "Ax")]
+tab$qx <- signif(tab$qx, 4); tab[, c("lx", "Dx", "Nx", "Mx")] <- round(tab[, c("lx", "Dx", "Nx", "Mx")])
+tab$ax <- round(tab$ax, 3); tab$Ax <- round(tab$Ax, 4)
+tab
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\ddot a_x$ bie me moshën, $A_x$ rritet: kontrolli $A_x=1-d\,\ddot a_x$ mund të bëhet në çdo rresht.
+    \item<2-> $D_x$ bie edhe për shkak të skontimit: $D_{90}$ është shumë më i vogël se $l_{90}$.
+    \item<3-> Me \texttt{write.csv(cs, ...)} del tabela e plotë 0--110 (sintetike, M, 5\%): ``tabela aktuariale'' që kërkon programi (C1).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6ush3]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Vetëm me kolonat e \texttt{cs} (tabela sintetike M, 5\%):
+    \begin{enumerate}
+      \item prima neto vjetore e sigurimit për gjithë jetën, 30 vjeç, 1\,000\,000 lekë;
+      \item e njëjta, por me prima vetëm për 20 vite (${}_{20}P_{30}$);
+      \item prima e sigurimit me afat 30 vite.
+    \end{enumerate}
+    Kontrolloji me \texttt{Axn()} dhe \texttt{axn()}.
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjUsh3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tri tabela}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Shqipëria 2011: funksioni \texttt{expand()}}
+<<w6h3-al>>=
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+expand <- function(age, lx, top = 110) {          # Week 5, Hour 6
+  f <- splinefun(age, log(lx), method = "monoH.FC"); x1 <- 0:max(age); l1 <- exp(f(x1))
+  q <- 1 - l1[-1] / l1[-length(l1)]; xa <- x1[-length(x1)]; s <- xa >= 60
+  g <- lm(log(-log(1 - q[s])) ~ xa[s])
+  cf <- coef(nls(q ~ gm_q(x, A, B, c), data = data.frame(q = q[s], x = xa[s]),
+          start = list(A = 1e-4, B = exp(coef(g)[[1]]), c = exp(coef(g)[[2]])),
+          algorithm = "port", lower = c(0, 1e-9, 1)))
+  c(l1, l1[length(l1)] * cumprod(1 - pmin(gm_q(max(age):(top - 1), cf[1], cf[2], cf[3]), 1)))
+}
+@
+  \small Spline monoton në nyjet 0--95; Makeham i përshtatur mbi 60 vjeç zgjat tabelën 95--110 (Java 5, Ora 6).
+\end{frame}
+
+\begin{frame}[fragile]{Shqipëria 2011: tabela e plotë}
+<<w6h3-al2>>=
+h11 <- subset(hld, Year1 == 2011 & TypeLT == 4 & Sex == 1)
+l_al <- expand(h11$Age, h11$l.x.)
+c(ages = length(l_al), l65 = round(l_al[66]))
+@
+  \begin{itemize}
+    \item \textbf{Reale (HLD)}: Shqipëria 2011, meshkuj, tabelë e shkurtuar.
+    \item E rindërtuar për çdo moshë 0--110; $\mathring e_0$ përputhet me HLD (Java 5).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Krahasimi me të njëjtën normë}
+<<w6h3-three>>=
+summ <- function(x, lx, i = 0.06) {
+  tb <- commute(x, lx, i); r <- function(a) tb[tb$x == a, ]
+  lt <- new("lifetable", x = x, lx = lx)
+  c(e0 = exn(lt, 0, type = "complete"), e65 = exn(lt, 65, type = "complete"),
+    a65 = r(65)$Nx / r(65)$Dx, A40 = r(40)$Mx / r(40)$Dx,
+    P40_term20 = (r(40)$Mx - r(60)$Mx) / (r(40)$Nx - r(60)$Nx))
+}
+round(rbind(SOA = summ(soa08Act@x, soa08Act@lx),
+            synthetic_M = summ(mt$age, mt$lx_male),
+            Albania_2011_M = summ(0:110, l_al)), 4)
+@
+  \small Të gjitha me $i=6\%$ (norma e \texttt{soa08Act}), që krahasimi të varet vetëm nga vdekshmëria.
+\end{frame}
+
+\begin{frame}[fragile]{$\log q_x$ e tri tabelave}
+<<w6h3-plot, echo=FALSE, fig.height=3.1>>=
+qq <- function(l) 1 - l[-1] / l[-length(l)]
+dq <- rbind(data.frame(x = 0:99, q = qq(soa08Act@lx)[1:100], tab = "SOA (soa08Act)"),
+            data.frame(x = 0:99, q = qq(mt$lx_male)[1:100], tab = "sintetike M"),
+            data.frame(x = 0:99, q = qq(l_al)[1:100], tab = "Shqiperia 2011 M"))
+ggplot(dq, aes(x, q, colour = tab)) + geom_line(linewidth = 0.9) + scale_y_log10() +
+  scale_colour_manual(values = c("#2C5AA0", "#E67E22", "#27AE60")) +
+  labs(x = "mosha", y = "q(x), shkalla log", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Tabela e SOA ka vdekshmëri më të \textbf{lartë} në moshat e mesme: $\mathring e_0\approx\Sexpr{fmt(exn(soa08Act, 0, type = "complete"), 1)}$, kundrejt $\approx75$--76 për dy të tjerat.
+    \item<2-> Pas 80 vjeç kurbat afrohen; në 80 vjeç Shqipëria 2011 kalon madje mbi SOA.
+    \item<3-> Prima me afat për 40-vjeçarin është shumë më e lartë me SOA: ndjeshmëri e madhe ndaj tabelës.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Përdorimi i tabelës së SOA për çmime në Shqipëri: tabela është ilustruese, me vdekshmëri të ndryshme nga ajo shqiptare.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w6par3]{Parashiko}
+  \begin{Parashiko}
+    Me $i=6\%$, rendit tri tabelat sipas:
+    \begin{enumerate}
+      \item kostos së pensionit $\ddot a_{65}$;
+      \item primës së sigurimit me afat për 40-vjeçarin.
+    \end{enumerate}
+    A është renditja e njëjtë? Pse?
+  \end{Parashiko}
+  \vfill\shkoTe{w6zgjPar3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w6ndr3]{Ndrysho parametrin dhe shiko}
+<<w6h3-rate>>=
+sapply(c(0.03, 0.06), function(i) {
+  tb <- commute(mt$age, mt$lx_male, i)
+  c(a65 = tb$Nx[66] / tb$Dx[66], A40 = tb$Mx[41] / tb$Dx[41])
+})
+@
+  \begin{enumerate}
+    \item Pse duhet të rillogarisim \textbf{të gjitha} kolonat kur ndryshon $i$?
+    \item A mund të përdorim $D_x$ me 6\% dhe vetëm $M_x$ me 3\%?
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjNdr3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli i identiteteve në çdo moshë}
+<<w6h3-id>>=
+d <- 0.05 / 1.05
+c(M_eq_D_minus_dN = max(abs(cs$Mx - (cs$Dx - d * cs$Nx)) / cs$Dx),
+  R_eq_N_minus_dS = max(abs(cs$Rx - (cs$Nx - d * cs$Sx)) / cs$Dx))
+@
+  \small Identitetet e Orës 2 vlejnë për të 111 moshat, deri në gabimin e rrumbullakimit. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si llogaritet $N_x$ për të gjitha moshat me një rresht R?
+    \item Pse krahasojmë kolonat me diferencë \textbf{relative}?
+    \item Pse tri tabelat krahasohen me të njëjtën normë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) \texttt{rev(cumsum(rev(D)))}; (2) vlerat ndryshojnë me 90 rende madhësie;
+  (3) që diferencat të vijnë vetëm nga vdekshmëria.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item \texttt{commute()}: gjashtë kolona në gjashtë rreshta; identike me \texttt{soa08Act}.
+    \item Çdo funksion aktuarial = raport kolonash; përputhet me \texttt{axn}, \texttt{Axn}, \texttt{IAxn}.
+    \item Tabela aktuariale e plotë për tabelën sintetike: rezultati C1 i programit.
+    \item SOA kundrejt Shqipërisë: tabela e gabuar = çmim i gabuar.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria e funksioneve për disa jetë: $(xy)$, $(\overline{xy})$, anuiteti i të vejës.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{soa08Act}, \texttt{IAxn}.
+    \item Human Life-Table Database: Shqipëria 2011 (e shkurtuar).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

@@ -1,0 +1,49 @@
+% ============================================================
+%  Java 6 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w6zgjGab3]{Zgjidhja: Gjej gabimin ($C_x$ me $v^x$)}
+  \begin{enumerate}
+    \item Vdekja paguhet në \textbf{fund} të vitit: $C_x=v^{x+1}d_x$, jo $v^x d_x$.
+    \item Çdo $C_x$ është $1/v=1.06$ herë më i madh, pra edhe $M_x$ dhe $A_x$:
+      $0.4662/0.4398=1.06$.
+    \item Gabimi është ``i qetë'': numri duket i arsyeshëm. Vetëm krahasimi me \texttt{Axn()} e zbulon.
+  \end{enumerate}
+  \vfill\kthehu{w6gab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w6zgjUsh3]{Zgjidhja: Radha jote!}
+<<w6h3-sol-ush>>=
+rs <- function(a) cs[cs$x == a, ]
+c(P_whole = 1e6 * rs(30)$Mx / rs(30)$Nx,
+  P_whole_20pay = 1e6 * rs(30)$Mx / (rs(30)$Nx - rs(50)$Nx),
+  P_term30 = 1e6 * (rs(30)$Mx - rs(60)$Mx) / (rs(30)$Nx - rs(60)$Nx))
+a5 <- new("actuarialtable", x = mt$age, lx = mt$lx_male, interest = 0.05)
+1e6 * c(Axn(a5, 30) / axn(a5, 30), Axn(a5, 30) / axn(a5, 30, 20),
+        Axn(a5, 30, 30) / axn(a5, 30, 30))
+@
+  \small Prima për 20 vite është më e lartë: e njëjta vlerë paguhet me më pak këste.
+  \vfill\kthehu{w6ush3}
+\end{frame}
+
+\begin{frame}[label=w6zgjPar3]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $\ddot a_{65}$: sintetike (10.567) $>$ Shqipëria (10.290) $>$ SOA (9.897).
+    \item Prima me afat për 40-vjeçarin (për 1 lek): SOA (0.00511) $>$ Shqipëria (0.00348) $>$ sintetike (0.00340).
+  \end{enumerate}
+  \begin{itemize}
+    \item Renditja \textbf{përmbyset}: vdekshmëria e lartë e bën pensionin më të lirë dhe sigurimin e vdekjes më të shtrenjtë.
+    \item Ky është rreziku i \textbf{jetëgjatësisë} (longevity) kundrejt rrezikut të \textbf{vdekshmërisë}.
+  \end{itemize}
+  \vfill\kthehu{w6par3}
+\end{frame}
+
+\begin{frame}[label=w6zgjNdr3]{Zgjidhja: Ndrysho parametrin}
+  \begin{enumerate}
+    \item Çdo kolonë përmban $v^x$ ose $v^{x+1}$: të gjitha varen nga $i$.
+      Me 3\%: $\ddot a_{65}=13.34$ (kundrejt 10.57), $A_{40}=0.336$ (kundrejt 0.135).
+    \item Jo. $M_{65}^{(3\%)}/D_{65}^{(6\%)}=3.95$: një ``probabilitet'' i skontuar më i madh se 1!
+  \end{enumerate}
+  \begin{Gabim}Tabela e komutimit vlen vetëm për normën me të cilën u ndërtua. Shkruaj normën në titullin e tabelës.\end{Gabim}
+  \vfill\kthehu{w6ndr3}
+\end{frame}
