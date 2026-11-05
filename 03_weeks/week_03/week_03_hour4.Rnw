@@ -1,0 +1,551 @@
+% ============================================================
+%  Java 3 · Ora 4 — Teoria II: dëmet agregate dhe GLM
+% ============================================================
+\section{Teoria II: agregatet}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w3h4-setup, include=FALSE>>=
+suppressMessages(library(actuar))
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+panjer_pois <- function(lambda, f, smax) {
+  g <- numeric(smax + 1); g[1] <- exp(-lambda * (1 - f[1]))
+  for (s in 1:smax) { j <- 1:min(s, length(f) - 1)
+    g[s + 1] <- lambda / s * sum(j * f[j + 1] * g[s - j + 1]) }
+  g
+}
+@
+
+% ------------------------------------------------------------
+\subsection{Klasa (a, b, 0)}
+% ------------------------------------------------------------
+
+\begin{frame}{Një rekursion për numrin e dëmeve}
+  \begin{Definicion}[(klasa (a, b, 0))]
+    Shpërndarja e $N$, me $p_k=\Pr(N=k)$, i përket klasës (a, b, 0) nëse
+    \[ \frac{p_k}{p_{k-1}}=a+\frac{b}{k},\qquad k=1,2,\dots \]
+    për dy konstante $a$ dhe $b$.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item ``0'' do të thotë: rekursioni fillon nga $k=1$, pra $p_0$ është i lirë vetëm për të normalizuar.
+    \item Me $p_0$, $a$ dhe $b$ e njohim gjithë shpërndarjen.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Poisson: $a=0$, $b=\lambda$}
+  \[
+    \frac{p_k}{p_{k-1}}
+    =\frac{e^{-\lambda}\lambda^k/k!}{e^{-\lambda}\lambda^{k-1}/(k-1)!}
+    \pause
+    =\frac{\lambda\,(k-1)!}{k!}
+    \pause
+    =\frac{\lambda}{k}.
+  \]
+  \pause
+  \begin{itemize}
+    \item Pra $a=0$ dhe $b=\lambda$.
+    \item Raporti \textbf{bie} me $k$: pas $k>\lambda$ probabilitetet zvogëlohen.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Binomialja: $a<0$}
+  $N\sim\text{Bin}(m,q)$:
+  \begin{align*}
+    \frac{p_k}{p_{k-1}}
+    &=\frac{\binom mk q^k(1-q)^{m-k}}{\binom m{k-1}q^{k-1}(1-q)^{m-k+1}}
+     =\frac{m-k+1}{k}\cdot\frac{q}{1-q} \\
+    \onslide<2->{&=-\frac{q}{1-q}+\frac{(m+1)\,q}{1-q}\cdot\frac1k}
+  \end{align*}
+  \onslide<3->{
+  \[ a=-\frac{q}{1-q},\qquad b=\frac{(m+1)\,q}{1-q}. \]}
+  \onslide<4->{\small Shembull: $m$ police, secila me të shumtën një dëm me probabilitet $q$.}
+\end{frame}
+
+\begin{frame}{Binomialja negative: $a>0$}
+  $N\sim\text{NB}(r,\pi)$, si në R: \texttt{dnbinom(k, size = r, prob = pi)}:
+  \[ p_k=\binom{k+r-1}{k}\pi^r(1-\pi)^k. \]
+  \pause
+  \begin{align*}
+    \frac{p_k}{p_{k-1}} &= \frac{k+r-1}{k}\,(1-\pi) \\
+    \onslide<3->{&= (1-\pi)+\frac{(r-1)(1-\pi)}{k}}
+  \end{align*}
+  \onslide<4->{
+  \[ a=1-\pi,\qquad b=(r-1)(1-\pi). \]}
+\end{frame}
+
+\begin{frame}{Tabela e klasës (a, b, 0)}
+  \centering
+  \renewcommand{\arraystretch}{1.4}
+  \begin{tabular}{lcccc}
+    \toprule
+    Shpërndarja & $a$ & $b$ & $p_0$ & $\mathrm{Var}[N]$ vs $E[N]$ \\
+    \midrule
+    Binomiale$(m,q)$ & $-\frac{q}{1-q}$ & $\frac{(m+1)q}{1-q}$ & $(1-q)^m$ & më e vogël \\
+    Poisson$(\lambda)$ & $0$ & $\lambda$ & $e^{-\lambda}$ & e barabartë \\
+    NB$(r,\pi)$ & $1-\pi$ & $(r-1)(1-\pi)$ & $\pi^r$ & më e madhe \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \begin{Teoreme}[(Sundt dhe Jewell, 1981)]
+    Këto tri (dhe rasti i degjeneruar $N=0$) janë të \textbf{vetmet} shpërndarje në klasën (a, b, 0).
+  \end{Teoreme}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R: raportet $p_k/p_{k-1}$}
+<<w3h4-ab0>>=
+k <- 1:5
+ratio <- function(p) p[-1] / p[-length(p)]
+rbind(pois  = ratio(dpois(0:5, 2)),         pois_ab  = 0 + 2 / k,
+      binom = ratio(dbinom(0:5, 10, 0.2)),  binom_ab = -0.25 + 11 * 0.25 / k,
+      nb    = ratio(dnbinom(0:5, 3, 0.4)),  nb_ab    = 0.6 + 2 * 0.6 / k)
+@
+  \small Binomialja $(10,0.2)$: $a=-0.2/0.8=-0.25$, \; $b=11\times0.25=2.75$.
+\end{frame}
+
+\begin{frame}[label=w3mc5]{Zgjedhje e shumëfishtë}
+  Nga të dhënat e një portofoli vlerëson $\hat a=0.15$ dhe $\hat b=0.05$. Cili model i përshtatet?
+  \begin{enumerate}[A)]
+    \item Poisson, sepse $b>0$.
+    \item Binomiale, sepse $a+b<1$.
+    \item Binomiale negative, sepse $a>0$.
+    \item Asnjë: $a$ dhe $b$ duhet të jenë të barabarta.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjMC5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w3ush4a]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    $N\sim\text{NB}(r=3,\;\pi=0.4)$.
+    \begin{enumerate}
+      \item Gjej $a$, $b$ dhe $p_0$.
+      \item Me rekursionin, llogarit $p_1$ dhe $p_2$.
+      \item Kontrollo $p_2$ me formulën e drejtpërdrejtë.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh4a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vërtetimi i Panjer-it}
+% ------------------------------------------------------------
+
+\begin{frame}{Panjer: rasti i përgjithshëm}
+  \begin{Teoreme}[(Panjer, 1981)]
+    Nëse $N$ është në klasën (a, b, 0) dhe $f_j=\Pr(X=j)$, $j=0,1,\dots$, atëherë
+    \[
+      g_s=\frac{1}{1-a f_0}\sum_{j=1}^{s}\Big(a+\frac{b\,j}{s}\Big)f_j\,g_{s-j},\qquad s=1,2,\dots
+    \]
+    me $g_0=P_N(f_0)$, ku $P_N(z)=E[z^N]$ është funksioni gjenerues i probabiliteteve.
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Poisson ($a=0$, $b=\lambda$): $g_s=\frac{\lambda}{s}\sum_j j f_j g_{s-j}$. Kjo është formula e Orës 3. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Lema: simetria}
+  \begin{Teoreme}[(lema)]
+    Për $X_1,\dots,X_k$ i.i.d.\ dhe $S_k=X_1+\dots+X_k$:
+    \[ E[X_1\mid S_k=s]=\frac{s}{k}. \]
+  \end{Teoreme}
+  \pause
+  \textbf{Vërtetimi:}
+  \begin{itemize}
+    \item<2-> Nga simetria, $E[X_1\mid S_k=s]=E[X_2\mid S_k=s]=\dots=E[X_k\mid S_k=s]$.
+    \item<3-> Shuma e tyre është $E[S_k\mid S_k=s]=s$.
+    \item<4-> Pra secila është $s/k$. \quad $\blacksquare$
+  \end{itemize}
+  \onslide<5->{\small Pasojë: $E\big[a+b\,X_1/s\mid S_k=s\big]=a+b/k$. Ky është raporti i klasës (a, b, 0)!}
+\end{frame}
+
+\begin{frame}{Vërtetimi i Panjer-it (1/2)}
+  Për $s\ge1$, me $p_k=(a+b/k)\,p_{k-1}$:
+  \begin{align*}
+    g_s &= \sum_{k\ge1}p_k\,f^{*k}(s)=\sum_{k\ge1}\Big(a+\frac bk\Big)p_{k-1}\,f^{*k}(s) \\
+    \onslide<2->{&= \sum_{k\ge1}p_{k-1}\,E\Big[a+\frac{b\,X_1}{s}\,\Big|\,S_k=s\Big]f^{*k}(s)} \\
+    \onslide<3->{&= \sum_{k\ge1}p_{k-1}\sum_{j=0}^{s}\Big(a+\frac{b\,j}{s}\Big)\Pr(X_1=j,\,S_k=s)}
+  \end{align*}
+  \onslide<4->{\small Hapi i fundit: $E[h(X_1)\mid S_k=s]\,\Pr(S_k=s)=\sum_j h(j)\Pr(X_1=j,S_k=s)$.}
+\end{frame}
+
+\begin{frame}{Vërtetimi i Panjer-it (2/2)}
+  Me $\Pr(X_1=j,\,S_k=s)=f_j\,f^{*(k-1)}(s-j)$:
+  \begin{align*}
+    g_s &= \sum_{j=0}^{s}\Big(a+\frac{b\,j}{s}\Big)f_j\underbrace{\sum_{k\ge1}p_{k-1}f^{*(k-1)}(s-j)}_{=\,g_{s-j}} \\
+    \onslide<2->{&= a f_0\,g_s+\sum_{j=1}^{s}\Big(a+\frac{b\,j}{s}\Big)f_j\,g_{s-j}}
+  \end{align*}
+  \onslide<3->{Termi $j=0$ përmban vetë $g_s$: e kalojmë majtas dhe pjesëtojmë me $1-af_0$. \quad $\blacksquare$}
+  \onslide<4->{
+  \begin{Gabim}Për NB dhe binomialen ($a\ne0$), harrohet faktori $1/(1-af_0)$. Për Poisson ai është 1, ndaj gabimi nuk duket.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Pika e fillimit $g_0$}
+  $S=0$ kur çdo dëm është 0: \; $g_0=\sum_k p_k f_0^k=P_N(f_0)$.
+  \pause
+  \begin{center}
+    \renewcommand{\arraystretch}{1.4}
+    \begin{tabular}{lcc}
+      \toprule
+      Shpërndarja & $P_N(z)$ & $g_0=P_N(f_0)$ \\
+      \midrule
+      Poisson$(\lambda)$ & $e^{\lambda(z-1)}$ & $e^{-\lambda(1-f_0)}$ \\
+      Binomiale$(m,q)$ & $(1-q+qz)^m$ & $(1-q+qf_0)^m$ \\
+      NB$(r,\pi)$ & $\Big(\dfrac{\pi}{1-(1-\pi)z}\Big)^r$ & $\Big(\dfrac{\pi}{1-(1-\pi)f_0}\Big)^r$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Kur $f_0=0$: $g_0=p_0$, siç pritej.
+\end{frame}
+
+\begin{frame}[fragile]{Panjer i përgjithshëm në R}
+<<w3h4-panjer-ab0>>=
+panjer_ab0 <- function(a, b, g0, f, smax) {
+  g <- numeric(smax + 1); g[1] <- g0
+  for (s in 1:smax) {
+    j <- 1:min(s, length(f) - 1)
+    g[s + 1] <- sum((a + b * j / s) * f[j + 1] * g[s - j + 1]) / (1 - a * f[1])
+  }
+  g
+}
+f <- c(0.2, 0.5, 0.3)                       # f0 > 0 on purpose
+r <- 3; p <- 0.4; a <- 1 - p; b <- (r - 1) * (1 - p)
+g_nb <- panjer_ab0(a, b, (p / (1 - a * f[1]))^r, f, 6)
+set.seed(1)
+S_nb <- replicate(1e5, sum(sample(0:2, rnbinom(1, r, p), TRUE, prob = f)))
+rbind(panjer = g_nb, simulation = tabulate(S_nb + 1, 7) / 1e5)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{panjer\_ab0()} punon për të tri shpërndarjet: ndryshojnë vetëm $a$, $b$ dhe $g_0$.
+    \item<2-> Me $f_0=0.2>0$, faktori $1/(1-af_0)=1/0.88$ \textbf{nuk} është 1.
+    \item<3-> Kontrolli me simulim përputhet deri në gabimin rastësor.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}\texttt{aggregateDist(method = "recursive")} në \Rkey{actuar} bën pikërisht këtë, me \texttt{model.freq = "poisson"}, \texttt{"binomial"} ose \texttt{"negative binomial"}.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Klasa (a, b, 1) \Zgj}
+  \begin{itemize}
+    \item<1-> Në auto, shumë policë \textbf{nuk raportojnë} dëme të vogla (frika nga humbja e bonusit).
+    \item<2-> Rezultati: më shumë zero se sa jep Poisson-i ose NB.
+    \item<3-> \termi{Zero e modifikuar}{zero-modified}: zgjedhim lirisht $p_0^M$, dhe
+      \[ p_k^M=\frac{1-p_0^M}{1-p_0}\,p_k,\qquad k\ge1. \]
+    \item<4-> Raporti $p_k/p_{k-1}=a+b/k$ vlen tani vetëm për $k\ge2$: klasa (a, b, 1).
+  \end{itemize}
+  \onslide<5->{\small Në R: \texttt{dzmpois()}, \texttt{dzmnbinom()} në \Rkey{actuar}; Panjer vlen me një ndryshim te $g_s$ (shih \texttt{?aggregateDist}).}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përafrimet}
+% ------------------------------------------------------------
+
+\begin{frame}{Përafrimi normal}
+  \[
+    F_S(s)\approx\Phi\Big(\frac{s-E[S]}{\mathrm{sd}[S]}\Big),\qquad
+    \mathrm{VaR}_p\approx E[S]+z_p\,\mathrm{sd}[S].
+  \]
+  \pause
+  \begin{itemize}
+    \item Arsyeja: teorema qendrore limite, kur $N$ është i madh.
+    \item<3-> Mjafton $E[S]$ dhe $\mathrm{Var}[S]$: dy formula të Orës 1.
+    \item<4-> Problemi: normalja është \textbf{simetrike}, kurse $S$ është i anuar djathtas.
+  \end{itemize}
+  \onslide<5->{\small Pasoja: përafrimi normal e \textbf{nënvlerëson} VaR-in e nivelit të lartë.}
+\end{frame}
+
+\begin{frame}{Anësia e Poisson-it të përbërë}
+  \begin{Teoreme}
+    Për Poisson të përbërë, kumulanti i rendit $k$ është $\kappa_k=\lambda\,E[X^k]$. Pra
+    \[
+      \gamma_S=\frac{\kappa_3}{\kappa_2^{3/2}}=\frac{\lambda\,E[X^3]}{\big(\lambda\,E[X^2]\big)^{3/2}}
+      =\frac{1}{\sqrt\lambda}\cdot\frac{E[X^3]}{E[X^2]^{3/2}}.
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item $\gamma_S>0$ gjithmonë: $S$ është i anuar djathtas.
+    \item $\gamma_S\to0$ si $1/\sqrt\lambda$: portofolet e mëdha janë ``më normale''.
+    \item Gamma$(\alpha,\theta)$: $E[X^3]=\alpha(\alpha+1)(\alpha+2)\theta^3$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Fuqia normale NP2 \Zgj}
+  Korrigjimi i Cornish--Fisher-it për anësinë $\gamma=\gamma_S$:
+  \[
+    \mathrm{VaR}_p\approx E[S]+\mathrm{sd}[S]\Big(z_p+\frac{\gamma}{6}\,(z_p^2-1)\Big).
+  \]
+  \pause
+  \begin{itemize}
+    \item Për $p=0.995$: $z_p=2.5758$, \; $z_p^2-1=5.635$.
+    \item Shtesa ndaj normales: $\mathrm{sd}[S]\cdot0.939\,\gamma$.
+    \item<3-> E dobishme kur $\gamma<1$; për anësi të madhe bëhet e pasaktë.
+  \end{itemize}
+  \onslide<4->{\small Në \Rkey{actuar}: \texttt{aggregateDist(method = "npower", moments = c(mean, var, skewness))}.}
+\end{frame}
+
+\begin{frame}[fragile]{Tri përafrime për VaR$_{0.995}$}
+<<w3h4-approx>>=
+approx_var <- function(lambda, shape = 2, scale = 450, p = 0.995) {
+  m <- sapply(1:3, function(k) mgamma(k, shape, scale = scale))
+  ES <- lambda * m[1]; sdS <- sqrt(lambda * m[2])
+  gam <- lambda * m[3] / (lambda * m[2])^1.5; z <- qnorm(p)
+  c(skew = gam, normal = ES + z * sdS,
+    NP2 = ES + sdS * (z + gam / 6 * (z^2 - 1)))
+}
+set.seed(2026)
+sim_var <- function(lambda, B = 50000) quantile(vapply(1:B, function(b)
+  sum(rgamma(rpois(1, lambda), 2, scale = 450)), 1), 0.995, names = FALSE)
+rbind(Fier  = c(approx_var(60),  simulation = sim_var(60)),
+      motor = c(approx_var(768), simulation = sim_var(768)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Anësia është e vogël: $\approx\Sexpr{fmt(approx_var(60)[1], 2)}$ për Fierin, $\approx\Sexpr{fmt(approx_var(768)[1], 2)}$ për gjithë portofolin.
+    \item<2-> Normalja del nën simulimin; NP2 e mbyll pothuajse gjithë diferencën.
+    \item<3-> Për portofolin e vogël (Fier), diferenca normale--simulim është relativisht më e madhe.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Vlerësimi kundrejt së vërtetës}
+    Këtu ``e vërteta'' është simulimi me 50\,000 vite (me gabimin e vet rastësor). Ora 5 jep edhe vlerën Panjer.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: përafrimi me bisht të rëndë}
+  \begin{Gabim}
+    Përafrimi normal ose NP2 për dëme me bisht Pareto me $\alpha=1.8$.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item $E[X^2]=\infty$: $\mathrm{Var}[S]=\lambda E[X^2]=\infty$. Formula as nuk mund të llogaritet.
+    \item<3-> Edhe me $\alpha$ pak mbi 3, $E[X^3]$ është i madh dhe i paqëndrueshëm: NP2 jep rezultate të çuditshme.
+    \item<4-> Zgjidhja: Panjer me diskretizim, ose simulim.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w3par4]{Parashiko}
+  \begin{Parashiko}
+    Kompania hap një degë të re në Kukës me $\lambda=20$ dëme në vit, ashpërsi Gamma(2, 450).
+    \begin{enumerate}
+      \item Anësia $\gamma_S$ do të jetë më e madhe apo më e vogël se te Fieri? Sa herë?
+      \item Gabimi relativ i përafrimit normal për VaR$_{0.995}$ rritet apo zvogëlohet?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w3zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Stop-loss për portofolin}
+% ------------------------------------------------------------
+
+\begin{frame}{Risigurimi stop-loss}
+  \begin{Definicion}[(stop-loss me prioritet $d$)]
+    Risiguruesi paguan pjesën e shumës totale mbi $d$:
+    \[ R=(S-d)_+,\qquad \text{siguruesi mban } S\wedge d. \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Prima neto e risigurimit: $\pi(d)=E[(S-d)_+]$.
+    \item E njëjta formulë si franshiza e Orës 2, por mbi \textbf{shumën totale}, jo mbi një dëm.
+    \item<3-> Siguruesi kufizon humbjen e vitit në $d$: kapitali i nevojshëm bie.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Një rekursion i thjeshtë për $\pi(d)$}
+  Për $S$ në rrjetën $0,h,2h,\dots$:
+  \[
+    \pi(d+h)=\pi(d)-h\,\big(1-F_S(d)\big),\qquad \pi(0)=E[S].
+  \]
+  \pause
+  \textbf{Pse?} Kur $d$ rritet me $h$, risiguruesi paguan $h$ më pak në çdo vit ku $S>d$.
+  \pause
+  \begin{block}{Portofoli lodër (Ora 1), $h=100$}
+    \begin{itemize}
+      \item $\pi(0)=E[S]=98$
+      \item $\pi(100)=98-100\,(1-0.5)=48$
+      \item $\pi(200)=48-100\,(1-0.68)=16$
+    \end{itemize}
+  \end{block}
+  \pause
+  \small Kontroll direkt: $\pi(200)=100\times0.096+200\times0.032=9.6+6.4=16$. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Stop-loss për degën e Fierit}
+<<w3h4-sl>>=
+h <- 100; smax <- 1500; s <- (0:smax) * h
+fx <- discretize(pgamma(x, shape = 2, scale = 450),
+                 from = 0, to = 15000, step = h, method = "rounding")
+g  <- panjer_pois(60, fx, smax)
+stop_loss <- function(d) sum(pmax(s - d, 0) * g)
+d_grid <- c(54000, 60000, 65000, 70000)
+rbind(d = d_grid, premium = sapply(d_grid, stop_loss),
+      prob_pay = sapply(d_grid, function(d) sum(g[s > d])))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me $d=E[S]=54\,000$ €, prima neto $\approx\Sexpr{fmt(stop_loss(54000))}$ €: risiguruesi paguan pothuajse në gjysmën e viteve.
+    \item<2-> Me $d=70\,000$ € prima bie në $\approx\Sexpr{fmt(stop_loss(70000))}$ €, dhe pagesa ndodh rrallë.
+    \item<3-> Prima bie \textbf{shpejt} me $d$: është sipërfaqja nën bishtin e $1-F_S$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Në treg, risiguruesi shton një ngarkesë (\emph{loading}) mbi primën neto, më të madhe për prioritete të larta: pagesat e rralla dhe të mëdha janë më të rrezikshme.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w3ush4b]{Radha jote!}
+  \begin{Ushtrim}[(3 minuta, pa ndihmën e PC)]
+    Për portofolin lodër të Orës 1:
+    \begin{enumerate}
+      \item llogarit $\pi(300)$ me rekursionin;
+      \item kontrolloje direkt nga tabela e $S$;
+      \item sa është $\pi(400)$? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh4b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{GLM: teoria minimale}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse GLM?}
+  \begin{itemize}
+    \item<1-> Deri tani: një $\lambda$ për gjithë portofolin.
+    \item<2-> Në realitet frekuenca varet nga mosha e shoferit, mosha e mjetit, qyteti, karburanti\dots
+    \item<3-> Java 2: raporti i thjeshtë Tiranë/jo-Tiranë dha $\approx1.12$. E vërteta sintetike: $e^{0.25}\approx1.28$.
+    \item<4-> Pse ndryshojnë? Faktorët e tjerë janë të ``përzier'' me qytetin (\emph{confounding}).
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Ideja}
+    Një model që vlerëson efektin e çdo faktori \textbf{duke mbajtur të tjerët të fiksuar}: GLM.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{GLM Poisson për frekuencën}
+  \begin{Definicion}[(GLM Poisson me ekspozim)]
+    Për policën $i$, me ekspozim $e_i$ (police-vite) dhe karakteristika $x_{i1},\dots,x_{ip}$:
+    \[
+      N_i\sim\text{Poisson}(\mu_i),\qquad
+      \log\mu_i=\underbrace{\log e_i}_{\text{offset}}+\beta_0+\beta_1x_{i1}+\dots+\beta_px_{ip}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item \termi{Lidhja log}{log link}: $\mu_i=e_i\cdot e^{\beta_0}\cdot e^{\beta_1x_{i1}}\cdots$ \; (tarifë shumëzuese).
+    \item<3-> \termi{Offset}{}: koeficient i fiksuar 1, nuk vlerësohet. Frekuenca për vit: $\mu_i/e_i$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Interpretimi: $e^{\beta}$ si raport frekuencash}
+  Dy police të njëjta, me një ndryshim: njëra në Tiranë ($x=1$), tjetra jo ($x=0$):
+  \[
+    \frac{\mu_{\text{Tiranë}}/e}{\mu_{\text{tjetër}}/e}=\frac{e^{\beta_0+\beta_T}}{e^{\beta_0}}=e^{\beta_T}.
+  \]
+  \pause
+  \begin{itemize}
+    \item E vërteta sintetike: $\beta_T=0.25$, \; $e^{0.25}=1.284$: \textbf{28.4\% më shumë dëme} për police-vit.
+    \item Nafta: $e^{0.10}=1.105$; \; çdo vit i mjetit: $e^{0.015}=1.015$.
+    \item<3-> Për variabël të vazhdueshme: $+1$ njësi në $x$ shumëzon frekuencën me $e^{\beta}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Gabime të zakonshme në GLM}
+  \begin{Gabim}
+    \begin{enumerate}
+      \item Harrohet \texttt{offset(log(exposure))}: modelohet numri i dëmeve, jo frekuenca.
+      \item Shkruhet \texttt{offset(exposure)}: lidhja është log, ndaj duhet logaritmi.
+      \item $e^{\beta}$ lexohet si raport \textbf{probabilitetesh}. Është raport \textbf{mesataresh} (frekuencash).
+    \end{enumerate}
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Pa offset: policat që mbulojnë gjithë vitin duken ``më të rrezikshme'' thjesht sepse janë ekspozuar më gjatë.
+    \item E shohim numerikisht në Orën 5.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{GLM Gamma për ashpërsinë}
+  \begin{Definicion}[(GLM Gamma me lidhje log)]
+    Për dëmin $i$: \; $X_i\sim\text{Gamma}$ me mesatare $\mu_i$ dhe
+    \[ \log\mu_i=\gamma_0+\gamma_1x_{i1}+\dots,\qquad \mathrm{Var}[X_i]=\phi\,\mu_i^2. \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Koeficienti i variacionit $\sqrt\phi$ është \textbf{i njëjtë} për të gjitha policat.
+    \item $\phi=1/\alpha$: me formë Gamma 2, $\phi=0.5$.
+    \item<3-> Në të dhënat sintetike: ashpërsia \textbf{nuk} varet nga faktorët; GLM duhet të gjejë $\gamma_j\approx0$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Prima e pastër: frekuenca $\times$ ashpërsia}
+  \[
+    \text{Prima e pastër}_i=E[N_i/e_i]\cdot E[X_i]=e^{\beta_0+\beta^\top x_i}\cdot e^{\gamma_0+\gamma^\top x_i}.
+  \]
+  \pause
+  \textbf{Shembull pa ndihmën e PC} (e vërteta sintetike, ashpërsia 900 €):
+  \begin{itemize}
+    \item<2-> Shofer 40 vjeç, mjet i ri, benzinë, jo Tiranë: $\lambda=e^{-2.3}=0.1003$; prima $=90.25$ €.
+    \item<3-> I njëjti shofer, Tiranë, naftë, mjet 10 vjeç: $\lambda=e^{-2.3+0.25+0.10+0.15}=e^{-1.8}=0.1653$.
+    \item<4-> Prima $=0.1653\times900=148.77$ €: raporti $e^{0.5}=1.649$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w3mc6]{Zgjedhje e shumëfishtë}
+  Një GLM Poisson me offset jep $\hat\beta_{\text{naftë}}=0.10$. Cili interpretim është i saktë?
+  \begin{enumerate}[A)]
+    \item Mjetet me naftë kanë 10\% më shumë probabilitet të kenë të paktën një dëm.
+    \item Mjetet me naftë kanë rreth 10.5\% më shumë dëme për police-vit, faktorët e tjerë të njëjtë.
+    \item Mjetet me naftë kanë dëme 10\% më të shtrenjta.
+    \item Mjetet me naftë kanë 0.10 dëme më shumë për police.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjMC6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Sa janë $a$ dhe $b$ për Poisson$(\lambda=5)$?
+    \item Pse në Panjer pjesëtojmë me $1-af_0$?
+    \item Pse \texttt{offset(log(exposure))} dhe jo \texttt{offset(exposure)}?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $a=0$, $b=5$; (2) termi $j=0$ përmban vetë $g_s$;
+  (3) lidhja është log: $\log\mu=\log e+\eta$, pra $\mu=e\cdot e^{\eta}$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item Klasa (a, b, 0): $p_k/p_{k-1}=a+b/k$; binomiale ($a<0$), Poisson ($a=0$), NB ($a>0$).
+    \item Panjer: $g_s=\frac{1}{1-af_0}\sum_j(a+bj/s)f_jg_{s-j}$, \; $g_0=P_N(f_0)$; vërtetim me simetrinë.
+    \item Normalja nënvlerëson VaR; NP2 korrigjon me $\gamma_S=\lambda E[X^3]/(\lambda E[X^2])^{3/2}$.
+    \item Stop-loss: $\pi(d+h)=\pi(d)-h(1-F_S(d))$.
+    \item GLM Poisson me offset dhe Gamma me log: tarifë shumëzuese, $e^\beta$ = raport.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator me paketat: \texttt{aggregateDist()}, \texttt{coverage()}, \texttt{glm()} mbi portofolin auto.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitujt për modelet agregate dhe GLM në tarifim).
+    \item H.~H.~Panjer (1981), \emph{ASTIN Bulletin} 12(1); B.~Sundt, W.~S.~Jewell (1981), \emph{ASTIN Bulletin} 12(1).
+    \item V.~Goulet et al., vinjetat e paketës \Rkey{actuar}: \texttt{?aggregateDist}, \texttt{?ZeroModifiedPoisson}.
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur), kapitujt për frekuencën dhe GLM.
+    \item README i të dhënave: \texttt{motor\_portfolio\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
