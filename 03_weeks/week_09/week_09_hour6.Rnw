@@ -1,0 +1,237 @@
+% ============================================================
+%  Java 9 · Ora 6 — Rast studimi: opsioni i anulimit
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Detyra}
+  \begin{Shembull}[(``Kursimi Plus'', kontratë fiktive)]
+    Klienti investon 10\,000\,000 lekë në një fond ($S_0=100$, 100\,000 njësi), për 5 vjet.
+    Në \textbf{çdo kohë} mund ta anulojë dhe merr $\max(\text{vlera e fondit},\;G)$, ku $G=(1-c)\cdot10^7$ dhe $c$ është ndëshkimi i anulimit.
+    \begin{enumerate}
+      \item Sa vlen garancia ``në çdo kohë'' për kompaninë?
+      \item Sa vlen pjesa që vjen nga e drejta e anulimit?
+      \item Kur do të anulonte një klient racional?
+    \end{enumerate}
+  \end{Shembull}
+  \vfill\LO{K3}\;\LO{C3}
+\end{frame}
+
+\begin{frame}{Modeli i thjeshtuar}
+  \begin{itemize}
+    \item<1-> Kontrata = fondi + e drejta për të ``shitur'' fondin me $G$ në çdo kohë.
+    \item<2-> Pra: fond + \textbf{put amerikan} me çmim ushtrimi $G$ dhe $T=5$.
+    \item<3-> Garancia vetëm në maturim (Java 8) do të ishte një put \textbf{europian}.
+    \item<4-> Vlera e së drejtës së anulimit $\approx P_A(G)-P(G)$: prima e ushtrimit të hershëm.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}Ky është një model mësimor: pa vdekshmëri, pa kosto, me klientë ``racionalë''. Modelet rregullatore janë shumë më të pasura.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlera e garancisë}
+% ------------------------------------------------------------
+
+<<w9h6-setup, include=FALSE>>=
+U6 <- 1e5; sig6 <- sig_hat; r6 <- 0.03; T6 <- 5
+pa6 <- function(G, r = r6) U6 * unname(binomopt(100, G, sig6, r, T6, 0, 300, TRUE, TRUE))
+pe6 <- function(G, r = r6) U6 * bsput(100, G, sig6, r, T6, 0)
+@
+
+\begin{frame}[fragile]{Europiane kundrejt amerikane}
+<<w9h6-val>>=
+G6 <- c(100, 98, 95, 90)                                 # c = 0, 2, 5, 10 %
+v6 <- rbind(european = sapply(G6, pe6), american = sapply(G6, pa6))
+v6 <- rbind(v6, surrender_option = v6["american", ] - v6["european", ])
+colnames(v6) <- paste0("c=", c(0, 2, 5, 10), "%")
+round(v6)
+@
+  \small $\hat\sigma=\Sexpr{fmt(100 * sig6, 1)}\%$ (Java 8), $r=3\%$, $T=5$; lekë për kontratë.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Pa ndëshkim: garancia ``në çdo kohë'' vlen \Sexpr{fmt(v6["american", 1])} lekë, kundrejt \Sexpr{fmt(v6["european", 1])} vetëm në maturim.
+    \item<2-> E drejta e anulimit shton \Sexpr{fmt(v6["surrender_option", 1])} lekë: rreth \Sexpr{fmt(100 * v6["surrender_option", 1] / v6["european", 1])}\% të garancisë europiane.
+    \item<3-> Ndëshkimi i anulimit e ul vlerën: me $c=5\%$, garancia vlen \Sexpr{fmt(v6["american", 3])} lekë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w9par6]{Parashiko}
+  \begin{Parashiko}
+    Normat e interesit në treg rriten nga 3\% në 7\%.
+    \begin{enumerate}
+      \item Vlera totale e garancisë $P_A(G)$ rritet apo bie?
+      \item Pjesa e anulimit $P_A(G)-P(G)$ rritet apo bie?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w9zgjPar6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Ndjeshmëria ndaj normave të interesit}
+<<w9h6-rate>>=
+rg6 <- c(0.01, 0.03, 0.05, 0.07)
+vr6 <- rbind(european = sapply(rg6, pe6, G = 98), american = sapply(rg6, pa6, G = 98))
+vr6 <- rbind(vr6, surrender_option = vr6["american", ] - vr6["european", ])
+colnames(vr6) <- paste0("r=", 100 * rg6, "%")
+round(vr6)
+@
+  \small $c=2\%$, pra $G=9\,800\,000$ lekë.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me $r$ më të lartë, \textbf{garancia totale} bie: put-i lirohet.
+    \item<2-> Por \textbf{pjesa e anulimit} rritet: nga \Sexpr{fmt(vr6["surrender_option", 1])} në \Sexpr{fmt(vr6["surrender_option", 4])} lekë.
+    \item<3-> Kur normat rriten, klienti ka më shumë arsye të dalë dhe t'i investojë paratë gjetkë: \textbf{rreziku i anulimit} lidhet me normat.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kur anulon klienti racional?}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Kufiri i anulimit}
+<<w9h6-bnd>>=
+n6 <- 60                                                  # monthly steps over 5 years
+b6 <- binomopt(100, 98, sig6, r6, T6, 0, n6, american = TRUE, putopt = TRUE, returntrees = TRUE)
+bnd6 <- sapply(1:(n6 + 1), function(j) {
+  s <- b6$stree[1:j, j]; e <- b6$exertree[1:j, j]
+  if (any(e)) max(s[e]) else 0 })                         # 0: no surrender at this step
+round(bnd6[c(13, 25, 37, 49, 61)], 1)                     # years 1, 2, 3, 4, 5
+@
+  \small Klienti racional anulon kur fondi bie \textbf{nën} këtë kufi.
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi në botën reale}
+<<w9h6-sim>>=
+set.seed(969)
+M6 <- 1e4; dt6 <- T6 / n6
+Z6 <- matrix(rnorm(M6 * n6), M6, n6)
+S6 <- 100 * exp(t(apply((0.07 - sig6^2 / 2) * dt6 + sig6 * sqrt(dt6) * Z6, 1, cumsum)))
+hit6 <- apply(S6 <= matrix(bnd6[-1], M6, n6, byrow = TRUE), 1,
+              function(h) if (any(h)) which(h)[1] else NA)
+round(c(share_surrender = mean(!is.na(hit6)), before_maturity = mean(!is.na(hit6) & hit6 < n6),
+        median_year = median(hit6, na.rm = TRUE) * dt6), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me $\mu=7\%$, një klient racional anulon para maturimit në rreth \Sexpr{fmt(100 * mean(!is.na(hit6) & hit6 < n6))}\% të skenarëve.
+    \item<2-> Mediana e kohës së anulimit: rreth \Sexpr{fmt(median(hit6, na.rm = TRUE) * dt6, 1)} vjet.
+    \item<3-> Anulimet racionale ndodhin \textbf{pas rënieve të tregut}: kur fondi vlen pak dhe garancia shumë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kjo e bën rrezikun të rrezikshëm: anulimet grumbullohen pikërisht kur kompania ka humbje në aktive.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile,label=w9gab6]{Gjej gabimin}
+<<w9h6-bug>>=
+hit_bad <- apply(S6 >= matrix(bnd6[-1], M6, n6, byrow = TRUE), 1,
+                 function(h) if (any(h)) which(h)[1] else NA)
+c(share_bad = mean(!is.na(hit_bad)), median_year_bad = median(hit_bad, na.rm = TRUE) * dt6)
+@
+  \begin{enumerate}
+    \item Pse ``anulojnë'' pothuajse të gjithë klientët që në muajin e parë?
+    \item Çfarë do të thotë ekonomikisht të anulosh kur fondi është \textbf{mbi} kufirin?
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjGab6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Sjellja reale}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Të dhënat e anulimeve (sintetike)}
+<<w9h6-lapse>>=
+lp <- read.csv(file.path(DATA, "lapse_policies_synthetic.csv"))
+round(c(n = nrow(lp), share_lapsed = mean(lp$lapse),
+        median_time_lapsed = median(lp$time_years[lp$lapse == 1])), 3)
+round(prop.table(table(lp$channel, lp$lapse), 1), 3)       # by sales channel
+@
+  \small \textbf{Sintetike}: Weibull PH, me efekt të moshës, primës dhe kanalit (README). Pa asnjë lidhje me tregun.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në të dhënat, \Sexpr{fmt(100 * mean(lp$lapse))}\% e kontratave anulohen, për arsye që nuk lidhen me tregun: kanali, mosha, prima.
+    \item<2-> Shitjet \texttt{online} kanë më shumë anulime se ato në bankë: efekt sjelljeje, jo tregu.
+    \item<3-> Modeli i plotë kombinon dy pjesë: anulime ``bazë'' (statistikore) + anulime ``dinamike'' që varen nga tregu.
+  \end{itemize}
+  \onslide<4->{\small Modelimi i anulimeve bazë (Kaplan--Meier, modeli Cox) është jashtë temave të kësaj jave; të dhënat janë gati për projektin.}
+\end{frame}
+
+\begin{frame}[label=w9ush6]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Gjej ndëshkimin $c$ për të cilin vlera e së drejtës së anulimit bie nën 100\,000 lekë (me $r=3\%$).
+      \item Për atë $c$, sa \% e klientëve racionalë anulojnë para maturimit?
+    \end{enumerate}
+    Ndihmë: përdor \texttt{pa6()}, \texttt{pe6()} dhe kodin e simulimit me një kufi të ri.
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjUsh6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lidhja me rregullimin}
+% ------------------------------------------------------------
+
+\begin{frame}{Solvency II dhe IFRS 17 (koncepte)}
+  \begin{itemize}
+    \item<1-> \textbf{Solvency II}: kapitali për rrezikun e anulimeve përfshin skenarë rritjeje, uljeje dhe \textbf{anulimi masiv}.
+    \item<2-> \textbf{IFRS 17}: flukset e ardhshme përfshijnë supozimet më të mira për anulimet; opsionet e anulimit ndikojnë në vlerën e detyrimit.
+    \item<3-> Lidhja me këtë orë: një opsion amerikan i shitur klientit është detyrim, edhe kur nuk ka çmim të shkruar.
+  \end{itemize}
+  \onslide<4->{\small Detajet rregullatore janë jashtë këtij kursi.}
+\end{frame}
+
+\begin{frame}[label=w9tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    \begin{enumerate}
+      \item Pse një kompani mund të zgjedhë ndëshkim anulimi që zbret me kohën (p.sh.\ 5\%, 4\%, \dots, 0\%)?
+      \item Ndëshkimi i lartë ul rrezikun për kompaninë. Çfarë kostoje ka për klientin dhe për konkurrueshmërinë e produktit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjTps6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse garancia ``në çdo kohë'' është një put amerikan?
+    \item Pse pjesa e anulimit rritet me normat e interesit?
+    \item Kur anulon klienti racional?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) klienti mund ta ``shesë'' fondin me $G$ në çdo moment; (2) interesi mbi $G$ e bën marrjen e tij sot më tërheqëse;
+  (3) kur fondi bie nën kufirin $S^*(t)$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item ``Kursimi Plus'' = fond + put amerikan me $G=(1-c)\cdot10^7$.
+    \item E drejta e anulimit: \Sexpr{fmt(v6["surrender_option", 2])} lekë për kontratë me $c=2\%$, $r=3\%$.
+    \item Rritet me $r$; anulimet racionale ndodhin pas rënieve të tregut.
+    \item Sjellja reale: shumë anulime (53\%), për arsye jo-tregu.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, ushtrime të tipit provim, gabimet e zakonshme, fletë-kujtesë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item README i të dhënave: \texttt{lapse\_policies\_synthetic.csv}, \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{binomopt()}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+  \end{itemize}
+\end{frame}

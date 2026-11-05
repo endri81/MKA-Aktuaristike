@@ -1,0 +1,41 @@
+% ============================================================
+%  Java 9 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w9zgjPar6]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Bie: nga \Sexpr{fmt(vr6["american", 2])} në \Sexpr{fmt(vr6["american", 4])} lekë. Me $r$ të lartë, put-i vlen më pak.
+    \item Rritet: nga \Sexpr{fmt(vr6["surrender_option", 2])} në \Sexpr{fmt(vr6["surrender_option", 4])} lekë. Interesi mbi $G$ e bën anulimin më tërheqës (Ora 5).
+  \end{enumerate}
+  \small Dy efekte në drejtime të kundërta: kompania duhet t'i matë të dyja.
+  \vfill\kthehu{w9par6}
+\end{frame}
+
+\begin{frame}[label=w9zgjGab6]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item \texttt{>=} në vend të \texttt{<=}: në muajin e parë fondi është afër 100, shumë mbi kufirin ($\approx\Sexpr{fmt(bnd6[2])}$), pra ``anulon'' pothuajse çdo klient.
+    \item Anulimi kur fondi $>G$ jep vetëm vlerën e fondit: klienti heq dorë nga garancia pa marrë asgjë. Është vendim joracional.
+  \end{enumerate}
+  \vfill\kthehu{w9gab6}
+\end{frame}
+
+\begin{frame}[fragile,label=w9zgjUsh6]{Zgjidhja: Radha jote!}
+<<w9h6-sol-ush>>=
+cg <- seq(0, 0.30, by = 0.01)
+opt <- sapply(cg, function(cc) pa6(100 * (1 - cc)) - pe6(100 * (1 - cc)))
+c_min <- cg[which(opt < 1e5)[1]]
+bb <- binomopt(100, 100 * (1 - c_min), sig6, r6, T6, 0, n6, TRUE, TRUE, returntrees = TRUE)
+bn <- sapply(1:(n6 + 1), function(j) max(c(0, bb$stree[1:j, j][bb$exertree[1:j, j]])))
+hh <- apply(S6 <= matrix(bn[-1], M6, n6, byrow = TRUE), 1, function(h) which(h)[1])
+round(c(c_min = c_min, option_value = opt[which(opt < 1e5)[1]], early_share = mean(!is.na(hh) & hh < n6)), 3)
+@
+  \vfill\kthehu{w9ush6}
+\end{frame}
+
+\begin{frame}[label=w9zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Kompania ka kosto fillestare (komisione, shitje): ndëshkimi i lartë në fillim i mbulon ato; me kohën, ato janë rikuperuar dhe ndëshkimi bie.
+    \item Klienti humbet likuiditet dhe fleksibilitet; produkti bëhet më pak tërheqës kundrejt konkurrentëve. Ndëshkimi shumë i lartë mund të shihet edhe si praktikë e padrejtë ndaj klientit.
+  \end{enumerate}
+  \vfill\kthehu{w9tps6}
+\end{frame}
