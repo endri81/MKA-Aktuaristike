@@ -1,0 +1,293 @@
+% ============================================================
+%  Java 8 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Mjaftojnë: $\ln$, $e^x$, $\sqrt{\;}$ dhe tabela e $\Phi$. Ku duhet, vlerat jepen në ushtrim.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w8qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Kemi 2 vite çmime ditore. Si ulet $\text{SE}(\hat\mu)$ në \textbf{gjysmë}?
+    \begin{enumerate}
+      \item[A)] Me çmime çdo orë në vend të çmimeve ditore.
+      \item[B)] Me 8 vite çmime ditore.
+      \item[C)] Me 4 vite çmime ditore.
+      \item[D)] Duke përdorur kthimet e thjeshta në vend të atyre logaritmike.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w8sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Put--call parity $C-P=S_0-Ke^{-rT}$ vlen:
+    \begin{enumerate}
+      \item[A)] vetëm nëse çmimi ndjek GBM;
+      \item[B)] vetëm nëse $\mu=r$;
+      \item[C)] për opsione europiane mbi aksion pa dividendë, pa arbitrazh, për çdo model;
+      \item[D)] edhe për opsione amerikane, me barazim.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w8sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU1]{U1 · Kthimet}
+  \begin{Ushtrim}[(çmimet: 80, 84, 82)]
+    \begin{enumerate}
+      \item Llogarit $R_1,R_2$ dhe $r_1,r_2$.
+      \item Kontrollo $r_1+r_2=\ln(82/80)$.
+      \item Pse $R_1+R_2\neq82/80-1$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU2]{U2 · Vjetorizimi dhe gabimi standard}
+  \begin{Ushtrim}[(2 vite, $n=504$ kthime ditore)]
+    \begin{enumerate}
+      \item Devijimi standard ditor është 1.2\%. Llogarit $\hat\sigma$ vjetor.
+      \item Llogarit $\text{SE}(\hat\sigma)\approx\hat\sigma/\sqrt{2n}$ dhe intervalin 95\%.
+      \item Llogarit $\text{SE}(\hat\mu)\approx\hat\sigma/\sqrt T$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU3]{U3 · GBM}
+  \begin{Ushtrim}[($\mu=8\%$, $\sigma=20\%$, $t=4$; $\Phi(-0.6)=0.2743$)]
+    \begin{enumerate}
+      \item Llogarit $E[S_4]/S_0$ dhe medianën e $S_4/S_0$.
+      \item Llogarit $P(S_4<S_0)$.
+      \item Pse mediana $<$ mesatarja?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU4]{U4 · Forward-i}
+  \begin{Ushtrim}[($S_0=50$, $r=4\%$, $T=2$)]
+    \begin{enumerate}
+      \item Llogarit çmimin e forward-it pa arbitrazh.
+      \item Tregu kuoton $F=56$. Ndërto arbitrazhin dhe llogarit fitimin në $T$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU5]{U5 · Parity}
+  \begin{Ushtrim}[($S_0=80$, $K=75$, $r=5\%$, $T=0.5$, $P=2.40$; $e^{-0.025}=0.975310$)]
+    \begin{enumerate}
+      \item Llogarit $C$ nga parity.
+      \item Kontrollo kufirin $C\ge S_0-Ke^{-rT}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU6]{U6 · Arbitrazhi}
+  \begin{Ushtrim}[(të dhënat e U5)]
+    Tregu kuoton $C=10.00$.
+    \begin{enumerate}
+      \item A është call-i i lirë apo i shtrenjtë?
+      \item Shkruaj katër veprimet e arbitrazhit dhe tabelën e flukseve (sot, në $T$).
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU7]{U7 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Zbato \texttt{est\_gbm()} vetëm në vitin e parë të të dhënave (\texttt{rx["2023"]}).
+      \item Krahaso intervalet e $\mu$ dhe $\sigma$ me ato të 3 viteve. Sa herë më të gjera janë?
+      \item A përputhet me formulat $\sigma/\sqrt T$ dhe $\sigma/\sqrt{2n}$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w8qU8]{U8 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Kostoja e garancisë së 95\% të kapitalit për 3 vjet (10 milionë lekë, $\hat\sigma$, $r=3\%$).
+      \item Kontrolloje me parity.
+      \item Norma e pjesëmarrjes me obligacion + call.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w8sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): kthimet dhe vlerësimi}
+  \begin{enumerate}
+    \item \texttt{log(diff(S))} në vend të \texttt{diff(log(S))}.
+    \item $\sigma_{\text{vjetor}}=252\,\sigma_{\text{ditor}}$ në vend të $\sqrt{252}$.
+    \item ``Më shumë frekuencë $\Rightarrow$ $\hat\mu$ më i saktë'': jo, vetëm më shumë vite.
+    \item Normaliteti i marrë si i mirëqenë: kontrollo me QQ.
+    \item Luhatjet e volatilitetit rrëshqitës lexuar si ndryshime të vërteta.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): opsionet}
+  \begin{enumerate}
+    \item $Ke^{rT}$ në vend të $Ke^{-rT}$ në parity.
+    \item $S_0$ dhe $K$ të ngatërruara: $C-P=K-S_0e^{-rT}$.
+    \item ``Bli opsionin e lirë'' pa portofolin e plotë: nuk është arbitrazh.
+    \item Çmimi i garancisë me pritjen e botës reale ($\mu$): e nënvlerëson.
+    \item Skontimi me $\mu$ në vend të $r$.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w8qGab7]{Gjej gabimin: raundi i shpejtë}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{sigma <- sd(diff(log(S))) * 252}
+    \item[(b)] \texttt{P <- C - S0 + K * exp(-r * T)}
+    \item[(c)] \texttt{F <- S0 * exp(-r * T)}
+  \end{enumerate}
+  \vfill\shkoTe{w8sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): R}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Funksioni & Çfarë jep \\
+      \midrule
+      \texttt{xts(x, order.by = date)} & seri kohore \\
+      \texttt{diff(log(S))[-1]} & kthimet log \\
+      \texttt{apply.yearly(r, sum)} & kthimet vjetore \\
+      \texttt{rollapply(r, 60, sd) * sqrt(252)} & volatiliteti rrëshqitës \\
+      \texttt{bscall(s, k, v, r, tt, d)} & çmimi i call-it (Black--Scholes) \\
+      \texttt{bsput(s, k, v, r, tt, d)} & çmimi i put-it \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      $r=\ln(S_t/S_{t-1})=\ln(1+R)$ & $\hat\sigma=\text{sd}(r)\sqrt{252}$ \\
+      $\hat\mu=252\,\bar r+\hat\sigma^2/2$ & $\text{SE}(\hat\mu)\approx\sigma/\sqrt T$, \; $\text{SE}(\hat\sigma)\approx\sigma/\sqrt{2n}$ \\
+      $E[S_t]=S_0e^{\mu t}$ & $P(S_t<S_0)=\Phi\big(-(\mu-\sigma^2/2)\sqrt t/\sigma\big)$ \\
+      $F=S_0e^{rT}$ & $C-P=S_0-Ke^{-rT}$ \\
+      $\max(S_T,K)=S_T+(K-S_T)^+$ & $=K+(S_T-K)^+$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w8h7-cheat, eval=FALSE>>=
+S  <- xts(st$close, order.by = as.Date(st$date))
+rx <- diff(log(S))[-1]
+est_gbm(as.numeric(rx))                              # Hour 3: mu, sigma, CI
+P  <- bsput(100, 100, sigma_hat, 0.03, 5, 0)         # guarantee per unit
+C  <- bscall(100, 100, sigma_hat, 0.03, 5, 0)
+C - P - (100 - 100 * exp(-0.03 * 5))                 # parity: ~ 0
+alpha <- (1 - exp(-0.03 * 5)) * 100 / C              # participation rate
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 9)}
+  \begin{enumerate}
+    \item Simulo 1\,000 seri me 10 vite të dhëna ditore. Si ndryshon $\text{SE}(\hat\mu)$ krahasuar me 3 vite?
+    \item Çmo garancinë e ``Pensioni Plus'' për $T=1,\dots,20$ vjet dhe vizato koston dhe $\alpha$ si funksione të $T$.
+    \item Gjej një shembull numerik ku parity me dividendë ($q=2\%$) e ndryshon çmimin e put-it me më shumë se 1 lek për njësi.
+  \end{enumerate}
+  \small Dorëzim: një skript R i riprodhueshëm (\texttt{set.seed}) dhe një faqe me interpretim.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 9}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 9: opsionet europiane dhe amerikane}
+  \begin{itemize}
+    \item<1-> Call dhe put europiane dhe amerikane: payoff, kufij, vetitë.
+    \item<2-> Ushtrimi i hershëm: kur ka vlerë?
+    \item<3-> Pse një call amerikan mbi aksion \textbf{pa dividendë} nuk ushtrohet kurrë herët.
+    \item<4-> Put-i amerikan: kur ushtrimi i hershëm është optimal.
+  \end{itemize}
+  \onslide<5->{\vfill\LO{K3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse $\hat\sigma$ është i saktë dhe $\hat\mu$ jo, me 3 vite të dhëna?
+    \item Si e vërteton parity ligji i një çmimi?
+    \item Pse kostoja e garancisë nuk është pagesa e pritur në botën reale?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\text{SE}(\hat\sigma)\propto1/\sqrt n$, $\text{SE}(\hat\mu)\propto1/\sqrt T$;
+  (2) call + para dhe put + aksion kanë të njëjtin payoff; (3) çmimi është kostoja e replikimit, që nuk varet nga $\mu$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 8}
+  \begin{itemize}
+    \item Kthimet, vjetorizimi, GBM, $P(S_t<S_0)$. \LO{S1}
+    \item $\hat\mu$, $\hat\sigma$ me intervale; 1\,000 botë të simuluara. \LO{S1}
+    \item Opsionet, arbitrazhi, put--call parity. \LO{K3}
+    \item Parity në R me \Rkey{derivmkts}; arbitrazhi i simuluar. \LO{K3}
+    \item Garancia e fondit: put, bota reale kundrejt çmimit, obligacion + call. \LO{C3}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}

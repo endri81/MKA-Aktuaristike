@@ -1,0 +1,116 @@
+% ============================================================
+%  Java 8 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8sT1]{Zgjidhja T1}
+  \textbf{B)} $\text{SE}(\hat\mu)\approx\sigma/\sqrt T$: për ta përgjysmuar, $T$ duhet shumëzuar me 4: nga 2 në 8 vite.
+  \begin{itemize}
+    \item A) frekuenca nuk ndihmon për $\mu$. \; C) 4 vite e ulin vetëm me faktorin $\sqrt2$.
+    \item D) nuk ka lidhje me gabimin standard.
+  \end{itemize}
+  \vfill\kthehu{w8qT1}
+\end{frame}
+
+\begin{frame}[label=w8sT2]{Zgjidhja T2}
+  \textbf{C)} Parity vjen vetëm nga mungesa e arbitrazhit: nuk kërkon model.
+  \begin{itemize}
+    \item A), B) parity nuk varet nga GBM, as nga $\mu$.
+    \item D) për opsionet amerikane bëhet mosbarazim: $S_0-K\le C_A-P_A\le S_0-Ke^{-rT}$.
+  \end{itemize}
+  \vfill\kthehu{w8qT2}
+\end{frame}
+
+\begin{frame}[label=w8sU1]{Zgjidhja U1}
+  \begin{enumerate}
+    \item $R_1=0.050000$, $R_2=-0.023810$; \; $r_1=0.048790$, $r_2=-0.024098$.
+    \item $0.048790-0.024098=0.024693=\ln1.025$. \textcolor{okgreen}{$\checkmark$}
+    \item $R_1+R_2=0.026190\neq0.025$: kthimet e thjeshta shumëzohen, $(1.05)(0.97619)=1.025$.
+  \end{enumerate}
+  \vfill\kthehu{w8qU1}
+\end{frame}
+
+\begin{frame}[label=w8sU2]{Zgjidhja U2}
+  \begin{enumerate}
+    \item $\hat\sigma=0.012\sqrt{252}=0.1905=19.05\%$.
+    \item $\text{SE}=0.1905/\sqrt{1008}=0.0060$; \; IB: $19.05\%\pm1.18\%=[17.9\%,\;20.2\%]$.
+    \item $\text{SE}(\hat\mu)=0.1905/\sqrt2=13.5\%$.
+  \end{enumerate}
+  \vfill\kthehu{w8qU2}
+\end{frame}
+
+\begin{frame}[label=w8sU3]{Zgjidhja U3}
+  \begin{enumerate}
+    \item $E[S_4]/S_0=e^{0.32}=1.3771$; \; mediana $e^{(0.08-0.02)\cdot4}=e^{0.24}=1.2712$.
+    \item $P(S_4<S_0)=\Phi(-0.06\cdot2/0.2)=\Phi(-0.6)=0.2743$.
+    \item $\ln S_4$ është simetrik (normal); eksponenciali ``zgjat'' bishtin e djathtë: mesatarja tërhiqet lart nga skenarët shumë të mirë.
+  \end{enumerate}
+  \vfill\kthehu{w8qU3}
+\end{frame}
+
+\begin{frame}[label=w8sU4]{Zgjidhja U4}
+  \begin{enumerate}
+    \item $F=50e^{0.08}=54.1644$.
+    \item $56>54.16$: shit forward me 56, bli aksionin me hua 50. Në $T$: dorëzo aksionin, merr 56, shlyej $54.1644$.
+      Fitimi: $56-54.1644=1.8356$.
+  \end{enumerate}
+  \vfill\kthehu{w8qU4}
+\end{frame}
+
+\begin{frame}[label=w8sU5]{Zgjidhja U5}
+  \begin{enumerate}
+    \item $Ke^{-rT}=75\cdot0.975310=73.1482$; \; $C=P+S_0-Ke^{-rT}=2.40+80-73.1482=9.2518$.
+    \item $S_0-Ke^{-rT}=6.8518\le9.2518$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w8qU5}
+\end{frame}
+
+\begin{frame}[label=w8sU6]{Zgjidhja U6}
+  Call-i është \textbf{i shtrenjtë} ($10.00>9.2518$): e shesim.
+  \begin{center}
+    \small
+    \begin{tabular}{lcc}
+      \toprule
+      Veprimi & Sot & Në $T$ \\
+      \midrule
+      Shit call & $+10.00$ & $-(S_T-75)^+$ \\
+      Bli put & $-2.40$ & $(75-S_T)^+$ \\
+      Bli aksionin & $-80$ & $S_T$ \\
+      Merr hua $Ke^{-rT}$ & $+73.1482$ & $-75$ \\
+      \midrule
+      \textbf{Gjithsej} & $\mathbf{+0.7482}$ & $\mathbf{0}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \vfill\kthehu{w8qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=w8sU7]{Zgjidhja U7}
+<<w8s7-u7>>=
+e1 <- est_gbm(as.numeric(rx["2023"])); e3 <- est_gbm(rv)
+w  <- function(e) e["upper", ] - e["lower", ]
+round(rbind(width_1y = w(e1), width_3y = w(e3), ratio = w(e1) / w(e3)), 3)
+@
+  \small Teoria: $\mu$: $\sqrt{3}=1.73$ herë; $\sigma$: $\sqrt{755/251}\approx1.73$ herë. Të dyja $\approx\sqrt3$, sepse $n$ dhe $T$ shkojnë bashkë. Raporti del \Sexpr{fmt(w(e1)[1] / w(e3)[1], 2)}, pak më shumë, sepse $\hat\sigma$ i 2023 është më i madh.
+  \vfill\kthehu{w8qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w8sU8]{Zgjidhja U8}
+<<w8s7-u8>>=
+sh <- unname(sig_g["estimate"])
+p95 <- 1e5 * bsput(100, 95, sh, 0.03, 3, 0)
+c95 <- 1e5 * bscall(100, 95, sh, 0.03, 3, 0)
+par95 <- c95 - 1e7 + 9.5e6 * exp(-0.03 * 3)
+alpha95 <- (1e7 - 9.5e6 * exp(-0.03 * 3)) / c95
+round(c(put = p95, via_parity = par95, alpha_pct = 100 * alpha95), 1)
+@
+  \vfill\kthehu{w8qU8}
+\end{frame}
+
+\begin{frame}[label=w8sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{itemize}
+    \item (a) gabim: duhet \texttt{sqrt(252)}.
+    \item (b) \textbf{e saktë}: $P=C-S_0+Ke^{-rT}$.
+    \item (c) gabim: $F=S_0e^{+rT}$.
+  \end{itemize}
+  \vfill\kthehu{w8qGab7}
+\end{frame}
