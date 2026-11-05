@@ -428,11 +428,15 @@ rbind(d = d_grid, premium = sapply(d_grid, stop_loss),
     \item<1-> Deri tani: një $\lambda$ për gjithë portofolin.
     \item<2-> Në realitet frekuenca varet nga mosha e shoferit, mosha e mjetit, qyteti, karburanti\dots
     \item<3-> Java 2: raporti i thjeshtë Tiranë/jo-Tiranë dha $\approx1.12$. E vërteta sintetike: $e^{0.25}\approx1.28$.
-    \item<4-> Pse ndryshojnë? Faktorët e tjerë janë të ``përzier'' me qytetin (\emph{confounding}).
+    \item<4-> Pse ndryshojnë? Dy arsye të mundshme:
+      \begin{enumerate}
+        \item faktorët e tjerë janë të ``përzier'' me qytetin (\emph{confounding});
+        \item rastësia: vetëm 768 dëme.
+      \end{enumerate}
   \end{itemize}
   \onslide<5->{
   \begin{block}{Ideja}
-    Një model që vlerëson efektin e çdo faktori \textbf{duke mbajtur të tjerët të fiksuar}: GLM.
+    GLM vlerëson efektin e çdo faktori \textbf{duke mbajtur të tjerët të fiksuar} (arsyeja 1), dhe jep gabimin standard (arsyeja 2). Përgjigjen e shohim në Orën 5.
   \end{block}}
 \end{frame}
 
@@ -488,7 +492,7 @@ rbind(d = d_grid, premium = sapply(d_grid, stop_loss),
   \begin{itemize}
     \item Koeficienti i variacionit $\sqrt\phi$ është \textbf{i njëjtë} për të gjitha policat.
     \item $\phi=1/\alpha$: me formë Gamma 2, $\phi=0.5$.
-    \item<3-> Në të dhënat sintetike: ashpërsia \textbf{nuk} varet nga faktorët; GLM duhet të gjejë $\gamma_j\approx0$.
+    \item<3-> Në të dhënat sintetike ashpërsia \textbf{nuk} varet nga faktorët: presim $\hat\gamma_j$ afër 0, brenda gabimit standard.
   \end{itemize}
 \end{frame}
 

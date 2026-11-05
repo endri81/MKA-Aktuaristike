@@ -1,0 +1,82 @@
+% ============================================================
+%  Java 3 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w3s5-setup, include=FALSE>>=
+suppressMessages(library(actuar))
+fx <- discretize(pgamma(x, shape = 2, scale = 450),
+                 from = 0, to = 15000, step = 100, method = "rounding")
+F_rec <- aggregateDist("recursive", model.freq = "poisson", model.sev = fx,
+                       lambda = 60, x.scale = 100, maxit = 3000)
+mp <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+mp <- transform(mp, young = pmax(30 - driver_age, 0), old = pmax(driver_age - 65, 0),
+                tirane = as.numeric(region == "Tirane"), nafte = as.numeric(fuel == "nafte"))
+glm_f <- glm(n_claims ~ young + old + vehicle_age + tirane + nafte + offset(log(exposure)),
+             family = poisson, data = mp)
+@
+
+\begin{frame}[fragile,label=w3zgjPar5]{Zgjidhja: Parashiko (\texttt{convolve})}
+  \begin{enumerate}
+    \item Edhe $2^1$ do të mjaftonte: $e^{-384(1-f_0)}\approx10^{-166}>10^{-308}$. Me më shumë copa, $g_0$ mbetet larg kufirit dhe rekursioni është i shkurtër.
+    \item $f_0=\Pr(X<50)\approx0.0057$, \; $g_0=e^{-24(1-f_0)}\approx4.3\times10^{-11}$.
+    \item \texttt{maxit} vlen vetëm për rekursionin e një cope; çdo konvolucion e dyfishon rrjetën vetë.
+  \end{enumerate}
+<<w3s5-par>>=
+F_two <- aggregateDist("recursive", model.freq = "poisson", model.sev = fx,
+                       lambda = 384, x.scale = 100, convolve = 1, maxit = 5000)
+c(mean = mean(F_two), VaR995 = VaR(F_two, 0.995))
+@
+  \vfill\kthehu{w3par5}
+\end{frame}
+
+\begin{frame}[label=w3zgjGab5]{Zgjidhja: Gjej gabimin (\texttt{x.scale})}
+  \begin{itemize}
+    \item Mungon \texttt{x.scale = 100}.
+    \item \texttt{fx} është pmf në pikat $0,100,200,\dots$, por \Rkey{actuar} nuk e di hapin: e vendos në $0,1,2,\dots$
+    \item Çdo shumë del në njësi ``100 €'': mesatarja 540 në vend të 54\,000.
+  \end{itemize}
+  \begin{Keshille}Kontroll i shpejtë: \texttt{mean(F)} duhet të jetë afër $\lambda E[X]$.\end{Keshille}
+  \vfill\kthehu{w3gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjUsh5a]{Zgjidhja: Radha jote! (stop-loss me \texttt{actuar})}
+<<w3s5-sl>>=
+s <- knots(F_rec); p <- diff(F_rec)
+c(n_points = length(s), total_prob = sum(p),
+  stop_loss_60k = sum(pmax(s - 60000, 0) * p))
+@
+  \begin{itemize}
+    \item \texttt{knots()}: pikat ku $F_S$ ka kërcime; \texttt{diff()}: madhësia e kërcimeve, pra pmf.
+    \item Rezultati përputhet me Orën 4 (Panjer nga zero, $d=60\,000$).
+  \end{itemize}
+  \vfill\kthehu{w3ush5a}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjNdr5]{Zgjidhja: Ndrysho parametrin (franshiza)}
+<<w3s5-ndr>>=
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+x <- cl$amount_eur; u <- 50000
+t(sapply(c(500, 1000, 2000, 5000), function(d) {
+  y <- pmin(x, u) - pmin(x, d)
+  c(d = d, not_paid = mean(x <= d),
+    LER = 1 - mean(y) / mean(pmin(x, u)))
+}))
+@
+  \small LER këtu matet ndaj pagesës pa franshizë (me të njëjtin limit). Për $-10\%$ zgjidh franshizën e parë me LER $\ge0.10$.
+  \vfill\kthehu{w3ndr5}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjUsh5b]{Zgjidhja: Radha jote! (profili)}
+<<w3s5-prof>>=
+p1 <- data.frame(driver_age = 25, young = 5, old = 0, vehicle_age = 8,
+                 tirane = 0, nafte = 1, exposure = 1)
+f_est  <- predict(glm_f, newdata = p1, type = "response")
+f_true <- exp(-2.3 + 0.02 * 5 + 0.015 * 8 + 0.10)
+round(c(freq_est = f_est, freq_true = f_true,
+        pure_est = 900 * f_est, pure_true = 900 * f_true), 4)
+xv <- c(1, 5, 0, 8, 0, 1)                      # profile values incl. intercept
+round((coef(glm_f) - c(-2.3, 0.02, 0.01, 0.015, 0.25, 0.10)) * xv, 3)
+@
+  \small Rreshti i fundit: kontributi i çdo koeficienti te $\log\hat\lambda-\log\lambda$. Shuma e tyre jep diferencën në log.
+  \vfill\kthehu{w3ush5b}
+\end{frame}

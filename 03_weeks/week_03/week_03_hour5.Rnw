@@ -1,0 +1,532 @@
+% ============================================================
+%  Java 3 · Ora 5 — Laborator R II: actuar dhe glm
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w3h5-setup, include=FALSE>>=
+suppressMessages(library(actuar))
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{aggregateDist()}: pesë metoda për shpërndarjen e $S$.
+    \item<2-> Portofoli i plotë ($\lambda=768$): si e kalojmë \emph{underflow}-in e Orës 3.
+    \item<3-> \texttt{coverage()} dhe franshiza mbi dëmet individuale.
+    \item<4-> \texttt{glm()}: frekuenca dhe ashpërsia e portofolit auto, \textbf{vlerësimi kundrejt së vërtetës}.
+    \item<5-> Prima e pastër sipas profilit.
+  \end{enumerate}
+  \onslide<6->{\small Paketat: \Rkey{actuar} \Sexpr{as.character(packageVersion("actuar"))}, \Rkey{stats} (\texttt{glm}), \Rkey{ggplot2}.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{\texttt{aggregateDist()}}
+% ------------------------------------------------------------
+
+\begin{frame}{Funksioni \texttt{aggregateDist()}}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{lll}
+      \toprule
+      \texttt{method} & Çfarë kërkon & Ora \\
+      \midrule
+      \texttt{"recursive"} & \texttt{model.freq} (a, b, 0), \texttt{model.sev} diskrete & Panjer, Ora 3--4 \\
+      \texttt{"convolution"} & pmf e $N$ (vektor), \texttt{model.sev} diskrete & Ora 1 \\
+      \texttt{"normal"} & \texttt{moments = c(mean, var)} & Ora 4 \\
+      \texttt{"npower"} & \texttt{moments = c(mean, var, skewness)} & Ora 4 \\
+      \texttt{"simulation"} & \texttt{model.freq}, \texttt{model.sev} si \texttt{expression()} & Ora 3 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Rezultati është një \textbf{funksion} $F_S(s)$: \texttt{F(60000)} jep $\Pr(S\le60\,000)$.
+    \item Metodat: \texttt{mean()}, \texttt{quantile()}, \texttt{VaR()}, \texttt{CTE()}, \texttt{plot()}, \texttt{diff()}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Metoda rekursive për Fierin}
+<<w3h5-rec>>=
+fx <- discretize(pgamma(x, shape = 2, scale = 450),
+                 from = 0, to = 15000, step = 100, method = "rounding")
+F_rec <- aggregateDist("recursive", model.freq = "poisson",
+                       model.sev = fx, lambda = 60,
+                       x.scale = 100, maxit = 3000)
+c(mean = mean(F_rec), F_60000 = F_rec(60000),
+  VaR995 = VaR(F_rec, 0.995), TVaR995 = CTE(F_rec, 0.995))
+@
+  \small Të njëjtat vlera si funksioni ynë \texttt{panjer\_pois()} i Orës 3: VaR$_{0.995}=77\,700$ €.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{x.scale = 100}: hapi i rrjetës. Pa të, \Rkey{actuar} supozon hap 1 €.
+    \item<2-> \texttt{maxit}: numri maksimal i hapave të rekursionit. Me 3\,000 hapa arrijmë deri në 300\,000 €.
+    \item<3-> \texttt{F\_rec(60000)}: rreth \Sexpr{fmt(100 * F_rec(60000), 1)}\% e viteve kanë $S\le60\,000$ €.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Me \texttt{maxit} të paracaktuar (500), rekursioni ndalet te 50\,000 €, para se shpërndarja të plotësohet. R jep vetëm një \emph{warning}, dhe mesatarja del shumë e gabuar.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: \texttt{maxit} shumë i vogël}
+<<w3h5-maxit>>=
+F_short <- aggregateDist("recursive", model.freq = "poisson",
+                         model.sev = fx, lambda = 60, x.scale = 100)
+c(mean_short = mean(F_short), mean_ok = mean(F_rec),
+  truth = 60 * 900)
+@
+  \small Lexo gjithmonë mesazhet \emph{warning}: këtu ato tregojnë që rezultati është i paplotë.
+\end{frame}
+
+\begin{frame}[fragile]{Portofoli i plotë: \emph{underflow}}
+<<w3h5-underflow>>=
+try(aggregateDist("recursive", model.freq = "poisson",
+                  model.sev = fx, lambda = 768, x.scale = 100))
+@
+  \begin{itemize}
+    \item<2-> $g_0=e^{-768(1-f_0)}\approx e^{-765}$: më i vogël se numri më i vogël pozitiv i R-së ($\approx10^{-308}$).
+    \item<3-> \Rkey{actuar} e dallon dhe ndalet me gabim, në vend që të japë zero.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Zgjidhja: ndaj dhe konvolo}
+  \begin{Teoreme}
+    Shuma e dy Poisson-ëve të përbërë të pavarur, me $\lambda_1$ dhe $\lambda_2$ dhe të njëjtën ashpërsi,
+    është Poisson i përbërë me $\lambda_1+\lambda_2$.
+  \end{Teoreme}
+  \pause
+  \begin{enumerate}
+    \item Llogarit me Panjer shpërndarjen për $\lambda/2^m$ (p.sh.\ $768/32=24$): $g_0\approx e^{-24}$, pa problem.
+    \item<3-> Konvolo rezultatin me veten $m$ herë: $2\to4\to8\to16\to32$ copa.
+    \item<4-> Rezultati: shpërndarja e saktë për $\lambda=768$.
+  \end{enumerate}
+  \onslide<5->{\small Në \texttt{aggregateDist()}: argumenti \texttt{convolve = m}.}
+\end{frame}
+
+\begin{frame}[fragile]{Portofoli i plotë me \texttt{convolve = 5}}
+<<w3h5-conv>>=
+F_full <- aggregateDist("recursive", model.freq = "poisson",
+                        model.sev = fx, lambda = 768 / 2^5,
+                        x.scale = 100, convolve = 5, maxit = 3000)
+c(mean = mean(F_full), truth = 768 * 900,
+  VaR995 = VaR(F_full, 0.995), TVaR995 = CTE(F_full, 0.995),
+  P_above_750k = 1 - F_full(750000))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mesatarja përputhet me $\lambda E[X]=691\,200$ €. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> VaR$_{0.995}\approx\Sexpr{fmt(VaR(F_full, 0.995))}$ €, si simulimi i Orës 4 ($\approx771\,600$ €).
+    \item<3-> \textbf{Përgjigjja për bordin} (Ora 1): $\Pr(S>750\,000)\approx\Sexpr{fmt(100 * (1 - F_full(750000)), 2)}\%$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Kujdes}
+    Kjo vlen për \textbf{ashpërsinë Gamma}. Me bisht Pareto përgjigjja ndryshon shumë (Ora 6).
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w3par5]{Parashiko para se ta ekzekutosh}
+  \begin{Parashiko}
+    \begin{enumerate}
+      \item Pse zgjodhëm $2^5=32$ copa dhe jo $2^1=2$?
+      \item Sa është $g_0$ për një copë me $\lambda=24$, kur $f_0\approx0.02$?
+      \item Çfarë ndodh me rrjetën kur konvolojmë: a duhet \texttt{maxit} më i madh?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w3zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Metodat e tjera për Fierin}
+<<w3h5-others>>=
+m1 <- 60 * 900; m2 <- 60 * mgamma(2, 2, scale = 450)
+skew <- 60 * mgamma(3, 2, scale = 450) / m2^1.5
+F_norm <- aggregateDist("normal", moments = c(m1, m2))
+F_np2  <- aggregateDist("npower", moments = c(m1, m2, skew))
+F_conv <- aggregateDist("convolution", model.freq = dpois(0:150, 60),
+                        model.sev = fx, x.scale = 100)
+set.seed(2026)
+F_sim  <- aggregateDist("simulation", nb.simul = 20000,
+                        model.freq = expression(y = rpois(60)),
+                        model.sev  = expression(y = rgamma(2, scale = 450)))
+@
+  \small Në \texttt{expression()} jepet emri \texttt{y} dhe thirrja pa argumentin \texttt{n}.
+\end{frame}
+
+\begin{frame}[fragile]{Pesë metoda, një tabelë}
+<<w3h5-table>>=
+methods <- list(recursive = F_rec, convolution = F_conv,
+                normal = F_norm, npower = F_np2, simulation = F_sim)
+t(sapply(methods, function(F)
+  c(q95 = quantile(F, 0.95, names = FALSE),
+    q995 = quantile(F, 0.995, names = FALSE),
+    P_above_70k = 1 - F(70000))))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Bishti i $F_S$ sipas metodës}
+<<w3h5-plot, echo=FALSE, fig.height=3.2>>=
+sg <- seq(60000, 95000, by = 250)
+tail_df <- do.call(rbind, lapply(names(methods), function(nm)
+  data.frame(s = sg / 1000, surv = 1 - methods[[nm]](sg), method = nm)))
+ggplot(tail_df, aes(s, surv, colour = method)) + geom_step(linewidth = 0.8) +
+  scale_y_log10() + coord_cartesian(ylim = c(1e-4, 0.3)) +
+  labs(x = "s (mije EUR)", y = "1 - F(s), shkalla log", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Rekursioni dhe konvolucioni janë \textbf{identike}: e njëjta pmf, dy algoritme.
+    \item<2-> NP2 dhe simulimi janë shumë afër tyre.
+    \item<3-> Normalja është vija që bie më shpejt: \textbf{nënvlerëson} bishtin.
+    \item<4-> Konvolucioni zgjat disa sekonda; rekursioni një pjesë të sekondës.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Në praktikë: rekursioni për shpërndarjen, simulimi si kontroll, normalja vetëm si orientim i shpejtë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile,label=w3gab5]{Gjej gabimin}
+<<w3h5-bug>>=
+F_bad <- aggregateDist("recursive", model.freq = "poisson",
+                       model.sev = fx, lambda = 60, maxit = 3000)
+c(mean = mean(F_bad), VaR995 = VaR(F_bad, 0.995))
+@
+  Pritej mesatare 54\,000 €. Çfarë mungon? Pse mesatarja del saktësisht 100 herë më e vogël?
+  \vfill\shkoTe{w3zgjGab5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w3ush5a]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Me \texttt{F\_rec} (Fieri):
+    \begin{enumerate}
+      \item merr pikat me \texttt{knots(F\_rec)} dhe probabilitetet me \texttt{diff(F\_rec)};
+      \item llogarit primën stop-loss $E[(S-60\,000)_+]$;
+      \item krahasoje me rezultatin e Orës 4.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh5a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{\texttt{coverage()} mbi dëmet}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Franshiza dhe limiti mbi dëmet individuale}
+<<w3h5-claims>>=
+cl <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+x <- cl$amount_eur; d <- 1000; u <- 50000     # deductible, max covered loss
+y_loss <- pmin(x, u) - pmin(x, d)              # payment per loss
+c(n = length(x), mean_loss = mean(x),
+  E_YL = mean(y_loss), E_YP = mean(y_loss[x > d]),
+  share_paid = mean(x > d), LER = 1 - mean(y_loss) / mean(x))
+@
+  \small Të dhëna \textbf{sintetike}: \texttt{individual\_claims\_synthetic.csv}.
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi kundrejt së vërtetës}
+<<w3h5-truth>>=
+lev_mix <- function(t)                         # E[X ^ t], true mixture
+  0.95 * levlnorm(t, 7, 0.9) +
+  0.05 * ifelse(t <= 20000, t, levpareto1(t, 1.8, 20000))
+S_mix <- function(t) 0.95 * plnorm(t, 7, 0.9, lower.tail = FALSE) +
+  0.05 * ppareto1(t, 1.8, 20000, lower.tail = FALSE)
+E_YL_true <- lev_mix(u) - lev_mix(d)
+c(E_YL_data = mean(y_loss), E_YL_true = E_YL_true,
+  E_YP_data = mean(y_loss[x > d]), E_YP_true = E_YL_true / S_mix(d))
+@
+  \small Pareto me një parametër: $X\wedge t=t$ kur $t\le20\,000$ (minimumi), ndaj \texttt{ifelse()}.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Franshiza 1\,000 € heq rreth \Sexpr{fmt(100 * mean(x <= d))}\% të dëmeve nga pagesat.
+    \item<2-> Por mesatarja e pagesës për dëm bie vetëm nga \Sexpr{fmt(mean(x))} € në \Sexpr{fmt(mean(y_loss))} €.
+    \item<3-> Vlerësimi nga të dhënat dhe e vërteta ndryshojnë me disa përqind: bishti Pareto e bën mesataren të paqëndrueshme.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pse?}
+    Dëmet e vogla janë të shumta, por kushtojnë pak. Franshiza ul kostot administrative më shumë se primën.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{coverage()} me franshizë dhe limit}
+<<w3h5-cov>>=
+f_pay <- coverage(dgamma, pgamma, deductible = 1000, limit = 5000)
+dens <- integrate(function(y) f_pay(y, shape = 2, scale = 450),
+                  0, 4000 - 1e-9)$value          # continuous part
+mass <- f_pay(4000, shape = 2, scale = 450)     # point mass at u - d
+c(continuous = dens, mass_at_4000 = mass, total = dens + mass)
+@
+  \begin{itemize}
+    \item<2-> Pagesa maksimale është $u-d=4\,000$ €: aty ka një \textbf{masë pikësore}.
+    \item<3-> \texttt{f\_pay(4000)} kthen probabilitetin e asaj mase, jo një dendësi.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: çfarë është \texttt{limit}?}
+  \begin{Gabim}
+    \texttt{limit = 5000} lexohet si ``pagesa maksimale 5\,000 €''.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Në \texttt{coverage()}, \texttt{limit} është \textbf{humbja maksimale e mbuluar} $u$.
+    \item Pagesa maksimale është $u-d=4\,000$ €.
+    \item<3-> Nëse kontrata thotë ``paguan deri në 5\,000 €'', duhet \texttt{limit = 6000}.
+  \end{itemize}
+  \onslide<4->{\small Kontrollo gjithmonë: \texttt{f\_pay(u - d, ...)} duhet të japë $\Pr(X>u)/\Pr(X>d)$.}
+\end{frame}
+
+\begin{frame}[label=w3ndr5]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(5 minuta)]
+    Mbi dëmet sintetike, me limit $u=50\,000$ €:
+    \begin{enumerate}
+      \item llogarit LER për franshiza $d=500,\;1\,000,\;2\,000,\;5\,000$ €;
+      \item sa përqind e dëmeve nuk paguhen fare në secilin rast?
+      \item cilën franshizë do t'i propozoje një kompanie që do të ulë primën me 10\%?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjNdr5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{GLM e frekuencës}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Përgatitja e të dhënave}
+<<w3h5-prep>>=
+mp <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+mp <- transform(mp,
+  young  = pmax(30 - driver_age, 0),    # years below 30
+  old    = pmax(driver_age - 65, 0),    # years above 65
+  tirane = as.numeric(region == "Tirane"),
+  nafte  = as.numeric(fuel == "nafte"))
+head(mp[, c("driver_age", "young", "old", "vehicle_age",
+            "tirane", "nafte", "exposure", "n_claims")], 4)
+@
+  \small Variablat ndërtohen në të njëjtën formë si modeli i vërtetë në README.
+\end{frame}
+
+\begin{frame}[fragile]{GLM Poisson me offset}
+<<w3h5-glm>>=
+glm_f <- glm(n_claims ~ young + old + vehicle_age + tirane + nafte +
+               offset(log(exposure)),
+             family = poisson(link = "log"), data = mp)
+round(summary(glm_f)$coefficients[, 1:2], 4)
+@
+\end{frame}
+
+\begin{frame}{Vlerësimi kundrejt së vërtetës}
+<<w3h5-cmp, include=FALSE>>=
+truth_f <- c(-2.3, 0.02, 0.01, 0.015, 0.25, 0.10)
+est_f <- coef(glm_f); se_f <- sqrt(diag(vcov(glm_f)))
+@
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    Koeficienti & Vlerësimi & SE & E vërteta & (vl.\ $-$ e v.)/SE \\
+    \midrule
+    \texttt{(Intercept)} & \Sexpr{fmt(est_f[1],3)} & \Sexpr{fmt(se_f[1],3)} & $-2.300$ & \Sexpr{fmt((est_f[1]-truth_f[1])/se_f[1],2)} \\
+    \texttt{young}       & \Sexpr{fmt(est_f[2],3)} & \Sexpr{fmt(se_f[2],3)} & 0.020 & \Sexpr{fmt((est_f[2]-truth_f[2])/se_f[2],2)} \\
+    \texttt{old}         & \Sexpr{fmt(est_f[3],3)} & \Sexpr{fmt(se_f[3],3)} & 0.010 & \Sexpr{fmt((est_f[3]-truth_f[3])/se_f[3],2)} \\
+    \texttt{vehicle\_age}& \Sexpr{fmt(est_f[4],3)} & \Sexpr{fmt(se_f[4],3)} & 0.015 & \Sexpr{fmt((est_f[4]-truth_f[4])/se_f[4],2)} \\
+    \texttt{tirane}      & \Sexpr{fmt(est_f[5],3)} & \Sexpr{fmt(se_f[5],3)} & 0.250 & \Sexpr{fmt((est_f[5]-truth_f[5])/se_f[5],2)} \\
+    \texttt{nafte}       & \Sexpr{fmt(est_f[6],3)} & \Sexpr{fmt(se_f[6],3)} & 0.100 & \Sexpr{fmt((est_f[6]-truth_f[6])/se_f[6],2)} \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{6pt}
+  \small Kolona e fundit: sa gabime standarde larg së vërtetës. Të gjitha janë brenda $\pm2$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Asnjë vlerësim nuk është ``i gabuar'': secili ndryshon nga e vërteta me më pak se 2 SE.
+    \item<2-> Efekti i Tiranës: $e^{\Sexpr{fmt(est_f[5],3)}}=\Sexpr{fmt(exp(est_f[5]),3)}$, kundrejt së vërtetës $e^{0.25}=1.284$.
+    \item<3-> Intervali 95\%: $\Sexpr{fmt(est_f[5],3)}\pm1.96\times\Sexpr{fmt(se_f[5],3)}=[\Sexpr{fmt(est_f[5]-1.96*se_f[5],3)},\;\Sexpr{fmt(est_f[5]+1.96*se_f[5],3)}]$: përmban 0.25.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Përgjigjja për pyetjen e Javës 2}
+    Raporti i thjeshtë 1.12 nuk ishte efekt \emph{confounding}: GLM jep të njëjtin raport.
+    Diferenca nga 1.28 është \textbf{rastësi}: 768 dëme nuk mjaftojnë për një vlerësim të saktë.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Raporti i thjeshtë dhe përbërja e portofolit}
+<<w3h5-crude>>=
+rate <- with(mp, tapply(n_claims, tirane, sum) / tapply(exposure, tirane, sum))
+c(crude_ratio = unname(rate["1"] / rate["0"]), glm_ratio = exp(est_f[["tirane"]]))
+aggregate(cbind(driver_age, vehicle_age, nafte) ~ tirane, data = mp, FUN = mean)
+@
+  \small Tirana dhe qarqet e tjera kanë të njëjtën përbërje: nuk ka asgjë për ``korrigjuar''.
+\end{frame}
+
+\begin{frame}[fragile]{A është i paanshëm GLM? Eksperiment \Zgj}
+<<w3h5-exp>>=
+set.seed(2026)
+eta_true <- with(mp, -2.3 + 0.02 * young + 0.01 * old + 0.015 * vehicle_age +
+                   0.25 * tirane + 0.10 * nafte + log(exposure))
+b_tir <- replicate(200, {
+  mp$n_new <- rpois(nrow(mp), exp(eta_true))          # new claims, same truth
+  coef(glm(n_new ~ young + old + vehicle_age + tirane + nafte +
+             offset(log(exposure)), family = poisson, data = mp))[["tirane"]]
+})
+c(mean = mean(b_tir), sd = sd(b_tir), our_estimate = est_f[["tirane"]])
+@
+  \small 200 portofole të reja me të njëjtën të vërtetë: vlerësimet përqendrohen rreth 0.25.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mesatarja e 200 vlerësimeve është afër 0.25: GLM është \textbf{i paanshëm}.
+    \item<2-> Devijimi i tyre $\approx\Sexpr{fmt(sd(b_tir),3)}$, si SE e \texttt{summary()}.
+    \item<3-> Vlerësimi ynë \Sexpr{fmt(est_f[["tirane"]],3)} është thjesht një portofol ``pak me fat'' për Tiranën.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Me të dhëna reale nuk e dimë të vërtetën. Prandaj raportojmë gjithmonë edhe SE ose intervalin, jo vetëm $\hat\beta$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: pa offset}
+<<w3h5-nooff>>=
+glm_no <- glm(n_claims ~ young + old + vehicle_age + tirane + nafte,
+              family = poisson, data = mp)
+round(rbind(with_offset = coef(glm_f), no_offset = coef(glm_no)), 3)
+@
+  \begin{itemize}
+    \item<2-> Intercepti ndryshon shumë: modeli pa offset jep dëme \textbf{për police}, jo për police-vit.
+    \item<3-> Për një policë 1-vjeçare, frekuenca do të nënvlerësohej me rreth \Sexpr{fmt(100*(1-exp(coef(glm_no)[1]-coef(glm_f)[1])))}\% (ekspozimi mesatar është \Sexpr{fmt(mean(mp$exposure),2)}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{A mjafton Poisson-i? Mbishpërndarja}
+<<w3h5-disp>>=
+c(pearson_dispersion = sum(residuals(glm_f, type = "pearson")^2) /
+                       df.residual(glm_f))
+@
+  \begin{itemize}
+    \item<2-> Afër 1: nuk ka mbishpërndarje, Poisson-i mjafton. (E vërteta është Poisson.)
+    \item<3-> Me të dhëna reale shpesh del 1.2--2: atëherë \texttt{family = quasipoisson} ose binomiale negative (\texttt{MASS::glm.nb}).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{GLM e ashpërsisë}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{GLM Gamma për ashpërsinë}
+<<w3h5-sev>>=
+ms <- subset(mp, n_claims > 0)
+ms$avg <- ms$claim_amount_eur / ms$n_claims        # average claim per policy
+glm_s <- glm(avg ~ young + old + vehicle_age + tirane + nafte,
+             family = Gamma(link = "log"), weights = n_claims, data = ms)
+round(summary(glm_s)$coefficients[, c(1, 2, 4)], 4)
+c(dispersion = summary(glm_s)$dispersion)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{weights = n\_claims}: mesatarja e $n$ dëmeve ka variancë $\phi\mu^2/n$.
+    \item<2-> Dispersioni $\hat\phi\approx\Sexpr{fmt(summary(glm_s)$dispersion,3)}$, e vërteta $1/2=0.5$.
+    \item<3-> Shumica e koeficientëve janë afër 0, si e vërteta.
+    \item<4-> \texttt{tirane} ka $p\approx\Sexpr{fmt(summary(glm_s)$coefficients["tirane",4],3)}<0.05$, edhe pse efekti i vërtetë është 0.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}Me 5 koeficientë dhe nivel 5\%, një ``efekt'' i rremë ndodh lehtë (gabim i tipit I). Para se ta fusësh në tarifë: a ka kuptim? A përsëritet në vite të tjera?\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Prima e pastër}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Prima e pastër për katër profile}
+<<w3h5-prof>>=
+prof <- data.frame(driver_age = c(40, 22, 40, 70), vehicle_age = c(0, 5, 10, 15),
+                   tirane = c(0, 1, 1, 0), nafte = c(0, 0, 1, 1), exposure = 1)
+prof <- transform(prof, young = pmax(30 - driver_age, 0),
+                  old = pmax(driver_age - 65, 0))
+prof$freq <- predict(glm_f, newdata = prof, type = "response")
+prof$sev  <- 900                                    # severity: no rating factor
+prof$pure <- prof$freq * prof$sev
+prof[, c("driver_age", "vehicle_age", "tirane", "nafte", "freq", "pure")]
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{predict(..., type = "response")} jep $\hat\mu$, pra numrin e pritur të dëmeve me \texttt{exposure = 1}.
+    \item<2-> Ashpërsinë e mbajmë 900 € (e njëjtë për të gjithë): efektet e GLM-së Gamma nuk ishin bindëse.
+    \item<3-> Shoferi 22-vjeçar në Tiranë paguan rreth \Sexpr{fmt(prof$pure[2]/prof$pure[1],2)} herë më shumë se profili bazë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Lidhja me praktikën}
+    Tarifa komerciale = prima e pastër $\times$ (1 + ngarkesa për shpenzime, komisione, fitim, kapital).
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Prima e pastër mesatare sipas qarkut}
+<<w3h5-region, echo=FALSE, fig.height=3.2>>=
+mp$pure <- predict(glm_f, newdata = transform(mp, exposure = 1), type = "response") * 900
+reg <- aggregate(pure ~ region, data = mp, FUN = mean)
+ggplot(reg, aes(reorder(region, pure), pure)) +
+  geom_col(fill = "#5B8BD0") + coord_flip() +
+  labs(x = NULL, y = "prima e paster mesatare (EUR / police-vit)") + th
+@
+  \small Tirana del më lart për shkak të efektit \texttt{tirane}; qarqet e tjera ndryshojnë pak (mosha, mjeti, karburanti).
+\end{frame}
+
+\begin{frame}[label=w3ush5b]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    \begin{enumerate}
+      \item Llogarit primën e pastër për një shofer 25-vjeçar, me naftë, mjet 8-vjeçar, jashtë Tiranës.
+      \item Përsërite me koeficientët e \textbf{vërtetë} (README). Sa ndryshon?
+      \item Cili koeficient e shpjegon pjesën më të madhe të diferencës?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh5b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë bën \texttt{convolve = 5} në \texttt{aggregateDist()}?
+    \item Me \texttt{coverage(..., deductible = 500, limit = 3000)}, sa është pagesa maksimale?
+    \item Pse \texttt{weights = n\_claims} në GLM Gamma?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) llogarit për $\lambda/32$ dhe konvolon 5 herë; (2) $3\,000-500=2\,500$ €;
+  (3) mesatarja e $n$ dëmeve ka variancë $\phi\mu^2/n$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{aggregateDist()}: pesë metoda; rekursioni = konvolucioni; normalja nënvlerëson bishtin.
+    \item \texttt{x.scale}, \texttt{maxit}, \texttt{convolve}: tri argumente që duhen kontrolluar gjithmonë.
+    \item \texttt{coverage()}: \texttt{limit} = humbja maksimale e mbuluar; masë pikësore te $u-d$.
+    \item GLM: vlerësimet brenda 2 SE nga e vërteta; Tirana $\hat\beta\approx\Sexpr{fmt(est_f[["tirane"]],2)}$, e vërteta 0.25.
+    \item Prima e pastër = \texttt{predict(glm\_f, type = "response")} $\times$ ashpërsia.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6 \Zgj}
+    Rast studimi: portofoli nga fillimi në fund, risigurimi XL dhe stop-loss, ndikimi i bishtit Pareto.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item V.~Goulet et al., vinjetat e paketës \Rkey{actuar}: \texttt{?aggregateDist}, \texttt{?coverage}, \texttt{?discretize}.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për GLM në tarifim).
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur), kapitujt për GLM dhe modifikimet e policës.
+    \item README i të dhënave: \texttt{motor\_portfolio\_synthetic.csv}, \texttt{individual\_claims\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
