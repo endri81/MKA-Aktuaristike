@@ -1,0 +1,333 @@
+% ============================================================
+%  Java 4 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): shtatë pa ndihmën e PC, një në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Shtyp \textbf{Shiko zgjidhjen} vetëm pasi ta kesh provuar vetë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w4qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cili është vlerësuesi chain-ladder i faktorit $f_j$?
+    \begin{enumerate}
+      \item[A)] $\frac{1}{n-j}\sum_{i}C_{i,j+1}/C_{ij}$
+      \item[B)] $\sum_{i}C_{i,j+1}\big/\sum_{i}C_{ij}$, mbi rreshtat e njohur në të dyja kolonat
+      \item[C)] $C_{n-j,j+1}/C_{n-j,j}$, vetëm viti më i fundit
+      \item[D)] $\sum_{i}C_{i,j+1}\big/\sum_{i}C_{ij}$, mbi të gjitha rreshtat e kolonës $j$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w4sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Në modelin e Bühlmann-it, $Z=n/(n+s^2/a)$ rritet kur:
+    \begin{enumerate}
+      \item[A)] rritet zhurma brenda kontratave $s^2$;
+      \item[B)] rriten ndryshimet midis kontratave $a$;
+      \item[C)] zvogëlohet numri i viteve $n$;
+      \item[D)] rritet prima kolektive $m$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w4sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU1]{U1 · Chain-ladder pa ndihmën e PC}
+  \begin{Ushtrim}[(mijë €)]
+    \centering
+    \begin{tabular}{c|ccc}
+      \toprule
+      $i$ \textbackslash{} $j$ & 1 & 2 & 3 \\
+      \midrule
+      1 & 200 & 300 & 330 \\
+      2 & 220 & 340 & \\
+      3 & 250 & & \\
+      \bottomrule
+    \end{tabular}\par
+    \begin{enumerate}
+      \item Llogarit $\hat f_1$ dhe $\hat f_2$.
+      \item Llogarit ultimate dhe rezervën për vitet 2 dhe 3, si dhe rezervën totale.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU2]{U2 · Përqindja e zhvilluar}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Me faktorët e U1:
+    \begin{enumerate}
+      \item Llogarit $\hat F_1=\hat f_1\hat f_2$ dhe përqindjen e zhvilluar të vitit 3.
+      \item Kontrollo rezervën e vitit 3 me formulën $C_{31}\,(1/\hat p-1)$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU3]{U3 · Bornhuetter--Ferguson}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Për vitin 3 të U1, ultimate paraprake (prima $\times$ raporti i pritur i dëmeve) është $U_3=400$.
+    \begin{enumerate}
+      \item Llogarit $\hat R_3^{\text{BF}}$.
+      \item Shkruaj $\hat C_{3,3}^{\text{BF}}$ si përzierje kredibiliteti të chain-ladder dhe $U_3$. Sa është pesha?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU4]{U4 · $\hat\sigma_1^2$ i Mack-ut}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Me trekëndëshin e U1:
+    \begin{enumerate}
+      \item Llogarit raportet individuale $F_{11}$ dhe $F_{21}$.
+      \item Llogarit $\hat\sigma_1^2=\frac{1}{n-j-1}\sum_iC_{i1}(F_{i1}-\hat f_1)^2$.
+      \item Pse $\hat\sigma_2^2$ nuk mund të vlerësohet drejtpërdrejt?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU5]{U5 · Bühlmann}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Një portofol ka $m=0.80$, $s^2=0.04$, $a=0.01$. Një kontratë ka 4 vite me raport mesatar $\bar X=0.60$.
+    \begin{enumerate}
+      \item Llogarit $k$ dhe $Z$.
+      \item Llogarit primën e kredibilitetit.
+      \item Sa vite i duhen kontratës për $Z\ge0.8$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU6]{U6 · Bühlmann--Straub}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $\hat k=200$, $\hat m=0.85$. Një flotë ka vëllim total $w_{i\cdot}=600$ dhe raport të peshuar $\bar X_{iw}=0.70$.
+    \begin{enumerate}
+      \item Llogarit $Z_i$ dhe primën.
+      \item Një flotë tjetër ka të njëjtin raport, por vëllim 100. Sa është prima e saj?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU7]{U7 · Poisson--Gamma}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $\Lambda\sim$ Gamma$(\alpha=3,\;\beta=12)$ (normë). Një shofer ka 2 dëme në 4 vite.
+    \begin{enumerate}
+      \item Llogarit mesataren a posteriori të $\Lambda$.
+      \item Shkruaje si $Z\bar N+(1-Z)m$: sa janë $Z$ dhe $m$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w4qU8]{U8 · Në R}
+  \begin{Ushtrim}[(\Rkey{ChainLadder})]
+    Trekëndëshi \texttt{RAA} (të dhëna reale, Reinsurance Association of America, në paketën \Rkey{ChainLadder}):
+    \begin{enumerate}
+      \item llogarit rezervën totale dhe gabimin standard të Mack-ut;
+      \item llogarit kuantilet 75\% dhe 99.5\% me \texttt{BootChainLadder()} ($R=9\,999$, \texttt{set.seed(1)});
+      \item krahaso CV-në me atë të trekëndëshit tonë sintetik (12.5\%). Pse ndryshon kaq shumë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w4sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): rezervat}
+  \begin{enumerate}
+    \item<1-> Modeli aplikohet pa parë inkrementalet: anomalitë (kolona 7) kalojnë pa u vënë re.
+    \item<2-> Mesatarja e thjeshtë e raporteve në vend të asaj të peshuar.
+    \item<3-> \texttt{diag(C)} në vend të diagonales së fundit \texttt{C[cbind(1:n, n:1)]}.
+    \item<4-> $\mathrm{se}(\hat R)$ si shumë e gabimeve standarde, ose pa termin e kovariancës.
+    \item<5-> Bootstrap pa \texttt{set.seed()}, ose me shumë pak simulime për kuantilin 99.5\%.
+    \item<6-> SCR me ``ultimate view'' i paraqitur si pikëpamje një-vjeçare e Solvency II.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): kredibiliteti}
+  \begin{enumerate}
+    \item<1-> $\hat a<0$ i pa vënë re: \texttt{cm()} jep $Z=0$ pa paralajmërim.
+    \item<2-> Pesha = numri i viteve, kur kontratat kanë vëllime shumë të ndryshme.
+    \item<3-> Shuma e dëmeve në vend të raportit (dëme / vëllim) si $X_{ij}$.
+    \item<4-> \texttt{cm()} me të dhëna në format të gjatë.
+    \item<5-> Parametrat strukturorë me pak kontrata merren si të sigurt: një kontratë e vetme i ndryshon dukshëm.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w4qGab7]{Gjej gabimin: raundi i shpejtë}
+  \begin{Gabim}[(tre gabime, dy minuta)]
+    \ttfamily\small
+    tri <- xtabs(cum\_paid\_eur \textasciitilde{} accident\_year + dev\_year, data = rt)\\
+    mk <- MackChainLadder(tri)\\[4pt]
+    bt <- BootChainLadder(trc, R = 100)\\
+    quantile(bt, 0.995)\\[4pt]
+    fit <- cm(\textasciitilde{} contract, data = cp, ratios = loss\_ratio, weights = volume)
+  \end{Gabim}
+  \normalfont
+  \shkoTe{w4sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): funksionet}
+  \centering\small
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{ll}
+    \toprule
+    Detyra & Funksioni \\
+    \midrule
+    Trekëndëshi & \texttt{as.triangle(df, origin, dev, value)} \\
+    Raportet & \texttt{ata(trc)}: atributet \texttt{vwtd}, \texttt{smpl} \\
+    Chain-ladder + Mack & \texttt{MackChainLadder(trc, est.sigma = "Mack")} \\
+    Rezultatet & \texttt{summary(mk)\$ByOrigin}, \texttt{\$Totals}, \texttt{mk\$FullTriangle} \\
+    Mbetjet & \texttt{plot(mk, which = 3:6)} \\
+    Bootstrap ODP & \texttt{BootChainLadder(trc, R, process.distr = "od.pois")} \\
+    GLM ODP & \texttt{glmReserve(trc)} \\
+    Pikëpamja një-vjeçare & \texttt{CDR(mk)} \\
+    Kredibiliteti & \texttt{cm(\textasciitilde{} contract, data, ratios, weights)}, \texttt{predict()} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \small
+  \begin{itemize}
+    \item $\hat f_j=\sum_{i\le n-j}C_{i,j+1}/\sum_{i\le n-j}C_{ij}$; \; $\hat C_{in}=C_{i,n+1-i}\hat F_{n+1-i}$; \; $\hat R_i=\hat C_{in}-C_{i,n+1-i}$.
+    \item Mack: $E[C_{i,j+1}\mid\cdot]=f_jC_{ij}$, \; $\mathrm{Var}=\sigma_j^2C_{ij}$, \; $\hat\sigma_j^2=\frac{1}{n-j-1}\sum C_{ij}(F_{ij}-\hat f_j)^2$.
+    \item msep$(\hat R_i)=\hat C_{in}^2\sum_k\frac{\hat\sigma_k^2}{\hat f_k^2}\big(\frac{1}{\hat C_{ik}}+\frac{1}{\sum_lC_{lk}}\big)$.
+    \item BF: $\hat R_i=U_i(1-\hat p_i)$, \; $\hat p_i=1/\hat F_{n+1-i}$.
+    \item Bühlmann: $P=Z\bar X+(1-Z)m$, \; $Z=n/(n+k)$, \; $k=s^2/a$.
+    \item Bühlmann--Straub: $Z_i=w_{i\cdot}/(w_{i\cdot}+k)$; \; Poisson--Gamma: $k=\beta$.
+    \item IFRS 17: RA $=q_{75\%}-$ mesatarja; \; Solvency II: RM $=6\%\sum_t\mathrm{SCR}_t\,v^{t+1}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w4h7-cheat, eval=FALSE>>=
+trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year",
+                   value = "cum_paid_eur")
+mk  <- MackChainLadder(trc, est.sigma = "Mack"); summary(mk)$Totals
+inc <- cbind(mk$FullTriangle[, 1], t(apply(mk$FullTriangle, 1, diff)))
+cal <- row(inc) + col(inc) - 1; cf <- tapply(inc[cal > n], cal[cal > n], sum)
+set.seed(2026); bt <- BootChainLadder(trc, R = 9999)
+quantile(bt, c(0.75, 0.995))$Totals
+fit <- cm(~ contract, data = wide, ratios = r2020:r2025, weights = w2020:w2025)
+predict(fit); fit$cred
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 5)}
+  \begin{Ushtrim}[(skript i vetëm, i riprodhueshëm)]
+    \begin{enumerate}
+      \item Mbi \texttt{runoff\_triangle\_synthetic.csv}: llogarit rezervën BF me $U_i=$ ultimate e vërtetë e pritur
+            ($C_{i,n+1-i}/p_{n+1-i}$) dhe krahasoje me chain-ladder sipas vitit.
+      \item Me \texttt{CDR(mk)}: gabimi standard një-vjeçar. Sa më i vogël është se ai ``ultimate''?
+      \item Mbi \texttt{credibility\_portfolio\_synthetic.csv}: përdor vetëm vitet 2020--2024 për kredibilitetin dhe parashiko 2025.
+            Krahaso gabimin katror mesatar të tri qasjeve (vet, e sheshtë, kredibilitet).
+    \end{enumerate}
+  \end{Ushtrim}
+  \small Kriteri: skripti ekzekutohet pa gabim pas \emph{Session $\rightarrow$ Restart R}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 5}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 5: tabelat e vdekshmërisë}
+  \begin{itemize}
+    \item<1-> Kalojmë te sigurimet e jetës: \Rkey{lifecontingencies}. \LO{C1}
+    \item<2-> Objektet \texttt{lifetable} dhe \texttt{actuarialtable}; funksionet $l_x$, $d_x$, $q_x$, $p_x$, $e_x$.
+    \item<3-> Tabelat reale të Shqipërisë (HLD) dhe tabela sintetike me të vërtetë të njohur.
+    \item<4-> Sigurimet dhe anuitetet bazë: $A_x$, $\ddot a_x$, primat neto.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Shembull}[(pyetja e Javës 5)]
+    Sa duhet të paguajë sot një 40-vjeçar shqiptar për një sigurim jete prej 1\,000\,000 lekësh?
+  \end{Shembull}}
+\end{frame}
+
+\begin{frame}[fragile]{Përgatitja për Javën 5}
+<<w4h7-prep, eval=FALSE>>=
+install.packages("lifecontingencies")   # once, before next week
+library(lifecontingencies)
+@
+  \pause
+  \begin{Keshille}Të dhënat e Javës 5: \texttt{mortality\_table\_synthetic.csv} (sintetike) dhe
+  \texttt{albania\_lifetables\_HLD\_1950\_2011.csv} (reale, Human Life-Table Database).\end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse rezerva chain-ladder ka nevojë për një gabim standard?
+    \item Çfarë kanë të përbashkët BF dhe kredibiliteti?
+    \item Pse kontrolli i të dhënave vjen para çdo modeli?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) rezerva është vlerësim i rastit; IFRS 17 dhe Solvency II kërkojnë pasigurinë;
+  (2) të dyja përziejnë përvojën me një vlerë paraprake, me peshë që rritet me informacionin;
+  (3) modelet nuk e dallojnë një anomali (kolona 7) nga sjellja reale.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 4}
+  \begin{itemize}
+    \item Trekëndëshi, chain-ladder, BF: rezerva e dëmeve. \LO{C2}
+    \item Mack dhe bootstrap: gabimi standard dhe shpërndarja e rezervës. \LO{C3}
+    \item IFRS 17 (RA) dhe Solvency II (BE, SCR, RM) mbi të njëjtin trekëndësh.
+    \item Bühlmann, Bühlmann--Straub, Poisson--Gamma: primat me kredibilitet. \LO{C3}
+    \item \Rkey{ChainLadder} dhe \texttt{actuar::cm()} në praktikë. \LO{S2}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item M.~Gesmann et al., vinjeta e paketës \Rkey{ChainLadder} (të dhënat \texttt{RAA}).
+    \item V.~Goulet et al., vinjeta e kredibilitetit në \Rkey{actuar}.
+    \item README i të dhënave të kursit (të dhëna sintetike).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}

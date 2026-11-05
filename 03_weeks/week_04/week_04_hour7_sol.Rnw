@@ -1,0 +1,113 @@
+% ============================================================
+%  Java 4 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=w4sT1]{Zgjidhja T1}
+  \textbf{B)} Mesatare e peshuar, vetëm mbi rreshtat $i=1,\dots,n-j$ që kanë vlerë në kolonën $j+1$.
+  \begin{itemize}
+    \item A) Mesatarja e thjeshtë: e paanshme, por jo vlerësuesi chain-ladder.
+    \item C) Përdor vetëm një vit: shumë e paqëndrueshme.
+    \item D) Përfshin rreshtin pa vlerë në kolonën $j+1$: emëruesi del shumë i madh.
+  \end{itemize}
+  \vfill\kthehu{w4qT1}
+\end{frame}
+
+\begin{frame}[label=w4sT2]{Zgjidhja T2}
+  \textbf{B)} $a\uparrow\Rightarrow k=s^2/a\downarrow\Rightarrow Z\uparrow$.
+  \begin{itemize}
+    \item A) $s^2\uparrow\Rightarrow Z\downarrow$. \; C) $n\downarrow\Rightarrow Z\downarrow$. \; D) $m$ nuk hyn te $Z$.
+  \end{itemize}
+  \vfill\kthehu{w4qT2}
+\end{frame}
+
+\begin{frame}[fragile,label=w4sU1]{Zgjidhja U1}
+  \begin{itemize}
+    \item $\hat f_1=(300+340)/(200+220)=640/420=1.52381$; \; $\hat f_2=330/300=1.1$.
+    \item Viti 2: $340\times1.1=374$, rezerva 34.
+    \item Viti 3: $250\times1.52381\times1.1=419.05$, rezerva 169.05. \; Gjithsej: \textbf{203.05}.
+  \end{itemize}
+<<w4s7-u1>>=
+C <- matrix(c(200, 220, 250, 300, 340, NA, 330, NA, NA), 3, 3)
+f <- c(sum(C[1:2, 2]) / sum(C[1:2, 1]), C[1, 3] / C[1, 2])
+ult <- c(330, 340 * f[2], 250 * f[1] * f[2])
+round(c(f = f, reserve = ult - c(330, 340, 250), total = sum(ult) - 920), 2)
+@
+  \vfill\kthehu{w4qU1}
+\end{frame}
+
+\begin{frame}[label=w4sU2]{Zgjidhja U2}
+  \begin{enumerate}
+    \item $\hat F_1=1.52381\times1.1=1.67619$; \; $\hat p=1/1.67619=0.59659$: viti 3 është 59.7\% i zhvilluar.
+    \item $250\times(1/0.59659-1)=250\times0.67619=169.05$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w4qU2}
+\end{frame}
+
+\begin{frame}[label=w4sU3]{Zgjidhja U3}
+  \begin{enumerate}
+    \item $\hat R_3^{\text{BF}}=400\times(1-0.59659)=161.36$ (chain-ladder: 169.05).
+    \item $\hat C_{3,3}^{\text{BF}}=250+161.36=411.36=0.59659\times419.05+0.40341\times400$.
+          Pesha e chain-ladder: $\hat p=0.597$.
+  \end{enumerate}
+  \vfill\kthehu{w4qU3}
+\end{frame}
+
+\begin{frame}[label=w4sU4]{Zgjidhja U4}
+  \begin{enumerate}
+    \item $F_{11}=300/200=1.5$; \; $F_{21}=340/220=1.54545$.
+    \item $\hat\sigma_1^2=200\,(1.5-1.52381)^2+220\,(1.54545-1.52381)^2=0.1134+0.1031=0.2165$ \; ($n-j-1=1$).
+    \item Për $j=2$ ka vetëm një vrojtim ($n-j-1=0$): duhet ekstrapolim, p.sh.\ formula e Mack-ut me $\min(\cdot)$.
+  \end{enumerate}
+  \vfill\kthehu{w4qU4}
+\end{frame}
+
+\begin{frame}[label=w4sU5]{Zgjidhja U5}
+  \begin{enumerate}
+    \item $k=0.04/0.01=4$; \; $Z=4/(4+4)=0.5$.
+    \item $P=0.5\times0.60+0.5\times0.80=0.70$.
+    \item $n/(n+4)\ge0.8\iff n\ge16$ vite.
+  \end{enumerate}
+  \vfill\kthehu{w4qU5}
+\end{frame}
+
+\begin{frame}[label=w4sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item $Z_i=600/(600+200)=0.75$; \; $P=0.75\times0.70+0.25\times0.85=0.525+0.2125=0.7375$.
+    \item Vëllim 100: $Z=100/300=0.333$; \; $P=0.333\times0.70+0.667\times0.85=0.80$.
+  \end{enumerate}
+  \small I njëjti raport, prima të ndryshme: flota e vogël ka më pak kredibilitet.
+  \vfill\kthehu{w4qU6}
+\end{frame}
+
+\begin{frame}[label=w4sU7]{Zgjidhja U7}
+  \begin{enumerate}
+    \item Posteriori: Gamma$(3+2,\;12+4)$; mesatarja $5/16=0.3125$.
+    \item $m=\alpha/\beta=0.25$, \; $\bar N=0.5$, \; $Z=4/(4+12)=0.25$:
+          \; $0.25\times0.5+0.75\times0.25=0.125+0.1875=0.3125$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w4qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w4sU8]{Zgjidhja U8}
+<<w4s7-u8, warning=FALSE>>=
+suppressMessages(library(ChainLadder))
+mk_raa <- MackChainLadder(RAA, est.sigma = "Mack")
+tot <- summary(mk_raa)$Totals[, 1]
+set.seed(1); bt_raa <- BootChainLadder(RAA, R = 9999)
+round(c(IBNR = tot[4], se = tot[5], CV = tot[6],
+        quantile(bt_raa, c(0.75, 0.995))$Totals[, 1]), 3)
+@
+  \small CV $\approx52\%$ kundrejt 12.5\%: \texttt{RAA} është risigurim me zhvillim shumë të gjatë dhe të paqëndrueshëm
+  (rezerva $\approx$ 25\% e ultimate, faktorë të parë shumë të mëdhenj dhe të luhatshëm).
+  \vfill\kthehu{w4qU8}
+\end{frame}
+
+\begin{frame}[label=w4sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{enumerate}
+    \item \texttt{xtabs()} mbush qelizat e panjohura me \textbf{0}, jo \texttt{NA}: chain-ladder sheh dëme që ``ranë'' në zero.
+          E saktë: \texttt{as.triangle()}, ose \texttt{tri[tri == 0] <- NA}.
+    \item $R=100$ dhe pa \texttt{set.seed()}: kuantili 99.5\% mbështetet në $\approx0.5$ vlera dhe ndryshon çdo herë.
+    \item \texttt{cm()} pret format të \textbf{gjerë}: një rresht për kontratë, \texttt{ratios = r2020:r2025}, \texttt{weights = w2020:w2025}.
+  \end{enumerate}
+  \vfill\kthehu{w4qGab7}
+\end{frame}
