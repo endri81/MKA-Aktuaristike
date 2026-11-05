@@ -1,0 +1,271 @@
+% ============================================================
+%  Java 8 · Ora 6 — Rast studimi: kostoja e garancisë së fondit
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Detyra}
+  \begin{Shembull}[(``Pensioni Plus'', fond fiktiv)]
+    Anëtari investon 10\,000\,000 lekë në aksion ($S_0=100$, pra 100\,000 njësi).
+    Fondi garanton: pas $T=5$ vjetësh merr \textbf{të paktën} 10\,000\,000 lekë.
+    \begin{enumerate}
+      \item Sa kushton garancia sot?
+      \item Sa e ndjeshme është kostoja ndaj $\hat\sigma$?
+      \item Si mund ta financojë fondi garancinë pa kosto shtesë për anëtarin?
+    \end{enumerate}
+  \end{Shembull}
+  \vfill\LO{S1}\;\LO{K3}\;\LO{C3}
+\end{frame}
+
+\begin{frame}{Rruga e punës}
+  \centering
+  \begin{tikzpicture}[b/.style={draw,rounded corners,fill=uptlight,align=center,font=\small,minimum height=1cm,text width=2.2cm},>=Stealth]
+    \node[b] (a) at (0,0) {Të dhënat\\$\hat\sigma$, IB};
+    \node[b] (b) at (2.9,0) {Put\\me $\hat\sigma$};
+    \node[b] (c) at (5.8,0) {Parity\\kontroll};
+    \node[b] (d) at (8.7,0) {Ndjeshmëria\\ndaj $\sigma$};
+    \node[b] (e) at (2.9,-1.8) {Bota reale\\simulim};
+    \node[b] (f) at (5.8,-1.8) {Obligacion\\+ call};
+    \node[b] (g) at (8.7,-1.8) {Shpërndarja\\e vlerës};
+    \draw[->] (a)--(b); \draw[->] (b)--(c); \draw[->] (c)--(d);
+    \draw[->] (d.south) |- ++(0,-0.4) -| (e.north); \draw[->] (e)--(f); \draw[->] (f)--(g);
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Supozime: $r=3\%$ (ilustrues), aksion pa dividendë, GBM.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kostoja e garancisë}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{$\hat\sigma$ nga të dhënat}
+<<w8h6-sig>>=
+eg <- est_gbm(rv)                                # Hour 3
+sig_g <- c(lower = eg["lower", "sigma"], estimate = eg["estimate", "sigma"],
+           upper = eg["upper", "sigma"])
+round(sig_g, 4)
+@
+  \small \textbf{Sintetike}: e vërteta është $\sigma=25\%$, brenda intervalit.
+\end{frame}
+
+\begin{frame}[fragile]{Garancia = 100\,000 put}
+<<w8h6-cost>>=
+U <- 1e5; Kg <- 100; Tg <- 5; rg <- 0.03          # units, strike, years, rate
+put_g  <- U * bsput(100, Kg, sig_g, rg, Tg, 0)
+call_g <- U * bscall(100, Kg, sig_g, rg, Tg, 0)
+via_parity <- call_g - U * 100 + U * Kg * exp(-rg * Tg)   # P = C - S + K e^{-rT}
+round(rbind(put = put_g, via_parity = via_parity, pct_capital = 100 * put_g / 1e7), 1)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Garancia kushton \Sexpr{fmt(put_g["estimate"])} lekë: \Sexpr{fmt(100 * put_g["estimate"] / 1e7, 1)}\% e kapitalit.
+    \item<2-> Me intervalin e $\hat\sigma$: nga \Sexpr{fmt(put_g["lower"])} deri në \Sexpr{fmt(put_g["upper"])} lekë.
+    \item<3-> Put-i direkt dhe parity japin të njëjtin numër. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Pasiguria e $\hat\sigma$ ($\pm1.2$ pikë) jep $\pm\Sexpr{fmt((put_g["upper"] - put_g["lower"]) / 2 / 1e3)}$ mijë lekë në kosto. Gabimi i $\hat\mu$ ($\pm28$ pikë) nuk ndikon fare.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Kostoja si funksion i $\sigma$}
+<<w8h6-sens, echo=FALSE, fig.height=2.9>>=
+sg_grid <- seq(0.10, 0.40, by = 0.01)
+ds6 <- data.frame(sigma = 100 * sg_grid, cost = U * bsput(100, Kg, sg_grid, rg, Tg, 0) / 1e6)
+ggplot(ds6, aes(sigma, cost)) +
+  annotate("rect", xmin = 100 * sig_g["lower"], xmax = 100 * sig_g["upper"], ymin = -Inf, ymax = Inf,
+           fill = "#E67E22", alpha = 0.2) +
+  geom_line(colour = "#2C5AA0", linewidth = 1) + geom_vline(xintercept = 25, linetype = 2) +
+  labs(x = "sigma (%)", y = "kostoja (milione leke)") + th
+@
+  \small Zona portokalli: intervali 95\% i $\hat\sigma$. Vija e ndërprerë: $\sigma=25\%$ (e vërteta).
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Bota reale kundrejt çmimit}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w8par6]{Parashiko}
+  \begin{Parashiko}
+    Në botën reale aksioni rritet me $\mu=7\%>r=3\%$.
+    \begin{enumerate}
+      \item Në sa \% të skenarëve garancia paguan? (Ora 2.)
+      \item Vlera aktuale e pagesës \textbf{së pritur} në botën reale, $e^{-rT}E[(K-S_T)^+]$: më e madhe apo më e vogël se çmimi i put-it?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w8zgjPar6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi në botën reale ($\mu=7\%$)}
+<<w8h6-real>>=
+set.seed(868)
+ST_g <- 100 * exp((0.07 - 0.25^2 / 2) * Tg + 0.25 * sqrt(Tg) * rnorm(1e5))
+pay_g <- U * pmax(Kg - ST_g, 0)
+round(c(prob_pays = mean(pay_g > 0), real_world_pv = exp(-rg * Tg) * mean(pay_g),
+        put_price = unname(put_g["estimate"])), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Garancia paguan në \Sexpr{fmt(100 * mean(pay_g > 0), 1)}\% të skenarëve, si formula e Orës 2.
+    \item<2-> Vlera aktuale e pagesës së pritur në botën reale (\Sexpr{fmt(exp(-rg * Tg) * mean(pay_g))}) është \textbf{më e vogël} se çmimi (\Sexpr{fmt(put_g["estimate"])}).
+    \item<3-> Çmimi i put-it nuk është ``humbja mesatare'': është kostoja e \textbf{ndërtimit} të mbrojtjes pa rrezik.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Çmimi i garancisë me pritjen e botës reale e nënvlerëson me \Sexpr{fmt(100 * (1 - exp(-rg * Tg) * mean(pay_g) / put_g["estimate"]))}\%. Fondi që e çmon kështu nuk mund ta mbulojë rrezikun në treg.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile,label=w8gab6]{Gjej gabimin}
+<<w8h6-bug>>=
+cost_bad <- exp(-0.07 * Tg) * mean(pay_g)          # discounted with mu
+round(c(cost_bad = cost_bad, put_price = unname(put_g["estimate"])))
+@
+  \begin{enumerate}
+    \item Një analist skonton me $\mu=7\%$ në vend të $r$. Pse gabimi bëhet edhe më i madh?
+    \item Cilat \textbf{dy} ndryshime e bëjnë simulimin të japë çmimin e saktë?
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjGab6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll: simulim me $\mu=r$ \Zgj}
+<<w8h6-rn>>=
+set.seed(869)
+sh <- sig_g["estimate"]
+ST_q <- 100 * exp((rg - sh^2 / 2) * Tg + sh * sqrt(Tg) * rnorm(1e5))  # risk-neutral
+round(c(mc_price = exp(-rg * Tg) * mean(U * pmax(Kg - ST_q, 0)),
+        bs_price = unname(put_g["estimate"])))
+@
+  \small Kur simulojmë me $\mu=r$ (bota ``neutrale ndaj rrezikut'') dhe skontojmë me $r$, marrim çmimin e Black--Scholes. Arsyeja: Java 10--11.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Financimi: obligacion + call}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja}
+  \begin{itemize}
+    \item<1-> Fondi nuk i kërkon anëtarit 1.4 milionë shtesë.
+    \item<2-> Vendos $Ke^{-rT}=10^7e^{-0.15}=\Sexpr{fmt(1e7 * exp(-rg * Tg))}$ lekë në obligacion: pas 5 vjetësh bëhen 10 milionë.
+    \item<3-> Me pjesën tjetër (\Sexpr{fmt(1e7 * (1 - exp(-rg * Tg)))} lekë) blen call-e: aq sa mjafton.
+    \item<4-> Anëtari merr: \; $10^7+\alpha\cdot U\,(S_T-100)^+$, ku $\alpha$ = \termi{norma e pjesëmarrjes}{participation rate}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Norma e pjesëmarrjes}
+<<w8h6-alpha>>=
+bond  <- 1e7 * exp(-rg * Tg)
+alpha <- (1e7 - bond) / call_g                   # share of the upside the member gets
+round(rbind(call_cost = call_g, alpha_pct = 100 * alpha), 1)
+@
+  \pause
+  \small Me $\hat\sigma$: anëtari merr kapitalin e garantuar + \Sexpr{fmt(100 * alpha["estimate"], 1)}\% të rritjes mbi 100.
+  Me $\sigma$ më të madh, call-i është më i shtrenjtë dhe $\alpha$ më i vogël.
+\end{frame}
+
+\begin{frame}[fragile]{Tri produkte, një kapital}
+<<w8h6-dist, echo=FALSE, fig.height=2.9>>=
+prod <- data.frame(
+  value = c(U * ST_g, U * ST_g + pay_g, 1e7 + alpha["estimate"] * U * pmax(ST_g - 100, 0)) / 1e6,
+  product = rep(c("vetem aksion", "aksion + put", "obligacion + call"), each = length(ST_g)))
+ggplot(prod, aes(value, colour = product)) + stat_ecdf(linewidth = 1) +
+  geom_vline(xintercept = 10, linetype = 2) + coord_cartesian(xlim = c(0, 40)) +
+  scale_colour_manual(values = c("#27AE60", "#E67E22", "#2C5AA0")) +
+  labs(x = "vlera pas 5 vitesh (milione leke)", y = "P(vlera <= x)", colour = NULL) + th + theme(legend.position = "top")
+@
+  \small Bota reale, $\mu=7\%$. ``Aksion + put'' kërkon 1.4 milionë shtesë sot; ``obligacion + call'' jo.
+\end{frame}
+
+\begin{frame}[fragile]{Kuantilet}
+<<w8h6-q>>=
+qq <- sapply(split(prod$value, prod$product), quantile, probs = c(0.05, 0.25, 0.5, 0.75, 0.95))
+round(qq, 2)                                     # million lek
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> ``Vetëm aksion'': në 5\% të skenarëve, anëtari ka më pak se \Sexpr{fmt(qq["5%", "vetem aksion"], 1)} milionë.
+    \item<2-> Të dy produktet me garanci: kurrë nën 10 milionë.
+    \item<3-> ``Obligacion + call'': mediana \Sexpr{fmt(qq["50%", "obligacion + call"], 1)} milionë, sepse anëtari merr vetëm $\alpha\approx\Sexpr{fmt(100 * alpha["estimate"])}\%$ të rritjes.
+    \item<4-> Garancia nuk është falas: paguhet me kapital shtesë, ose me një pjesë të rritjes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8ush6]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Me \texttt{bsput()}, \texttt{bscall()} dhe $\hat\sigma$:
+    \begin{enumerate}
+      \item Kostoja e garancisë së \textbf{90\%} të kapitalit ($K=90$), $T=5$.
+      \item Kostoja e garancisë 100\%, por për $T=10$ vjet.
+      \item Norma e pjesëmarrjes $\alpha$ për të dy rastet.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjUsh6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lidhja me sigurimet}
+% ------------------------------------------------------------
+
+\begin{frame}{Garancitë në sigurimet e jetës}
+  \begin{itemize}
+    \item<1-> \textbf{Unit-linked me garanci në maturim}: e njëjta strukturë si ``Pensioni Plus'', por paguhet vetëm nëse i siguruari jeton.
+    \item<2-> Vlera: $\approx{}_Tp_x\times$ put (probabiliteti i mbijetesës, Java 5, herë çmimin e put-it), nëse vdekshmëria dhe tregu janë të pavarura.
+    \item<3-> \textbf{Solvency II}: garancitë janë detyrime që varen nga tregu; vlerësohen me skenarë stokastikë.
+    \item<4-> \textbf{IFRS 17}: flukset e garancive hyjnë në vlerën aktuale të flukseve të ardhshme.
+  \end{itemize}
+  \onslide<5->{\small Detajet rregullatore janë jashtë këtij kursi; ideja: garancia = opsion = kosto e matshme.}
+\end{frame}
+
+\begin{frame}[label=w8tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Fondi ka 1\,000 anëtarë si ky.
+    \begin{enumerate}
+      \item Sa është detyrimi total i garancisë sot?
+      \item Nëse fondi \textbf{nuk} blen put-e në treg dhe nuk ndërton mbrojtje, çfarë rreziku merr?
+      \item Pse mbrojtja kërkon $\sigma$, por jo $\mu$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjTps6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse kostoja e garancisë varet nga $\sigma$ por jo nga $\mu$?
+    \item Pse $e^{-rT}E^{\text{reale}}[(K-S_T)^+]$ nuk është çmimi?
+    \item Çfarë është norma e pjesëmarrjes?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) çmimi vjen nga arbitrazhi/replikimi; (2) me $\mu>r$ ai e nënvlerëson koston e replikimit;
+  (3) pjesa e rritjes që merr anëtari kur garancia financohet me obligacion + call.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item Garancia 5-vjeçare e 10 milionëve: \Sexpr{fmt(put_g["estimate"] / 1e6, 2)} milionë lekë (\Sexpr{fmt(100 * put_g["estimate"] / 1e7, 1)}\%).
+    \item Ndjeshmëria: $\hat\sigma\pm1.2$ pikë $\Rightarrow$ kostoja $\pm\Sexpr{fmt((put_g["upper"] - put_g["lower"]) / 2 / 1e3)}$ mijë.
+    \item Bota reale: paguan në 36\% të skenarëve, por pritja reale $\neq$ çmimi.
+    \item Obligacion + call: garanci pa kosto shtesë, me $\alpha\approx\Sexpr{fmt(100 * alpha["estimate"])}\%$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, ushtrime të tipit provim, gabimet e zakonshme, fletë-kujtesë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{bscall()}, \texttt{bsput()}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+  \end{itemize}
+\end{frame}

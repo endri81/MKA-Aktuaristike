@@ -1,0 +1,42 @@
+% ============================================================
+%  Java 8 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8zgjPar6]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Rreth \Sexpr{fmt(100 * mean(pay_g > 0), 1)}\% (Ora 2: $\Phi(-0.3466)=36.4\%$).
+    \item Më e vogël: \Sexpr{fmt(exp(-rg * Tg) * mean(pay_g))} kundrejt \Sexpr{fmt(put_g["estimate"])} lekë.
+      Me $\mu>r$, aksioni rritet më shpejt në botën reale; put-i paguan më rrallë.
+  \end{enumerate}
+  \small Por çmimi i tregut mbetet çmimi i Black--Scholes: me më pak, fondi nuk mund ta replikojë mbrojtjen.
+  \vfill\kthehu{w8par6}
+\end{frame}
+
+\begin{frame}[label=w8zgjGab6]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item Skontimi me $\mu=7\%>r$ e zvogëlon edhe më shumë vlerën: \Sexpr{fmt(cost_bad)} lekë, rreth \Sexpr{fmt(100 * (1 - cost_bad / put_g["estimate"]))}\% nën çmim.
+    \item (a) Simulo me $\mu=r$ (bota neutrale ndaj rrezikut); (b) skonto me $r$. Slide-i ``Kontroll'' e tregon.
+  \end{enumerate}
+  \vfill\kthehu{w8gab6}
+\end{frame}
+
+\begin{frame}[fragile,label=w8zgjUsh6]{Zgjidhja: Radha jote!}
+<<w8h6-sol-ush>>=
+sh <- unname(sig_g["estimate"])
+c90  <- U * bsput(100, 90, sh, rg, 5, 0);  c10 <- U * bsput(100, 100, sh, rg, 10, 0)
+a90  <- (1e7 - 9e6 * exp(-rg * 5)) / (U * bscall(100, 90, sh, rg, 5, 0))
+a10  <- (1e7 - 1e7 * exp(-rg * 10)) / (U * bscall(100, 100, sh, rg, 10, 0))
+round(c(cost_K90 = c90, cost_T10 = c10, alpha_K90 = 100 * a90, alpha_T10 = 100 * a10), 1)
+@
+  \small Garanci më e ulët (90\%) $\Rightarrow$ më lirë. Afat më i gjatë $\Rightarrow$ put më i shtrenjtë, por obligacioni më i lirë: $\alpha$ rritet.
+  \vfill\kthehu{w8ush6}
+\end{frame}
+
+\begin{frame}[label=w8zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item $1\,000\times\Sexpr{fmt(put_g["estimate"])}\approx\Sexpr{fmt(1000 * put_g["estimate"] / 1e9, 2)}$ miliardë lekë.
+    \item Rrezik tregu i pambuluar: në një rënie të madhe, të gjithë anëtarët kërkojnë garancinë njëkohësisht.
+    \item Mbrojtja (replikimi) mban në çdo moment një përzierje aksioni dhe parash që varet nga $\sigma$, $r$, $S$; kthimi i pritur $\mu$ nuk hyn (Java 10--11).
+  \end{enumerate}
+  \vfill\kthehu{w8tps6}
+\end{frame}
