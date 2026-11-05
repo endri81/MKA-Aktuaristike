@@ -1,0 +1,310 @@
+% ============================================================
+%  Java 5 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Tabela e vogël e kuizit: $l_{80},\dots,l_{84}=500,\;400,\;250,\;100,\;0$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w5qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cila formulë jep ${}_tp_x$ nga forca e vdekshmërisë?
+    \begin{enumerate}
+      \item[A)] ${}_tp_x=1-\int_0^t\mu_{x+s}\,ds$
+      \item[B)] ${}_tp_x=\exp\big(-\int_0^t\mu_{x+s}\,ds\big)$
+      \item[C)] ${}_tp_x=(1-\mu_x)^t$
+      \item[D)] ${}_tp_x=\exp(-t\,q_x)$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w5sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Me $d=i/(1+i)$, cila lidhje është e vërtetë?
+    \begin{enumerate}
+      \item[A)] $A_x=1-i\,\ddot a_x$
+      \item[B)] $A^1_{x:\overline n|}=1-d\,\ddot a_{x:\overline n|}$
+      \item[C)] $A_x=1-d\,\ddot a_x$
+      \item[D)] $A_x=1-d\,a_x$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w5sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU1]{U1 · Tabela pa ndihmën e PC}
+  \begin{Ushtrim}[($l_{80..84}=500,400,250,100,0$)]
+    \begin{enumerate}
+      \item Llogarit $d_x$ dhe $q_x$ për $x=80,\dots,83$.
+      \item Llogarit ${}_2p_{80}$ dhe ${}_{1|}q_{80}$.
+      \item Llogarit $e_{80}$ (e reduktuar).
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU2]{U2 · $L_x$, $T_x$, $\mathring e_x$}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Me të njëjtën tabelë dhe $L_x=(l_x+l_{x+1})/2$:
+    \begin{enumerate}
+      \item Llogarit $L_{80},\dots,L_{83}$ dhe $T_{80}$.
+      \item Llogarit $\mathring e_{80}$ dhe krahasoje me $e_{80}+\tfrac12$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU3]{U3 · Makeham}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $\mu_x=0.001+0.0001\cdot1.1^x$.
+    \begin{enumerate}
+      \item Llogarit $\mu_{50}$ (jepet $1.1^{50}\approx117.39$).
+      \item Sa vite i duhen pjesës $Bc^x$ për t'u dyfishuar?
+      \item Në moshat e reja, cili term dominon? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU4]{U4 · Moshat jo të plota}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $q_x=0.2$, $s=0.5$. Llogarit ${}_{0.5}p_x$ nën:
+    \begin{enumerate}
+      \item UDD;
+      \item forcën konstante;
+      \item Balducci.
+    \end{enumerate}
+    Rendit rezultatet.
+  \end{Ushtrim}
+  \shkoTe{w5sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU5]{U5 · $A_{80}$, $\ddot a_{80}$, prima}
+  \begin{Ushtrim}[(pa ndihmën e PC, $i=4\%$)]
+    Me tabelën e vogël:
+    \begin{enumerate}
+      \item Llogarit $A_{80}$ dhe $\ddot a_{80}$.
+      \item Kontrollo $A_{80}=1-d\,\ddot a_{80}$.
+      \item Llogarit primën neto vjetore për 1\,000\,000 lekë, gjithë jetën.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU6]{U6 · Me afat dhe dota}
+  \begin{Ushtrim}[(pa ndihmën e PC, $i=4\%$)]
+    \begin{enumerate}
+      \item Llogarit $A^1_{80:\overline2|}$, ${}_2E_{80}$ dhe $\ddot a_{80:\overline2|}$.
+      \item Llogarit primën neto vjetore të sigurimit me afat 2 vite për 1\,000\,000 lekë.
+      \item Llogarit $A_{80:\overline2|}$ dhe kontrolloje me $1-d\,\ddot a_{80:\overline2|}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU7]{U7 · Në R}
+  \begin{Ushtrim}[(\Rkey{lifecontingencies}, tabela sintetike F, $i=4\%$)]
+    \begin{enumerate}
+      \item Llogarit $\mathring e_{65}$.
+      \item Llogarit primën neto të sigurimit me afat 20 vite për një grua 40-vjeçare, 1\,000\,000 lekë.
+      \item Llogarit $\ddot a^{(12)}_{65}$ dhe koston e një pensioni 10\,000 lekë/muaj nga 65 vjeç.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w5qU8]{U8 · Në R}
+  \begin{Ushtrim}[(pensioni i shtyrë)]
+    Një grua 35-vjeçare (tabela sintetike F, $i=4\%$) do 1 lek në vit nga 65 vjeç, me prima vjetore nga 35 deri në 64.
+    \begin{enumerate}
+      \item Llogarit EPV e pensionit ${}_{30|}\ddot a_{35}$.
+      \item Llogarit primën vjetore të nivelit.
+      \item Sa herë më e lirë është se e njëjta primë për një 50-vjeçare (nga 50 deri në 64)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w5sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): tabelat}
+  \begin{enumerate}
+    \item<1-> Indeksi i moshës: \texttt{lx[40]} është $l_{39}$; përdor \texttt{lx[x + 1]} ose një funksion \texttt{L()}.
+    \item<2-> ${}_tp_x=p_x^t$ në vend të prodhimit $p_xp_{x+1}\cdots$
+    \item<3-> $e_x$ e reduktuar ngatërrohet me $\mathring e_x$ (diferenca $\tfrac12$).
+    \item<4-> $e_x$ ngatërrohet me $e_0-x$.
+    \item<5-> Tabelë periudhe përdoret si tabelë kohorte për pensionet.
+    \item<6-> Tabelë e shkurtuar e futur direkt në \texttt{lifetable}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): sigurimet}
+  \begin{enumerate}
+    \item<1-> $a_x$ (pagesa në fund) në vend të $\ddot a_x$ (prima në fillim).
+    \item<2-> $d$, $v$ dhe $i$ ngatërrohen: $d=iv=1-v$.
+    \item<3-> ${}_nE_x=v^n$, pa ${}_np_x$.
+    \item<4-> $A=1-d\ddot a$ për sigurimin \textbf{me afat}.
+    \item<5-> \texttt{actuarialtable} pa \texttt{interest}: paketa përdor 3\% pa paralajmërim.
+    \item<6-> Prima neto paraqitet si prima komerciale.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w5qGab7]{Gjej gabimin: raundi i shpejtë}
+  \begin{Gabim}[(tre gabime, dy minuta)]
+    \ttfamily\small
+    lt <- new("lifetable", x = 1:111, lx = mt\$lx\_male)\\[3pt]
+    p10\_60 <- (1 - mt\$qx\_male[61])\textasciicircum 10\\[3pt]
+    act <- new("actuarialtable", x = mt\$age, lx = mt\$lx\_male)\\
+    P <- 1e6 * Axn(act, 40, 20) / axn(act, 40, 20)   \# contract rate 5\%
+  \end{Gabim}
+  \normalfont
+  \shkoTe{w5sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): \texttt{lifecontingencies}}
+  \centering\small
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{ll}
+    \toprule
+    Detyra & Funksioni \\
+    \midrule
+    Tabela nga $l_x$ & \texttt{new("lifetable", x, lx, name)} \\
+    Tabela nga $q_x$ & \texttt{probs2lifetable(qx, type = "qx")} \\
+    Mbijetesa, vdekja & \texttt{pxt(lt, x, t)}, \texttt{qxt(lt, x, t)} \\
+    Jetëgjatësia & \texttt{exn(lt, x, type = "curtate" / "complete")} \\
+    Tabela aktuariale & \texttt{new("actuarialtable", x, lx, interest)} \\
+    Dota e pastër & \texttt{Exn(act, x, n)} \\
+    Sigurimet & \texttt{Axn(act, x, n)}, \texttt{AExn(act, x, n)} \\
+    Anuitetet & \texttt{axn(act, x, n, m, k)} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \small
+  \begin{itemize}
+    \item $d_x=l_x-l_{x+1}$, \; $q_x=d_x/l_x$, \; ${}_tp_x=l_{x+t}/l_x$, \; ${}_{t|}q_x=d_{x+t}/l_x$.
+    \item $e_x=\sum_{k\ge1}{}_kp_x=p_x(1+e_{x+1})$; \; $\mathring e_x\approx e_x+\tfrac12=T_x/l_x$.
+    \item ${}_tp_x=\exp(-\int_0^t\mu_{x+s}ds)$; \; Makeham $\mu_x=A+Bc^x$; dyfishim $\log2/\log c$.
+    \item UDD $1-sq_x$; forca konstante $p_x^s$; Balducci $p_x/(1-(1-s)q_x)$.
+    \item ${}_nE_x=v^n{}_np_x$; \; $A_x=\sum v^{k+1}{}_{k|}q_x$; \; $\ddot a_x=\sum v^k{}_kp_x$.
+    \item $A_x=1-d\ddot a_x$; \; $A_{x:\overline n|}=A^1_{x:\overline n|}+{}_nE_x=1-d\ddot a_{x:\overline n|}$.
+    \item ${}_{m|}\ddot a_x={}_mE_x\ddot a_{x+m}$; \; $P=A/\ddot a$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w5h7-cheat, eval=FALSE>>=
+lx <- 100000 * cumprod(c(1, 1 - qx[-length(qx)]))      # from q_x
+ex <- (rev(cumsum(rev(lx))) - lx) / lx                  # curtate e_x
+lt  <- new("lifetable", x = 0:110, lx = lx)
+act <- new("actuarialtable", x = 0:110, lx = lx, interest = 0.05)
+P   <- 1e6 * Axn(act, 40, 20) / axn(act, 40, 20)        # term net premium
+pen <- axn(act, 40, m = 25, k = 12)                     # deferred, monthly
+f <- splinefun(age, log(lx_abr), method = "monoH.FC")   # abridged -> complete
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 6)}
+  \begin{Ushtrim}[(skript i vetëm, i riprodhueshëm)]
+    \begin{enumerate}
+      \item Rindërto tabelën e plotë të Shqipërisë 2011 për femrat dhe kalibroje që $\mathring e_0$ dhe $\mathring e_{65}$ të përputhen me Eurostat 2024
+            (udhëzim: shumëzo të gjitha $q_x$ me një faktor $\theta$ dhe gjej $\theta$ me \texttt{uniroot()}).
+      \item Me tabelën e kalibruar: llogarit ndryshimin në koston e pensionit $\ddot a_{65}^{(12)}$ kundrejt 2011.
+      \item Përsërit për meshkujt. Cila gjini ka ndryshim më të madh?
+    \end{enumerate}
+  \end{Ushtrim}
+  \small Kriteri: skripti ekzekutohet pa gabim pas \emph{Session $\rightarrow$ Restart R}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 6}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 6: tabela aktuariale e plotë}
+  \begin{itemize}
+    \item<1-> Numrat e komutimit $D_x$, $N_x$, $C_x$, $M_x$: tabela aktuariale klasike. \LO{C1}
+    \item<2-> \termi{Funksionet e përziera}{mixed functions}: shpërndarjet e përziera (Java 3) dhe funksionet për disa jetë ($p_{xy}$, $A_{xy}$). \LO{K2}
+    \item<3-> Tabela ilustruese e SOA (\texttt{soa08Act}): ndërtojmë të njëjtën tabelë nga zero dhe krahasojmë.
+    \item<4-> Zgjerim: Lee--Carter dhe përmirësimet e vdekshmërisë.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Shembull}[(pyetja e Javës 6)]
+    Sa kushton një pension që paguhet sa kohë është gjallë \textbf{të paktën njëri} nga bashkëshortët?
+  \end{Shembull}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse e kontrollojmë çdo rezultat me dy rrugë (nga zero dhe me paketën)?
+    \item Çfarë i bën tabelat e Shqipërisë të vështira për t'u përdorur direkt?
+    \item Pse prima e nivelit krijon një rezervë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) gabimet e indeksit dhe të argumenteve nuk japin mesazh gabimi; (2) janë të shkurtuara dhe të vjetra;
+  (3) në vitet e para prima e kalon koston e rrezikut, teprica ruhet për më vonë.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 5}
+  \begin{itemize}
+    \item Tabela e vdekshmërisë: $l_x$, $d_x$, $q_x$, $p_x$, $e_x$, $L_x$, $T_x$. \LO{C1}
+    \item Forca e vdekshmërisë, Makeham, moshat jo të plota; përshtatja me \texttt{nls()}. \LO{K3}
+    \item ${}_nE_x$, $A_x$, $\ddot a_x$, prima neto; $A=1-d\ddot a$. \LO{C3}
+    \item \Rkey{lifecontingencies}: \texttt{lifetable}, \texttt{actuarialtable}. \LO{S2}
+    \item Shqipëria: HLD 1950--2011, rindërtimi i 2011, Eurostat 2013--2024.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10), dhe vinjeta e \Rkey{lifecontingencies}.
+    \item Human Life-Table Database; Eurostat \texttt{demo\_mlexpec}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}
