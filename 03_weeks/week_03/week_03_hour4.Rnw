@@ -179,8 +179,15 @@ rbind(pois  = ratio(dpois(0:5, 2)),         pois_ab  = 0 + 2 / k,
     \onslide<2->{&= a f_0\,g_s+\sum_{j=1}^{s}\Big(a+\frac{b\,j}{s}\Big)f_j\,g_{s-j}}
   \end{align*}
   \onslide<3->{Termi $j=0$ përmban vetë $g_s$: e kalojmë majtas dhe pjesëtojmë me $1-af_0$. \quad $\blacksquare$}
-  \onslide<4->{
-  \begin{Gabim}Për NB dhe binomialen ($a\ne0$), harrohet faktori $1/(1-af_0)$. Për Poisson ai është 1, ndaj gabimi nuk duket.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: faktori $1/(1-af_0)$}
+  \begin{Gabim}Për NB dhe binomialen ($a\ne0$) harrohet faktori $1/(1-af_0)$.\end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Për Poisson $a=0$, ndaj faktori është 1: gabimi nuk duket në Orën 3.
+    \item Pas diskretizimit $f_0>0$: me NB, gabimi i zhvendos të gjitha $g_s$.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Pika e fillimit $g_0$}
@@ -214,10 +221,10 @@ panjer_ab0 <- function(a, b, g0, f, smax) {
 }
 f <- c(0.2, 0.5, 0.3)                       # f0 > 0 on purpose
 r <- 3; p <- 0.4; a <- 1 - p; b <- (r - 1) * (1 - p)
-g_nb <- panjer_ab0(a, b, (p / (1 - a * f[1]))^r, f, 6)
+g_nb <- panjer_ab0(a, b, (p / (1 - a * f[1]))^r, f, 5)
 set.seed(1)
 S_nb <- replicate(1e5, sum(sample(0:2, rnbinom(1, r, p), TRUE, prob = f)))
-rbind(panjer = g_nb, simulation = tabulate(S_nb + 1, 7) / 1e5)
+round(rbind(panjer = g_nb, simulation = tabulate(S_nb + 1, 6) / 1e5), 4)
 @
 \end{frame}
 
