@@ -23,7 +23,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 |---|---|---|
 | 01 | Bazat e R në aktuaristikë | ✅ gati (324 slide) |
 | 02 | Analiza e të dhënave, `stats`, `tvm` | ✅ gati (277 slide) |
-| 03 | Libraritë për jo-jetën (`actuar`) | 🔄 Ora 1–4 |
+| 03 | Libraritë për jo-jetën (`actuar`) | ✅ gati (314 slide) |
 | 04 | Rezervat (`ChainLadder`), kredibiliteti | ⏳ |
 | 05 | `lifecontingencies`, tabelat e vdekshmërisë | ⏳ |
 | 06 | Tabela aktuariale, funksione të përziera, SOA | ⏳ |
