@@ -1,0 +1,39 @@
+% ============================================================
+%  Java 8 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8zgjMC2]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Variancat mblidhen: $12\cdot0.06^2$, pra devijimi $0.06\sqrt{12}=20.8\%$.
+  \begin{itemize}
+    \item A) shumëzon devijimin, jo variancën. \; C) pjesëton në vend që të shumëzojë.
+    \item D) volatiliteti \textbf{varet} nga periudha; prandaj jepet gjithmonë ``vjetor''.
+  \end{itemize}
+  \vfill\kthehu{w8mc2}
+\end{frame}
+
+\begin{frame}[label=w8zgjPar2]{Zgjidhja: Parashiko}
+  \textbf{C)} rreth 36\%: \; $\Phi(-0.03875\sqrt5/0.25)=\Phi(-0.3466)=0.3644$.
+  \begin{itemize}
+    \item Shumë studentë zgjedhin A ose B, sepse $\mu=7\%>0$.
+    \item Por në 5 vjet, devijimi $\sigma\sqrt5=56\%$ është shumë më i madh se zhvendosja $0.19$.
+  \end{itemize}
+  \vfill\kthehu{w8par2}
+\end{frame}
+
+\begin{frame}[label=w8zgjUsh2]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $r=0.019803,\;-0.009852,\;0.019608,\;0.009662$; \; $\bar r=0.009805=\ln1.04/4$. \textcolor{okgreen}{$\checkmark$}
+    \item $\hat\sigma=0.013934\sqrt{252}=0.2212=22.1\%$.
+    \item $252\,\bar r=2.47$, pra ``247\% në vit''. Pa kuptim: me $T=4/252$ vjet, $\text{SE}(\hat\mu)\approx0.22/\sqrt{0.016}\approx175\%$.
+  \end{enumerate}
+  \vfill\kthehu{w8ush2}
+\end{frame}
+
+\begin{frame}[label=w8zgjTps2]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Gabimi standard i mesatares së 3 viteve është rreth 14\%: mesatarja nuk tregon pothuajse asgjë për të ardhmen.
+    \item Seri shumë të gjata historike, primi i rrezikut i vlerësuar nga tregu, supozime të rregullatorit ose të aktuarit të pavarur.
+    \item Çmimi i opsionit përcaktohet nga arbitrazhi (Orët 4--5): $\mu$ nuk hyn në formulë, vetëm $\sigma$ dhe $r$.
+  \end{enumerate}
+  \vfill\kthehu{w8tps2}
+\end{frame}

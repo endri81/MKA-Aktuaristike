@@ -1,0 +1,263 @@
+% ============================================================
+%  Java 8 · Ora 2 — Teoria I: kthimet dhe modeli GBM
+% ============================================================
+\section{Teoria I: kthimet, GBM}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kthimet}
+% ------------------------------------------------------------
+
+\begin{frame}{Lidhja midis $R$ dhe $r$}
+  \begin{itemize}
+    \item<1-> $r=\ln(1+R)$ \quad dhe \quad $R=e^r-1$.
+    \item<2-> Për kthime të vogla (Taylor): \; $r=R-\dfrac{R^2}{2}+\dots\approx R$.
+    \item<3-> Shembull: $R=1\%$ $\Rightarrow$ $r=0.995\%$; \; $R=30\%$ $\Rightarrow$ $r=26.2\%$.
+  \end{itemize}
+  \onslide<4->{\small Kthimet ditore janë të vogla: $r$ dhe $R$ ndryshojnë pak. Kthimet vjetore jo.}
+\end{frame}
+
+\begin{frame}{Dy veti të kundërta}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Në \textbf{kohë} (shumë ditë) & Në \textbf{portofol} (shumë aksione) \\
+      \midrule
+      $r$ (log) & mblidhet: $r_{0\to T}=\sum_tr_t$ & nuk mblidhet \\
+      $R$ (i thjeshtë) & shumëzohet: $\prod(1+R_t)$ & mesatare me pesha: $\sum_jw_jR_j$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{Keshille}Për modele në kohë (GBM, volatilitet): $r$. Për kthimin e një portofoli në një periudhë: $R$.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Vjetorizimi}
+  Me $n_y=252$ ditë në vit dhe kthime ditore të pavarura:
+  \begin{align*}
+    \text{mesatarja vjetore} &= 252\times\text{mesatarja ditore}, \\
+    \onslide<2->{\text{varianca vjetore} &= 252\times\text{varianca ditore},} \\
+    \onslide<3->{\text{devijimi vjetor} &= \sqrt{252}\times\text{devijimi ditor}.}
+  \end{align*}
+  \onslide<4->{
+  \begin{Gabim}$\sigma_{\text{vjetor}}=252\cdot\sigma_{\text{ditor}}$: një aksion me 1.6\% luhatje ditore do të kishte ``400\%'' volatilitet vjetor. E sakta: $1.6\%\cdot\sqrt{252}\approx25\%$.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w8mc2]{Zgjedhje e shumëfishtë}
+  Kthimet mujore kanë devijim standard 6\%. Sa është volatiliteti vjetor?
+  \begin{enumerate}[A)]
+    \item $6\%\cdot12=72\%$
+    \item $6\%\cdot\sqrt{12}\approx20.8\%$
+    \item $6\%/\sqrt{12}\approx1.7\%$
+    \item $6\%$, sepse volatiliteti nuk varet nga periudha
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjMC2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Modeli GBM}
+% ------------------------------------------------------------
+
+\begin{frame}{Intuita}
+  \begin{itemize}
+    \item<1-> Çdo ditë, çmimi shumëzohet me një faktor të rastit: $S_t=S_{t-1}\,e^{r_t}$.
+    \item<2-> Pra $\ln S_t=\ln S_0+r_1+\dots+r_t$: një \textbf{ecje e rastit} në logaritme.
+    \item<3-> Nëse $r_t$ janë të pavarura dhe normale me të njëjtat parametra: \termi{lëvizja Brownian gjeometrike}{geometric Brownian motion, GBM}.
+  \end{itemize}
+  \onslide<4->{\small Pse ``gjeometrike''? Ndryshimet janë në \%, jo në lekë: çmimi nuk bëhet kurrë negativ.}
+\end{frame}
+
+\begin{frame}{Përkufizimi}
+  \begin{Definicion}
+    \[
+      S_t=S_0\exp\!\Big(\big(\mu-\tfrac{\sigma^2}{2}\big)t+\sigma W_t\Big),
+    \]
+    ku $W_t\sim N(0,t)$ është lëvizja Brownian standarde.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Kthimi log për një periudhë $\Delta$: \; $r\sim N\big((\mu-\tfrac{\sigma^2}{2})\Delta,\;\sigma^2\Delta\big)$.
+    \item Periudha të ndryshme jo të mbivendosura: kthime të \textbf{pavarura}.
+    \item Për të dhënat ditore: $\Delta=1/252$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pse $\mu-\sigma^2/2$?}
+  Për $X\sim N(m,s^2)$: \; $E[e^X]=e^{m+s^2/2}$ (Java 3: lognormalja).
+  \pause
+  \begin{align*}
+    E[S_t] &= S_0\,E\Big[\exp\!\big((\mu-\tfrac{\sigma^2}{2})t+\sigma W_t\big)\Big] \\
+    \onslide<3->{&= S_0\exp\!\Big((\mu-\tfrac{\sigma^2}{2})t+\tfrac{\sigma^2t}{2}\Big)} \\
+    \onslide<4->{&= S_0\,e^{\mu t}.}
+  \end{align*}
+  \onslide<5->{\small $\mu$ është kthimi i pritur i \textbf{çmimit}; termi $-\sigma^2/2$ ``korrigjon'' konveksitetin e eksponencialit.}
+\end{frame}
+
+\begin{frame}{Mesatarja dhe mediana}
+  Me $\mu=7\%$, $\sigma=25\%$, $t=5$ vjet:
+  \begin{itemize}
+    \item<1-> $\mu-\sigma^2/2=0.07-0.03125=0.03875$.
+    \item<2-> Mesatarja: $E[S_5]/S_0=e^{0.35}=1.4191$.
+    \item<3-> Mediana: $e^{0.03875\cdot5}=e^{0.19375}=1.2138$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}
+    Në GBM, mediana $<$ mesatarja: shumica e trajektoreve rriten më pak se mesatarja; disa rriten shumë.
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}[label=w8par2]{Parashiko}
+  \begin{Parashiko}
+    Me $\mu=7\%$, $\sigma=25\%$: sa është probabiliteti që pas 5 vitesh aksioni të jetë \textbf{nën} çmimin fillestar?
+    \begin{enumerate}[A)]
+      \item rreth 5\%
+      \item rreth 20\%
+      \item rreth 36\%
+      \item rreth 50\%
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w8zgjPar2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Probabiliteti i humbjes}
+  \begin{align*}
+    P(S_t<S_0) &= P\Big((\mu-\tfrac{\sigma^2}{2})t+\sigma W_t<0\Big) \\
+    \onslide<2->{&= \Phi\!\Big(-\frac{(\mu-\sigma^2/2)\sqrt t}{\sigma}\Big)} \\
+    \onslide<3->{&= \Phi\!\Big(-\frac{0.03875\sqrt5}{0.25}\Big)=\Phi(-0.3466)=0.3644.}
+  \end{align*}
+  \onslide<4->{\small Një garanci kapitali 5-vjeçare ``aktivizohet'' në rreth 36\% të skenarëve: nuk është rrezik i vogël.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlerësuesit}
+% ------------------------------------------------------------
+
+\begin{frame}{Vlerësuesit e $\mu$ dhe $\sigma$}
+  Të dhënat: $r_1,\dots,r_n$ ditore, $\Delta=1/252$, periudha totale $T=n\Delta$ vjet.
+  \pause
+  \begin{align*}
+    \hat\sigma &= \frac{\text{sd}(r)}{\sqrt\Delta}=\text{sd}(r)\,\sqrt{252}, \\
+    \onslide<3->{\hat\mu &= \frac{\bar r}{\Delta}+\frac{\hat\sigma^2}{2}=252\,\bar r+\frac{\hat\sigma^2}{2}.}
+  \end{align*}
+  \onslide<4->{\small Këto janë (pothuajse) vlerësuesit e verosimësisë maksimale për të dhëna normale.}
+\end{frame}
+
+\begin{frame}{Gabimi standard i $\hat\mu$}
+  \begin{itemize}
+    \item<1-> $\bar r=\dfrac{r_1+\dots+r_n}{n}=\dfrac{\ln S_T-\ln S_0}{n}$: vetëm çmimi i \textbf{parë} dhe i \textbf{fundit}!
+    \item<2-> $\text{Var}(\bar r/\Delta)=\dfrac{\sigma^2\Delta}{n\Delta^2}=\dfrac{\sigma^2}{T}$.
+    \item<3-> Pra $\text{SE}(\hat\mu)\approx\dfrac{\sigma}{\sqrt T}$: varet nga \textbf{gjatësia} e periudhës, jo nga frekuenca.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}``Me të dhëna çdo minutë do ta vlerësojmë $\mu$ më mirë.'' Jo: vetëm më shumë \textbf{vite} ndihmojnë.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Gabimi standard i $\hat\sigma$}
+  \begin{itemize}
+    \item<1-> Për të dhëna normale: $\text{SE}(\hat s)\approx\dfrac{s}{\sqrt{2n}}$ (për $n$ të madh).
+    \item<2-> Pra $\text{SE}(\hat\sigma)\approx\dfrac{\sigma}{\sqrt{2n}}$: varet nga \textbf{numri} i vëzhgimeve.
+    \item<3-> Më shumë frekuencë $\Rightarrow$ $\hat\sigma$ më i saktë (në GBM).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Numrat për të dhënat tona}
+  $\sigma=25\%$, $T=3$ vjet, $n=755$ kthime ditore:
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Formula & Vlera \\
+      \midrule
+      $\text{SE}(\hat\mu)$ & $\sigma/\sqrt T$ & $0.25/\sqrt3=14.4\%$ \\
+      $\text{SE}(\hat\sigma)$ & $\sigma/\sqrt{2n}$ & $0.25/\sqrt{1510}=0.64\%$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Për $\text{SE}(\hat\mu)=1\%$ duhen $T=(0.25/0.01)^2=625$ vjet të dhëna!
+    \item Përputhet me Orën 1: $\hat\sigma$ i saktë, $\hat\mu$ jo.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Intervalet e besimit (95\%)}
+  \begin{itemize}
+    \item<1-> $\sigma$: \; $\hat\sigma\pm1.96\,\hat\sigma/\sqrt{2n}$.
+    \item<2-> $\mu$: \; $\hat\mu\pm1.96\,\hat\sigma/\sqrt T$.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Shembull}[(të dhënat e Orës 1)]
+    $\sigma$: $\Sexpr{fmt(100 * sig_hat, 1)}\%\pm\Sexpr{fmt(196 * sig_hat / sqrt(2 * n), 1)}\%$, pra $[\Sexpr{fmt(100 * (sig_hat - 1.96 * sig_hat / sqrt(2 * n)), 1)}\%,\;\Sexpr{fmt(100 * (sig_hat + 1.96 * sig_hat / sqrt(2 * n)), 1)}\%]$. \\
+    $\mu$: $\Sexpr{fmt(100 * mu_hat, 1)}\%\pm\Sexpr{fmt(196 * sig_hat / sqrt(n / 252), 1)}\%$, pra $[\Sexpr{fmt(100 * (mu_hat - 1.96 * sig_hat / sqrt(n / 252)), 1)}\%,\;\Sexpr{fmt(100 * (mu_hat + 1.96 * sig_hat / sqrt(n / 252)), 1)}\%]$: përmban 7\%, por edhe pothuajse çdo vlerë të arsyeshme.
+  \end{Shembull}}
+\end{frame}
+
+\begin{frame}[label=w8ush2]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta, pa ndihmën e PC)]
+    Çmimet në 5 ditë: $100,\;102,\;101,\;103,\;104$.
+    \begin{enumerate}
+      \item Llogarit $r_1,\dots,r_4$, $\bar r$ dhe kontrollo $\bar r=\ln(104/100)/4$.
+      \item Me $\text{sd}(r)=0.013934$, llogarit $\hat\sigma$ vjetor.
+      \item Llogarit $252\,\bar r$. A ka kuptim si kthim vjetor? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Kur GBM nuk mjafton \Zgj}
+  \begin{itemize}
+    \item<1-> Të dhënat \textbf{reale} të aksioneve kanë zakonisht ``bishta të trashë'': rënie të mëdha më shpesh se normalja.
+    \item<2-> Volatiliteti \textbf{grumbullohet}: periudha të qeta dhe periudha të trazuara (modelet GARCH).
+    \item<3-> Të dhënat tona janë sintetike nga GBM: këto efekte nuk ekzistojnë. Me të dhëna reale, kontrollo me grafikun QQ (Ora 3).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8tps2]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Një kompani sigurimi duhet një supozim për kthimin e aksioneve për 20 vitet e ardhshme.
+    \begin{enumerate}
+      \item Pse nuk mjafton mesatarja e 3 viteve të fundit?
+      \item Nga çfarë burimesh të tjera mund të vijë supozimi?
+      \item Pse për çmimin e opsioneve (Orët 4--6) $\mu$ nuk do të na duhet fare?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjTps2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si vjetorizohet devijimi standard ditor?
+    \item Pse $E[S_t]=S_0e^{\mu t}$, por mediana është më e vogël?
+    \item Nga çfarë varet $\text{SE}(\hat\mu)$? Po $\text{SE}(\hat\sigma)$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\times\sqrt{252}$; (2) $E[e^X]=e^{m+s^2/2}$, mediana $e^{m}$;
+  (3) nga $T$ (vitet); nga $n$ (numri i vëzhgimeve).}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item $r=\ln(1+R)$; $r$ mblidhen në kohë, $R$ në portofol.
+    \item GBM: $\ln S_t$ normal, me mesatare $(\mu-\sigma^2/2)t$ dhe variancë $\sigma^2t$.
+    \item $E[S_t]=S_0e^{\mu t}$; $P(S_5<S_0)=36\%$ për $\mu=7\%$, $\sigma=25\%$.
+    \item $\text{SE}(\hat\mu)\approx\sigma/\sqrt T$, \; $\text{SE}(\hat\sigma)\approx\sigma/\sqrt{2n}$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator R: kthimet, \texttt{xts}, intervalet e besimit, volatiliteti rrëshqitës, 1\,000 botë të simuluara.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021: shpërndarja normale dhe lognormale, vlerësimi.
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
