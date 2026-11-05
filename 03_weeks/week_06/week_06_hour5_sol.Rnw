@@ -1,0 +1,55 @@
+% ============================================================
+%  Java 6 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w6zgjPar5]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}\approx11.37+13.46-10.12=14.71$. Nuk duhet kod!
+    \item Petriti: burrë dhe 3 vjet më i madh. Simulimi jep rreth \Sexpr{fmt(100 * mean(Ks[, 1] < Ks[, 2]))}\% për Petritin,
+      \Sexpr{fmt(100 * mean(Ks[, 1] > Ks[, 2]))}\% për Dritën, \Sexpr{fmt(100 * mean(Ks[, 1] == Ks[, 2]))}\% në të njëjtin vit.
+  \end{enumerate}
+  \vfill\kthehu{w6par5}
+\end{frame}
+
+\begin{frame}[label=w6zgjGab5]{Zgjidhja: Gjej gabimin (riciklimi)}
+  \begin{enumerate}
+    \item \texttt{pM0} ka 46 vlera, \texttt{pF0} 49. R \textbf{riciklon} \texttt{pM0}: për $t=46,47,48$ merr
+      \texttt{pM0[1:3]}, pra Petriti ``ringjallet'' me mbijetesë $1$, ${}_1p_{65}$, ${}_2p_{65}$.
+      Këtu gabimi është vetëm $\Sexpr{signif(a_bug - a_j, 2)}$, sepse Drita në 108--110 ka mbijetesë shumë të vogël: \textbf{fat}, jo kod i saktë.
+      Me një Dritë më të re, gabimi do të ishte më i madh.
+    \item Me gjatësi 46 dhe 92 (shumëfish), R \textbf{nuk} jep as paralajmërim: gabim krejt i heshtur.
+  \end{enumerate}
+  \begin{Keshille}Kontrollo gjithmonë \texttt{length()} para shumëzimit të vektorëve të mbijetesës.\end{Keshille}
+  \vfill\kthehu{w6gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w6zgjUsh5]{Zgjidhja: Radha jote!}
+<<w6h5-sol-ush>>=
+a_75  <- 0.75 * a_l + 0.25 * a_j            # 100% both, 75% survivor
+a_pet <- a_x + 0.6 * (a_y - a_j)            # Petrit 100% for life, Drita 60% after him
+round(rbind(annuity = c(opt75 = a_75, petrit_first = a_pet),
+            pension = K / c(a_75, a_pet)), 2)
+@
+  \small Në (2), nëse Drita vdes e para, Petriti vazhdon me 100\%: kjo është $\ddot a_x$ e plotë.
+  \vfill\kthehu{w6ush5}
+\end{frame}
+
+\begin{frame}[label=w6zgjNdr5]{Zgjidhja: Ndrysho parametrin}
+  \begin{itemize}
+    \item Sa më e re Drita, aq më gjatë paguhet pensioni: $\ddot a_{\overline{xy}}$ rritet nga
+      \Sexpr{fmt(gap[yy == 70, "last"], 2)} (70 vjeç) në \Sexpr{fmt(gap[yy == 55, "last"], 2)} (55 vjeç).
+    \item Edhe kur Drita është 70 vjeç, $\ddot a_{\overline{xy}}>\ddot a_x=\Sexpr{fmt(a_x, 2)}$: mbrojtja e saj ka gjithmonë kosto.
+    \item Në praktikë, tarifa e pensionit të çiftit varet nga \textbf{diferenca e moshave}.
+  \end{itemize}
+  \vfill\kthehu{w6ndr5}
+\end{frame}
+
+\begin{frame}[fragile,label=w6zgjTps5]{Zgjidhja: tabela unisex}
+<<w6h5-sol-tps>>=
+mix30 <- 0.3 * axn(aM, 65) + 0.7 * axn(aF, 65)
+c(priced_w0.5 = mix, true_w0.3 = mix30, loss_per_lek = mix30 - mix)
+@
+  \small Kompania \textbf{humbet} rreth \Sexpr{fmt(mix30 - mix, 3)} për çdo 1 lek pension vjetor
+  (\Sexpr{fmt(100 * (mix30 / mix - 1), 1)}\% e rezervës). Pesha $w$ duhet të vijë nga portofoli real.
+  \vfill\kthehu{w6tps5}
+\end{frame}

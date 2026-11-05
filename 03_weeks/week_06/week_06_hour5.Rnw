@@ -1,0 +1,414 @@
+% ============================================================
+%  Java 6 · Ora 5 — Laborator R II: disa jetë në lifecontingencies
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w6h5-setup, include=FALSE>>=
+suppressMessages(library(lifecontingencies))
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{axyzn()}, \texttt{Axyzn()}, \texttt{exyzt()}, \texttt{pxyzt()} për Petritin dhe Dritën.
+    \item<2-> Kontrolli nga zero: ${}_tp_{xy}$ me vektorë.
+    \item<3-> Opsioni 60\% dhe pensioni në lekë.
+    \item<4-> Simulimi i dy jetëve me \texttt{rLifexyz()}.
+    \item<5-> Shqipëria 2011 dhe tabela unisex (kuptimi i dytë i ``përzierjes'').
+  \end{enumerate}
+  \onslide<6->{\vfill\LO{S2}\;\LO{C1}\;\LO{C3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Funksionet e paketës}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga simboli te funksioni}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Simboli & Thirrja në \Rkey{lifecontingencies} \\
+      \midrule
+      $\ddot a_{xy}$ & \texttt{axyzn(list(tx, ty), x = c(x, y), status = "joint")} \\
+      $\ddot a_{\overline{xy}}$ & \texttt{axyzn(list(tx, ty), x = c(x, y), status = "last")} \\
+      $A_{xy}$, $A_{\overline{xy}}$ & \texttt{Axyzn(..., status = "joint" / "last")} \\
+      $e_{xy}$, $e_{\overline{xy}}$ & \texttt{exyzt(..., status = "joint" / "last")} \\
+      ${}_tp_{xy}$ & \texttt{pxyzt(..., t = t, status = "joint")} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item \texttt{tablesList}: një \textbf{listë} tabelash, një për çdo jetë, në të njëjtin rend si \texttt{x}.
+    \item Supozimi i brendshëm: jetët janë \textbf{të pavarura}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6par5]{Parashiko para se ta ekzekutosh}
+  \begin{Parashiko}
+    Nga Ora 1: $\ddot a_{65}^{M}=11.37$, $\ddot a_{62}^{F}=13.46$, $\ddot a_{xy}=10.12$.
+    \begin{enumerate}
+      \item Sa do të dalë $\ddot a_{\overline{xy}}$, pa e ekzekutuar kodin?
+      \item Kush ka më shumë gjasa të vdesë i pari, Petriti apo Drita? Sa afërsisht?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w6zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Petriti (65, M) dhe Drita (62, F)}
+<<w6h5-api>>=
+aM <- new("actuarialtable", x = mt$age, lx = mt$lx_male,   interest = 0.05)
+aF <- new("actuarialtable", x = mt$age, lx = mt$lx_female, interest = 0.05)
+L  <- list(aM, aF); xy <- c(65, 62)
+a_x <- axn(aM, 65); a_y <- axn(aF, 62)
+a_j <- axyzn(L, x = xy, status = "joint")
+a_l <- axyzn(L, x = xy, status = "last")
+round(c(a_x = a_x, a_y = a_y, joint = a_j, last = a_l,
+        identity = a_x + a_y - a_j), 6)
+@
+  \small Tabela sintetike M dhe F, $i=5\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\ddot a_x+\ddot a_y-\ddot a_{xy}$ jep saktësisht $\ddot a_{\overline{xy}}$. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> $\ddot a_{\overline{xy}}=\Sexpr{fmt(a_l, 2)}$ është shumë më afër $\ddot a_y$ se $\ddot a_x$: Drita jeton më gjatë dhe ``mban'' pagesat.
+    \item<3-> Pagesa që Drita merr pas vdekjes së Petritit ka vlerë $\ddot a_{x|y}=\ddot a_y-\ddot a_{xy}=\Sexpr{fmt(a_y - a_j, 3)}$.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kontrolli nga zero}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{${}_tp_x$ dhe ${}_tp_y$ si vektorë}
+<<w6h5-tp>>=
+tp <- function(lx, x) { l <- lx[(x + 1):length(lx)]; l / l[1] }  # t = 0, 1, ...
+pM <- tp(mt$lx_male, 65); pF <- tp(mt$lx_female, 62)
+c(length(pM), length(pF))
+n  <- max(length(pM), length(pF))
+pM <- c(pM, rep(0, n - length(pM)))       # Petrit is dead after age 110
+pF <- c(pF, rep(0, n - length(pF)))
+@
+  \begin{itemize}
+    \item<2-> Petriti ka 46 vlera (65--110), Drita 49 (62--110): vektorët duhen \textbf{barazuar}.
+    \item<3-> Pas moshës 110 mbijetesa është 0: plotësojmë me zero.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{$\ddot a_{xy}$ dhe $\ddot a_{\overline{xy}}$ nga zero}
+<<w6h5-scratch>>=
+v  <- 1 / 1.05; t <- 0:(n - 1)
+pj <- pM * pF                 # joint life
+pl <- pM + pF - pj            # last survivor
+scratch <- c(joint = sum(v^t * pj), last = sum(v^t * pl))
+rbind(scratch, package = c(a_j, a_l))
+@
+  \small Të njëjtat vlera deri në decimalin e fundit. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile,label=w6gab5]{Gjej gabimin}
+<<w6h5-bug>>=
+pM0 <- tp(mt$lx_male, 65); pF0 <- tp(mt$lx_female, 62)   # not padded
+t0  <- 0:(length(pF0) - 1)
+a_bug <- sum(v^t0 * pM0 * pF0); a_bug
+@
+  \begin{enumerate}
+    \item Numri duket i saktë. Pse kodi është përsëri i gabuar?
+    \item Si do të ishte gabimi nëse gjatësitë do të ishin 46 dhe 92?
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjGab5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Sigurimet: $A_u=1-d\,\ddot a_u$}
+<<w6h5-A>>=
+d <- 0.05 / 1.05
+rbind(Axyzn = c(joint = Axyzn(L, x = xy, status = "joint"),
+                last  = Axyzn(L, x = xy, status = "last")),
+      one_minus_d_a = c(1 - d * a_j, 1 - d * a_l))
+@
+  \pause
+  \small Për \texttt{"joint"} përputhen. Për \texttt{"last"} ka një diferencë në decimalin e 5-të. Pse?
+\end{frame}
+
+\begin{frame}[fragile]{Horizonti i paracaktuar}
+<<w6h5-n>>=
+sapply(c(46, 47, 48, 49), function(nn) Axyzn(L, x = xy, n = nn, status = "last"))
+@
+  \begin{itemize}
+    \item<2-> Pa \texttt{n}, \texttt{Axyzn(..., status = "last")} jep vlerën me $n=47$: humbet dy vitet e fundit të Dritës.
+    \item<3-> Me $n=49$ (Drita deri në 110) përputhet me $1-d\,\ddot a_{\overline{xy}}$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Mos i beso paracaktimeve për statusin \texttt{"last"}: jep \texttt{n} në mënyrë eksplicite dhe kontrollo me $A_u=1-d\,\ddot a_u$. (E testuar në \Rkey{lifecontingencies} 1.3.12.)\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Jetëgjatësia e statuseve}
+<<w6h5-e>>=
+rbind(exyzt = c(joint = exyzt(L, x = xy, status = "joint"),
+                last  = exyzt(L, x = xy, status = "last")),
+      scratch = c(sum(pj[-1]), sum(pl[-1])))
+@
+  \begin{itemize}
+    \item<2-> Jetëgjatësia e \textbf{plotë në vite} (\emph{curtate}): $e_u=\sum_{t\ge1}{}_tp_u$.
+    \item<3-> Çifti ``jeton'' bashkë rreth 14 vjet; të paktën njëri jeton rreth 25 vjet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Katër kurba mbijetese}
+<<w6h5-plot, echo=FALSE, fig.height=3.2>>=
+ds <- data.frame(t = rep(t, 4), p = c(pM, pF, pj, pl),
+                 status = rep(c("Petriti (x)", "Drita (y)", "te dy (xy)", "te pakten njeri"), each = n))
+ggplot(ds, aes(t, p, colour = status)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0", "#8E44AD", "#27AE60")) +
+  labs(x = "t (vite)", y = "tp", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kurba e gjelbër (të paktën njëri) është gjithmonë mbi të dyja kurbat individuale.
+    \item<2-> Kurba vjollcë (të dy) është gjithmonë poshtë tyre.
+    \item<3-> Sipërfaqja nën secilën kurbë $\approx$ jetëgjatësia e statusit; me skontim $\approx\ddot a_u$.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Opsioni 60\% në lekë}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tri produkte me 10\,000\,000 lekë}
+<<w6h5-opt>>=
+K <- 1e7                                   # savings in lek
+a_rev <- a_y - a_j                         # Drita after Petrit
+a_60  <- 0.6 * a_l + 0.4 * a_j             # 100% both alive, 60% survivor
+round(rbind(annuity = c(single = a_x, last100 = a_l, option60 = a_60),
+            pension = K / c(a_x, a_l, a_60)), 2)
+@
+  \small Pension vjetor në lekë, në fillim të vitit; tabela sintetike, $i=5\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{center}
+    \begin{tabular}{lr}
+      \toprule
+      Produkti & Pensioni vjetor (lekë) \\
+      \midrule
+      Vetëm Petriti & \Sexpr{fmt(K / a_x)} \\
+      100\% sa është gjallë njëri & \Sexpr{fmt(K / a_l)} \\
+      100\% / 60\% & \Sexpr{fmt(K / a_60)} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Mbrojtja e plotë e Dritës kushton rreth \Sexpr{fmt(100 * (1 - a_x / a_l))}\% të pensionit të Petritit.
+    \item Opsioni 60\% është kompromisi: më shumë sot, më pak për të venë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6ush5]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Me objektet \texttt{a\_j}, \texttt{a\_l}, \texttt{a\_x}, \texttt{a\_y} të krijuara më sipër:
+    \begin{enumerate}
+      \item Llogarit pensionin vjetor për opsionin 100\% / 75\%.
+      \item Petriti kërkon: 100\% për të, 60\% për Dritën \textbf{vetëm nëse ai vdes i pari}; nëse vdes Drita e para, ai vazhdon me 100\%.
+        Shkruaj $\ddot a$ me $\ddot a_x$ dhe $\ddot a_{x|y}$, dhe llogarit pensionin.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjUsh5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w6ndr5]{Ndrysho parametrin: mosha e Dritës}
+<<w6h5-gap, echo=FALSE, fig.height=2.9>>=
+yy  <- 55:70
+gap <- t(sapply(yy, function(y) {
+  j <- axyzn(L, x = c(65, y), status = "joint"); l <- axyzn(L, x = c(65, y), status = "last")
+  c(last = l, opt60 = 0.6 * l + 0.4 * j)
+}))
+dg <- data.frame(y = rep(yy, 2), a = c(gap[, "last"], gap[, "opt60"]),
+                 produkt = rep(c("100% (last)", "100% / 60%"), each = length(yy)))
+ggplot(dg, aes(y, a, colour = produkt)) + geom_line(linewidth = 1) + geom_point() +
+  geom_hline(yintercept = a_x, linetype = 2) +
+  annotate("text", x = 69, y = a_x + 0.25, label = "vetem Petriti", size = 3.5) +
+  scale_colour_manual(values = c("#2C5AA0", "#27AE60")) +
+  labs(x = "mosha e Drites (Petriti 65)", y = "vlera e anuitetit", colour = NULL) + th +
+  theme(legend.position = "top")
+@
+  \small Çdo vit që Drita është më e re, $\ddot a_{\overline{xy}}$ rritet me rreth \Sexpr{fmt(mean(-diff(gap[, "last"])), 2)}.
+  \hfill\shkoTe{w6zgjNdr5}{Pyetje}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Simulimi i dy jetëve}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{\texttt{rLifexyz()}: 100\,000 çifte}
+<<w6h5-sim>>=
+set.seed(2026)
+Ks <- rLifexyz(n = 1e5, tablesList = L, x = xy, k = 1, type = "Kx")  # curtate lifetimes
+K_last <- pmax(Ks[, 1], Ks[, 2])
+pv <- (1 - v^(K_last + 1)) / (1 - v)        # annuity-due paid K_last + 1 times
+c(mean = mean(pv), se = sd(pv) / sqrt(length(pv)), exact = a_l)
+c(Petrit_first = mean(Ks[, 1] < Ks[, 2]), Drita_first = mean(Ks[, 1] > Ks[, 2]),
+  same_year = mean(Ks[, 1] == Ks[, 2]))
+@
+\end{frame}
+
+\begin{frame}{Vlerësimi kundrejt së vërtetës}
+  \begin{itemize}
+    \item<1-> Mesatarja e simuluar $\Sexpr{fmt(mean(pv), 3)}$ kundrejt $\ddot a_{\overline{xy}}=\Sexpr{fmt(a_l, 3)}$:
+      diferenca është $\Sexpr{fmt((mean(pv) - a_l) / (sd(pv) / sqrt(length(pv))), 1)}$ gabime standarde. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Petriti vdes i pari në rreth \Sexpr{fmt(100 * mean(Ks[, 1] < Ks[, 2]))}\% të çifteve.
+    \item<3-> Simulimi jep atë që formula nuk jep: \textbf{shpërndarjen} e vlerës aktuale.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Shpërndarja e vlerës aktuale}
+<<w6h5-hist, echo=FALSE, fig.height=3>>=
+ggplot(data.frame(pv), aes(pv)) + geom_histogram(binwidth = 0.5, fill = "#2C5AA0", colour = "white") +
+  geom_vline(xintercept = a_l, colour = "#E67E22", linewidth = 1) +
+  geom_vline(xintercept = quantile(pv, 0.995), colour = "#C0392B", linetype = 2) +
+  labs(x = "vlera aktuale e pensionit (1 lek/vit)", y = "numri i cifteve") + th
+@
+  \small Portokalli: mesatarja. E kuqe: kuantili 99.5\% $=\Sexpr{fmt(quantile(pv, 0.995), 2)}$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Shpërndarja është e anuar majtas: shumica e çifteve marrin rreth 15--19 pagesa të skontuara, pak marrin shumë më pak.
+    \item<2-> Kuantili 99.5\% lidhet me logjikën e Solvency II, por këtu mat vetëm rrezikun \textbf{individual}.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Gabim}Rreziku i jetëgjatësisë (\emph{longevity risk}) është ndryshimi i \textbf{vetë tabelës}. Simulimi me një tabelë fikse nuk e mat atë.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shqipëria 2011}
+% ------------------------------------------------------------
+
+<<w6h5-alsetup, include=FALSE>>=
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+expand <- function(age, lx, top = 110) {          # Week 5, Hour 6 (also Hour 3)
+  f <- splinefun(age, log(lx), method = "monoH.FC"); x1 <- 0:max(age); l1 <- exp(f(x1))
+  q <- 1 - l1[-1] / l1[-length(l1)]; xa <- x1[-length(x1)]; s <- xa >= 60
+  g <- lm(log(-log(1 - q[s])) ~ xa[s])
+  cf <- coef(nls(q ~ gm_q(x, A, B, c), data = data.frame(q = q[s], x = xa[s]),
+          start = list(A = 1e-4, B = exp(coef(g)[[1]]), c = exp(coef(g)[[2]])),
+          algorithm = "port", lower = c(0, 1e-9, 1)))
+  c(l1, l1[length(l1)] * cumprod(1 - pmin(gm_q(max(age):(top - 1), cf[1], cf[2], cf[3]), 1)))
+}
+@
+
+\begin{frame}[fragile]{Çifti me tabelat e Shqipërisë}
+<<w6h5-al>>=
+al <- lapply(1:2, function(s) {
+  h <- subset(hld, Year1 == 2011 & TypeLT == 4 & Sex == s)    # 1 = M, 2 = F
+  new("actuarialtable", x = 0:110, lx = expand(h$Age, h$l.x.), interest = 0.05)
+})
+al_j <- axyzn(al, x = xy, status = "joint"); al_l <- axyzn(al, x = xy, status = "last")
+round(rbind(
+  synthetic   = c(a_x, a_y, a_j, a_l, 0.6 * a_l + 0.4 * a_j),
+  Albania2011 = c(axn(al[[1]], 65), axn(al[[2]], 62), al_j, al_l, 0.6 * al_l + 0.4 * al_j)), 3)
+@
+  \small Kolonat: $\ddot a_x$, $\ddot a_y$, $\ddot a_{xy}$, $\ddot a_{\overline{xy}}$, opsioni 60\%. \textbf{Reale}: HLD 2011, e rindërtuar (Ora 3).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me tabelat e Shqipërisë 2011, të gjitha anuitetet janë rreth 2--4\% më të vogla.
+    \item<2-> Pensioni 60\% nga 10 milionë: \Sexpr{fmt(K / (0.6 * al_l + 0.4 * al_j))} lekë (Shqipëria) kundrejt \Sexpr{fmt(K / a_60)} lekë (sintetike).
+    \item<3-> Tabela 2011 është tabelë \textbf{periodike}: nuk përfshin përmirësimin e ardhshëm të vdekshmërisë.
+  \end{itemize}
+  \onslide<4->{\small Pyetje për diskutim: cila tabelë është më e kujdesshme për një kompani që shet pensione?}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabela unisex}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse tabelë unisex?}
+  \begin{itemize}
+    \item<1-> Gratë jetojnë më gjatë: pensioni i tyre kushton më shumë.
+    \item<2-> Në BE, vendimi \emph{Test-Achats} (Gjykata e Drejtësisë e BE, C-236/09, 2011) ndaloi çmimet e ndryshme sipas gjinisë nga 21 dhjetori 2012.
+    \item<3-> Kompania duhet një tabelë e \textbf{përzier} për portofolin: kuptimi i dytë i ``funksioneve të përziera''.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Dy mënyra për tabelën unisex në 65 vjeç}
+<<w6h5-uni>>=
+w <- 0.5                                            # share of men at age 65
+mix  <- w * axn(aM, 65) + (1 - w) * axn(aF, 65)     # mix the survival curves
+qavg <- (mt$qx_male + mt$qx_female) / 2             # average q at each age
+aQ   <- new("actuarialtable", x = mt$age,
+            lx = probs2lifetable(qavg, type = "qx")@lx, interest = 0.05)
+round(c(men = axn(aM, 65), women = axn(aF, 65), mixture = mix, q_average = axn(aQ, 65)), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Përzierja e ${}_tp$ jep $\Sexpr{fmt(mix, 3)}$; mesatarja e $q$-ve jep $\Sexpr{fmt(axn(aQ, 65), 3)}$.
+    \item<2-> Mesatarja e $q$-ve e \textbf{nënvlerëson} anuitetin: injoron që në moshat e larta mbeten më shumë gra (Ora 4).
+    \item<3-> Diferenca këtu është e vogël; ajo rritet me hendekun midis dy tabelave.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6tps5]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Në portofolin real të pensioneve, 70\% e të siguruarve 65-vjeçarë janë gra.
+    \begin{enumerate}
+      \item Llogarit $\ddot a_{65}$ unisex me $w=0.3$.
+      \item Kompania çmon me $w=0.5$, por portofoli ka $w=0.3$. Fiton apo humbet? Sa për çdo 1 lek pension?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjTps5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë merr argumenti \texttt{tablesList} i \texttt{axyzn()}?
+    \item Pse duhet barazuar gjatësia e vektorëve ${}_tp_x$ dhe ${}_tp_y$?
+    \item Pse simulimi me një tabelë fikse nuk mat rrezikun e jetëgjatësisë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) një listë tabelash, një për çdo jetë; (2) R ricikloi vektorin më të shkurtër;
+  (3) ai rrezik vjen nga ndryshimi i vetë tabelës.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{axyzn}, \texttt{Axyzn}, \texttt{exyzt}: identike me kodin nga zero.
+    \item \texttt{Axyzn(..., "last")}: jep \texttt{n} eksplicit.
+    \item Petriti dhe Drita: pension 60\% $\approx$ \Sexpr{fmt(K / a_60)} lekë nga 10 milionë.
+    \item Simulimi: shpërndarja e vlerës aktuale, jo vetëm mesatarja.
+    \item Tabela unisex: përziej mbijetesën, jo $q$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: tabela aktuariale e plotë e portofolit dhe tarifa e pensioneve.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{axyzn}, \texttt{Axyzn}, \texttt{rLifexyz}.
+    \item Human Life-Table Database: Shqipëria 2011 (reale).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+    \item Gjykata e Drejtësisë e BE, çështja C-236/09 (\emph{Test-Achats}), 2011.
+  \end{itemize}
+\end{frame}
