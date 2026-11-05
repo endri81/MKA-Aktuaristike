@@ -1,0 +1,50 @@
+% ============================================================
+%  Java 7 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7zgjPar3]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $(IA)^1$: për 40-vjeçarin $q_x$ rritet gjatë 20 viteve, pra vdekjet janë më të shpeshta në fund, kur shuma rritëse është e madhe.
+    \item $(IA)^1/A^1=\Sexpr{fmt(mine["IA"] / mine["A1"], 2)}$ dhe $(DA)^1/A^1=\Sexpr{fmt(mine["DA"] / mine["A1"], 2)}$: të dyja afër 10.5,
+      dhe shuma e tyre është saktësisht 21.
+  \end{enumerate}
+  \vfill\kthehu{w7par3}
+\end{frame}
+
+\begin{frame}[label=w7zgjGab3]{Zgjidhja: Gjej gabimin ($v^k$)}
+  \begin{enumerate}
+    \item \texttt{v\^{}k} në vend të \texttt{v\^{}(k + 1)}: pagesa merret në \textbf{fillim} të vitit të vdekjes.
+    \item Çdo term është $1/v=1.06$ herë më i madh: \;
+      \texttt{bad / good} $=\Sexpr{fmt(varA_bad(soa08Act, 40, 20:1) / DAxn(soa08Act, 40, 20), 4)}$.
+  \end{enumerate}
+  \small I njëjti gabim si $C_x=v^xd_x$ në Javën 6.
+  \vfill\kthehu{w7gab3}
+\end{frame}
+
+\begin{frame}[label=w7zgjGab3b]{Zgjidhja: cila mbetje?}
+  \begin{enumerate}
+    \item Ka të drejtë ai që përdor mbetjen në \textbf{fillim} të vitit, $B_k$.
+    \item Nëse Arbeni vdes gjatë vitit $k+1$, kësti i atij viti nuk është paguar: borxhi është $B_k$ (plus interesin e atij viti, deri në $B_k(1+r)=P+B_{k+1}$ në fund të vitit).
+  \end{enumerate}
+  \small \texttt{B\_next} harron këstin e papaguar: e nënvlerëson primën me \Sexpr{fmt(100 * (1 - varA(aM, 40, B_next) / varA(aM, 40, B)))}\%.
+  \vfill\kthehu{w7gab3b}
+\end{frame}
+
+\begin{frame}[fragile,label=w7zgjUsh3]{Zgjidhja: Radha jote!}
+<<w7h3-sol-ush>>=
+a15 <- axn(aM, 40, 15)
+prem <- SP[c("real", "level")] / a15
+c(a15 = a15, round(prem), share_of_loan_payment = unname(100 * prem["real"] / P))
+@
+  \small Sigurimi i kredisë shton rreth \Sexpr{fmt(100 * prem["real"] / P, 1)}\% në kostot vjetore të Arbenit.
+  \vfill\kthehu{w7ush3}
+\end{frame}
+
+\begin{frame}[label=w7zgjNdr3]{Zgjidhja: Ndrysho parametrin}
+  \begin{itemize}
+    \item Raporti \textbf{nuk varet} nga shuma e kredisë: si mbetja reale, si ajo lineare, janë proporcionale me 8 milionë.
+    \item Varet nga interesi i kredisë $r$ (forma e amortizimit) dhe nga vdekshmëria, por jo nga $L_0$.
+    \item Me $r=12\%$, raporti është \Sexpr{fmt(ratio[12], 3)}: përafrimi linear gabon me rreth \Sexpr{fmt(100 * (1 - 1 / ratio[12]))}\% të primës reale.
+  \end{itemize}
+  \vfill\kthehu{w7ndr3}
+\end{frame}

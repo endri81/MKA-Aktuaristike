@@ -1,0 +1,240 @@
+% ============================================================
+%  Java 7 · Ora 3 — Laborator R I: IA, DA dhe kredia e Arbenit
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w7h3-setup, include=FALSE>>=
+data(soa08Act)
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{varA()}: një funksion për \textbf{çdo} vektor shumash.
+    \item<2-> Kontrolli kundrejt \texttt{Axn()}, \texttt{IAxn()}, \texttt{DAxn()} dhe formulave me komutime.
+    \item<3-> Kredia e Arbenit: mbetja reale kundrejt përafrimit linear.
+    \item<4-> Ndjeshmëria ndaj interesit të kredisë.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{S2}\;\LO{C3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Një funksion për çdo shumë}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{\texttt{varA()}: sigurim me shuma $b_1,\dots,b_n$}
+<<w7h3-fun>>=
+varA <- function(act, x, b, i = act@interest) {
+  n <- length(b); k <- 0:(n - 1); v <- 1 / (1 + i)
+  l <- act@lx[match(x + 0:n, act@x)]                 # l_x, ..., l_{x+n}
+  sum(b * v^(k + 1) * (l[1:n] - l[2:(n + 1)]) / l[1])  # b_{k+1} v^{k+1} k|q_x
+}
+@
+  \begin{itemize}
+    \item<2-> \texttt{b[k + 1]}: shuma nëse vdekja ndodh në vitin $k+1$.
+    \item<3-> $(l_{x+k}-l_{x+k+1})/l_x={}_{k|}q_x$: probabiliteti i vdekjes në vitin $k+1$.
+    \item<4-> Me \texttt{b = rep(1, n)}, \texttt{1:n} ose \texttt{n:1} marrim $A^1$, $(IA)^1$, $(DA)^1$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w7par3]{Parashiko}
+  \begin{Parashiko}
+    Për 40-vjeçarin e SOA ($i=6\%$, $n=20$):
+    \begin{enumerate}
+      \item Cila do të jetë më e madhe, $(IA)^1_{40:\overline{20}|}$ apo $(DA)^1_{40:\overline{20}|}$?
+      \item Rreth sa herë $A^1_{40:\overline{20}|}$ do të jetë secila? (Ndihmë: shumat mesatare janë 10.5.)
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w7zgjPar3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll mbi \texttt{soa08Act}}
+<<w7h3-soa>>=
+x <- 40; n <- 20
+mine <- c(A1 = varA(soa08Act, x, rep(1, n)), IA = varA(soa08Act, x, 1:n),
+          DA = varA(soa08Act, x, n:1))
+pkg  <- c(Axn(soa08Act, x, n), IAxn(soa08Act, x, n), DAxn(soa08Act, x, n))
+rbind(mine, pkg)
+c(identity = unname(mine["IA"] + mine["DA"] - (n + 1) * mine["A1"]))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{varA()} dhe paketa përputhen në të gjitha decimalet. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Identiteti $(IA)^1+(DA)^1=21\,A^1$ jep zero. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> Për 40-vjeçarin $(IA)^1>(DA)^1$: $q_x$ rritet me moshën, pra vdekjet janë më të shpeshta në fund, kur shuma rritëse është e madhe.
+  \end{itemize}
+  \onslide<4->{\small Krahaso me 100-vjeçarin e Orës 1, ku ishte e kundërta.}
+\end{frame}
+
+\begin{frame}[fragile]{Rruga e tretë: komutimet}
+<<w7h3-comm>>=
+commute <- function(x, lx, i) {                       # Week 6, Hour 3
+  v <- 1 / (1 + i); dx <- lx - c(lx[-1], 0)
+  D <- v^x * lx; C <- v^(x + 1) * dx
+  M <- rev(cumsum(rev(C))); R <- rev(cumsum(rev(M)))
+  data.frame(x, D, M, R)
+}
+ct <- commute(soa08Act@x, soa08Act@lx, 0.06); r <- function(a) ct[ct$x == a, ]
+c(IA = (r(40)$R - r(60)$R - 20 * r(60)$M) / r(40)$D,
+  DA = (20 * r(40)$M - r(41)$R + r(61)$R) / r(40)$D)
+@
+  \small Formulat e Orës 2 japin të njëjtat numra. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile,label=w7gab3]{Gjej gabimin}
+<<w7h3-bug>>=
+varA_bad <- function(act, x, b, i = act@interest) {
+  n <- length(b); k <- 0:(n - 1); v <- 1 / (1 + i)
+  l <- act@lx[match(x + 0:n, act@x)]
+  sum(b * v^k * (l[1:n] - l[2:(n + 1)]) / l[1])
+}
+c(bad = varA_bad(soa08Act, 40, 20:1), good = DAxn(soa08Act, 40, 20))
+@
+  \begin{enumerate}
+    \item Gjej rreshtin e gabuar.
+    \item Pa e llogaritur: sa duhet të jetë raporti \texttt{bad / good}?
+  \end{enumerate}
+  \vfill\shkoTe{w7zgjGab3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kredia e Arbenit}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tri sigurime për të njëjtën kredi}
+<<w7h3-arben>>=
+aM <- new("actuarialtable", x = mt$age, lx = mt$lx_male, interest = 0.03)
+P  <- pmt(amt = 8e6, maturity = 20, rate = 0.06)
+k  <- 0:19; B <- P * (1 - 1.06^-(20 - k)) / 0.06        # balance at start of year k + 1
+SP <- c(level  = 8e6 * varA(aM, 40, rep(1, 20)),        # 8 million throughout
+        real   = varA(aM, 40, B),                       # outstanding balance
+        linear = 8e6 / 20 * DAxn(aM, 40, 20))           # 8M, 7.6M, ..., 0.4M
+round(SP)
+@
+  \small Prima e vetme neto në lekë. Tabela sintetike M, norma teknike $i=3\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Sigurimi i mbetjes reale kushton \Sexpr{fmt(100 * SP["real"] / SP["level"])}\% të sigurimit konstant.
+    \item<2-> Përafrimi linear e \textbf{nënvlerëson} çmimin me \Sexpr{fmt(100 * (1 - SP["linear"] / SP["real"]))}\%.
+    \item<3-> Pse? Mbetja reale është mbi vijën e drejtë në çdo vit pas të parit (Ora 1).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Përdorimi i \texttt{DAxn()} për një kredi me këste konstante: çmim i ulët dhe rezervë e pamjaftueshme. Shuma duhet të ndjekë tabelën e amortizimit.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Kontributi i çdo viti}
+<<w7h3-contrib, echo=FALSE, fig.height=3>>=
+kq <- (aM@lx[41 + k] - aM@lx[42 + k]) / aM@lx[41]
+dc <- data.frame(year = rep(k + 1, 2),
+                 c = c(B, 8e6 * (20 - k) / 20) * (1 / 1.03)^(k + 1) * kq,
+                 type = rep(c("mbetja reale", "linear"), each = 20))
+ggplot(dc, aes(year, c, fill = type)) + geom_col(position = "dodge", width = 0.8) +
+  scale_fill_manual(values = c("#2C5AA0", "#E67E22")) +
+  labs(x = "viti i vdekjes", y = "leke (vlere aktuale)", fill = NULL) + th + theme(legend.position = "top")
+@
+  \small Lartësia e shtyllës: $b_{k+1}\,v^{k+1}\,{}_{k|}q_{40}$. Shuma e shtyllave = prima e vetme.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kontributet rriten me vitin: $q_x$ rritet më shpejt se sa zbret shuma.
+    \item<2-> Diferenca më e madhe është në vitet 10--17 (maksimumi në vitin 14): mbetja është ende mbi vijën dhe $q_x$ është rritur.
+    \item<3-> Në vitin 20 të dyja shumat janë të vogla: kredia pothuajse është shlyer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w7gab3b]{Gjej gabimin: cila mbetje?}
+<<w7h3-bug2>>=
+B_next <- c(B[-1], 0)                          # balance at END of year k + 1
+c(start_of_year = varA(aM, 40, B), end_of_year = varA(aM, 40, B_next))
+@
+  \begin{enumerate}
+    \item Një kolege përdor \texttt{B\_next}. Prima del rreth 10\% më e ulët. Kush ka të drejtë?
+    \item Çfarë i detyrohet Arbeni bankës nëse vdes gjatë vitit $k+1$, para se të paguajë këstin?
+  \end{enumerate}
+  \vfill\shkoTe{w7zgjGab3b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w7ush3]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Banka do që Arbeni ta paguajë sigurimin me prima vjetore, \textbf{vetëm 15 vitet e para}.
+    \begin{enumerate}
+      \item Llogarit $\ddot a_{40:\overline{15}|}$ me \texttt{axn()}.
+      \item Llogarit primën vjetore për mbetjen reale dhe për 8 milionë konstante.
+      \item Sa \% e këstit të kredisë (\Sexpr{fmt(P)} lekë) është prima e sigurimit real?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjUsh3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ndjeshmëria}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile,label=w7ndr3]{Ndrysho parametrin: interesi i kredisë}
+<<w7h3-rate, echo=FALSE, fig.height=2.9>>=
+rr <- seq(0.01, 0.12, by = 0.01)
+ratio <- sapply(rr, function(r) {
+  Pk <- pmt(amt = 8e6, maturity = 20, rate = r); Bk <- Pk * (1 - (1 + r)^-(20 - k)) / r
+  varA(aM, 40, Bk) / SP["linear"]
+})
+ggplot(data.frame(rr, ratio), aes(100 * rr, ratio)) + geom_line(linewidth = 1, colour = "#2C5AA0") +
+  geom_point(colour = "#2C5AA0") + geom_hline(yintercept = 1, linetype = 2) +
+  labs(x = "interesi i kredise (%)", y = "real / linear") + th
+@
+  \small Raporti i primës reale me primën lineare. Interesi teknik i sigurimit mbetet $3\%$.
+  \hfill\shkoTe{w7zgjNdr3}{Pyetje}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me interes kredie \Sexpr{fmt(100 * rr[3])}\%, \Sexpr{fmt(100 * rr[6])}\%, \Sexpr{fmt(100 * rr[9])}\%: raporti është
+      \Sexpr{fmt(ratio[3], 3)}, \Sexpr{fmt(ratio[6], 3)}, \Sexpr{fmt(ratio[9], 3)}.
+    \item<2-> Sa më i lartë interesi, aq më ngadalë bie mbetja: përafrimi linear gabon më shumë.
+    \item<3-> Kur interesi $\to0$, kësti është kryesisht kapital dhe mbetja $\to$ vija e drejtë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë vektori \texttt{b} jep $(DA)^1_{x:\overline n|}$ në \texttt{varA()}?
+    \item Pse $(IA)^1>(DA)^1$ për 40-vjeçarin, por $(IA)^1<(DA)^1$ për 100-vjeçarin?
+    \item Pse \texttt{DAxn()} nuk mjafton për një kredi me këste konstante?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) \texttt{n:1}; (2) për 40-vjeçarin $q$ rritet gjatë afatit, për 100-vjeçarin shumica vdesin herët;
+  (3) mbetja reale nuk bie linearisht.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item \texttt{varA()}: një rresht kodi për çdo sigurim me shuma të ndryshueshme.
+    \item Tri rrugë (shumë direkte, komutime, paketa), një rezultat.
+    \item Kredia e Arbenit: prima reale \Sexpr{fmt(SP["real"])} lekë kundrejt \Sexpr{fmt(SP["linear"])} me përafrimin linear.
+    \item Gabimi i përafrimit rritet me interesin e kredisë.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria II: anuitetet $a_x$, $\ddot a_x$, me afat, të shtyra; primat dhe rezervat prospektive.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{IAxn}, \texttt{DAxn}, \texttt{soa08Act}.
+    \item Dokumentacioni i paketës \Rkey{tvm}: \texttt{pmt()}.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
