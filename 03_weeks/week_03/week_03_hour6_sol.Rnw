@@ -1,0 +1,55 @@
+% ============================================================
+%  Java 3 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w3zgjGab6]{Zgjidhja: Gjej gabimin (\texttt{rowsum})}
+  \begin{enumerate}
+    \item Dy vite kanë $N=0$: nuk kanë asnjë dëm, ndaj \texttt{rowsum()} nuk u krijon rresht.
+    \item Mesatarja llogaritet vetëm mbi vitet \textbf{me} dëme: zerot mungojnë, mesatarja del lart.
+  \end{enumerate}
+<<w3s6-fix>>=
+set.seed(5); B <- 10
+N <- rpois(B, 2); X <- rgamma(sum(N), 2, scale = 450)
+S <- tapply(X, factor(rep(seq_len(B), N), levels = seq_len(B)),
+            sum, default = 0)
+c(length_S = length(S), zeros = sum(S == 0), mean_S = mean(S))
+@
+  \small \texttt{factor(..., levels = 1:B)} krijon një nivel për çdo vit; \texttt{default = 0} mbush vitet bosh.
+  \vfill\kthehu{w3gab6}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjUsh6a]{Zgjidhja: Radha jote! (XL pa ndihmën e PC)}
+  \begin{enumerate}
+    \item $(20\,000/50\,000)^{1.8}=0.4^{1.8}\approx0.1922$; \;
+          $E[(X-M)_+]=\dfrac{\theta^\alpha M^{1-\alpha}}{\alpha-1}=0.1922\times\dfrac{50\,000}{0.8}\approx12\,011$ €.
+    \item Me peshën 0.05: $\approx600.6$ € për dëm.
+    \item Prima neto vjetore: $768\times600.6\approx461\,000$ €.
+  \end{enumerate}
+<<w3s6-xl>>=
+e_tail <- 20000^1.8 * 50000^(1 - 1.8) / 0.8
+c(per_tail_claim = e_tail, per_claim = 0.05 * e_tail,
+  per_year = 768 * 0.05 * e_tail)
+@
+  \vfill\kthehu{w3ush6a}
+\end{frame}
+
+\begin{frame}[label=w3zgjPar6]{Zgjidhja: Parashiko ($M=20\,000$ €)}
+  \begin{enumerate}
+    \item Prima rritet. Pjesa Pareto: $E[(X-20\,000)_+]=\theta/(\alpha-1)=25\,000$ € për dëm të madh,
+          kundrejt $\approx12\,011$ € me $M=50\,000$: rreth \textbf{2 herë} më shumë.
+    \item Kapitali neto bie: siguruesi mban dëme më të vogla.
+    \item Varet nga çmimi: siguruesi paguan ngarkesën mbi një primë më të madhe, por kursen kapital.
+          Krahasimi bëhet me tabelën e kostos totale.
+  \end{enumerate}
+  \vfill\kthehu{w3par6}
+\end{frame}
+
+\begin{frame}[label=w3zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  Përgjigje të mundshme:
+  \begin{enumerate}
+    \item Dëmet e Kaskos kanë kufi natyral (vlera e mjetit); dëmet trupore TPL kanë bisht Pareto, ndaj një dëm i vetëm mund të vendosë vitin.
+    \item Stop-loss mbron nga \textbf{shumë} dëme mesatare në të njëjtin vit, gjë që XL nuk e bën. Ia vlen vetëm nëse çmimi është i arsyeshëm.
+    \item Vlera e $\alpha$ (SE e madhe), ngarkesat e risiguruesit, dhe mungesa e inflacionit të dëmeve.
+  \end{enumerate}
+  \vfill\kthehu{w3tps6}
+\end{frame}
