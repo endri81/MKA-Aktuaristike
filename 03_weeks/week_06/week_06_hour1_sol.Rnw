@@ -1,0 +1,41 @@
+% ============================================================
+%  Java 6 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w6zgjPar1]{Zgjidhja: Parashiko (komutimet)}
+  \begin{enumerate}
+    \item ${}_kp_x\,v^k=\dfrac{l_{x+k}}{l_x}\,v^k=\dfrac{v^{x+k}l_{x+k}}{v^xl_x}=\dfrac{D_{x+k}}{D_x}$, pra
+          $\ddot a_x=\sum_k\dfrac{D_{x+k}}{D_x}=\dfrac{N_x}{D_x}$.
+    \item ${}_nE_x=v^n\,{}_np_x=D_{x+n}/D_x$.
+    \item $\ddot a_{x:\overline n|}=\sum_{k=0}^{n-1}D_{x+k}/D_x=(N_x-N_{x+n})/D_x$.
+  \end{enumerate}
+  \vfill\kthehu{w6par1}
+\end{frame}
+
+\begin{frame}[label=w6zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $\ddot a_{xy}=1+0.48v+0.15v^2+0.02v^3=1+0.457143+0.136054+0.017277=1.610474$.\\
+          $\ddot a_{\overline{xy}}=1+0.92v+0.65v^2+0.28v^3=1+0.876190+0.589569+0.241875=2.707634$.
+    \item $\ddot a_y=1+0.8v+0.5v^2+0.2v^3=1+0.761905+0.453515+0.172768=2.388188$.
+    \item $1.929921+2.388188-1.610474=2.707635$ \textcolor{okgreen}{$\checkmark$} (diferenca në decimalin e 6-të: rrumbullakimi).
+  \end{enumerate}
+  \vfill\kthehu{w6ush1}
+\end{frame}
+
+\begin{frame}[label=w6zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{A)} ${}_tp_{xy}\le{}_tp_x\le{}_tp_{\overline{xy}}$ për çdo $t$, dhe shumat me $v^t$ ruajnë renditjen.
+  \begin{itemize}
+    \item B) Harron zbritjen e $\ddot a_{xy}$. \; C) E kundërta e A. \; D) $(\overline{xy})$ jeton të paktën sa $(y)$.
+  \end{itemize}
+  \vfill\kthehu{w6mc1}
+\end{frame}
+
+\begin{frame}[label=w6zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item (B) jep pension fillestar më të lartë: pas vdekjes së parë kompania paguan vetëm 60\%, ndaj kosti për 1 lek pension është më i vogël.
+    \item (B) ka kuptim kur shpenzimet e një personi të vetëm janë më të ulëta (një shtëpi, por një person).
+          (A) ka kuptim kur i mbijetuari nuk ka të ardhura të tjera, ose kur bashkëshortja është shumë më e re.
+  \end{enumerate}
+  \small Në Orën 5 llogarisim koston e saktë të (B): $\ddot a_{xy}+0.6\,(\ddot a_x-\ddot a_{xy})+0.6\,(\ddot a_y-\ddot a_{xy})$.
+  \vfill\kthehu{w6tps1}
+\end{frame}

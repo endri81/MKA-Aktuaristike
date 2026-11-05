@@ -1,0 +1,345 @@
+% ============================================================
+%  Java 6 · Ora 1 — Motivimi: pensioni i një çifti
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w6h1-setup, include=FALSE>>=
+suppressMessages(library(lifecontingencies))
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+data(soa08Act)
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e javës}
+% ------------------------------------------------------------
+
+\begin{frame}{Një çift në zyrën e AutoSig Jetë}
+  \begin{itemize}
+    \item<1-> Petriti, 65 vjeç, del në pension. Drita, bashkëshortja, është 62 vjeç.
+    \item<2-> Kanë kursyer një shumë dhe duan ta kthejnë në \textbf{të ardhur mujore}.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Shembull}[(pyetja e javës)]
+    ``Sa kushton një pension prej 1 leku në vit që paguhet sa kohë është gjallë \textbf{të paktën njëri} prej nesh?
+    Po nëse pas vdekjes së njërit paguhet vetëm 60\%?''
+  \end{Shembull}}
+  \onslide<4->{\small Çifti dhe kompania janë fiktivë. Produktet ``pension i përbashkët'' dhe ``pension familjar'' ekzistojnë në çdo treg.}
+\end{frame}
+
+\begin{frame}{Pse kjo është e re?}
+  \begin{itemize}
+    \item<1-> Java 5: \textbf{një} jetë, një tabelë, një variabël e rastit $T_x$.
+    \item<2-> Tani: \textbf{dy} jetë, dy tabela (M dhe F), dy variabla $T_x$ dhe $T_y$.
+    \item<3-> Pagesa varet nga një \textbf{status}: ``të dy gjallë'' ose ``të paktën njëri gjallë''.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Çfarë na duhet}
+    (1) një mënyrë e shpejtë për të llogaritur çdo funksion aktuarial: \textbf{numrat e komutimit};
+    (2) probabilitetet për \textbf{dy jetë}: funksionet e përziera.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 6}
+  \begin{enumerate}
+    \item<1-> Të ndërtojmë një \termi{tabelë aktuariale}{actuarial table} të plotë: $D_x$, $N_x$, $C_x$, $M_x$, $R_x$. \LO{C1}
+    \item<2-> Ta krahasojmë me tabelën e SOA në \Rkey{lifecontingencies} (\texttt{soa08Act}). \LO{C1}
+    \item<3-> Të llogarisim funksionet për dy jetë: $\ddot a_{xy}$, $\ddot a_{\overline{xy}}$, $A_{xy}$. \LO{K2}
+    \item<4-> Të çmojmë pensionin e çiftit dhe pensionin e të vejës. \LO{C3}
+    \item<5-> Zgjerim: Lee--Carter dhe tabelat kohorte për Shqipërinë. \LO{K3}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (c) at (0,0) {\textbf{Komutimet}\\$D_x$, $N_x$, Ora 2};
+    \node[b] (s) at (3.6,0) {\textbf{Nga zero}\\kundrejt SOA, Ora 3};
+    \node[b] (j) at (0,-2) {\textbf{Dy jetë}\\$\ddot a_{xy}$, Ora 4};
+    \node[b] (p) at (3.6,-2) {\textbf{Paketa}\\\texttt{axyzn}, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (l) at (7.6,-1) {\textbf{Lee--Carter}\\Shqipëria, Ora 6};
+    \draw[->,thick,uptmid] (c) -- (s); \draw[->,thick,uptmid] (j) -- (p);
+    \draw[->,thick,uptmid] (s) -- (l); \draw[->,thick,uptmid] (p) -- (l);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Funksionet e përziera}
+% ------------------------------------------------------------
+
+\begin{frame}{``Funksionet e përziera'': dy kuptime}
+  \begin{block}{Shënim për \LO{K2}}
+    Programi i lëndës përdor termin ``funksione të përziera'' pa e përcaktuar. Në literaturë ka dy kuptime:
+    \begin{enumerate}
+      \item \textbf{Shpërndarjet e përziera dhe të përbëra}: $F=\sum_jw_jF_j$, Poisson--Gamma, $S=\sum X_i$ (Java 3).
+      \item \textbf{Funksionet aktuariale për disa jetë}: $p_{xy}$, $\ddot a_{xy}$, $A_{\overline{xy}}$, me numrat e komutimit (kjo javë).
+    \end{enumerate}
+  \end{block}
+  \pause
+  \begin{itemize}
+    \item Këtë javë: kuptimi 2 si bërthamë.
+    \item Kuptimi 1 rikthehet në Orën 5: tabela ``unisex'' si \textbf{përzierje} e tabelave M dhe F.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Rifreskim nga Java 3: përzierja}
+  \begin{itemize}
+    \item<1-> Përzierje e fundme: $F(x)=\sum_jw_j\,F_j(x)$, me $\sum_jw_j=1$.
+    \item<2-> Në jetë: një portofol me 60\% burra dhe 40\% gra ka mbijetesë
+      \[ {}_tp^{\text{portofol}}=0.6\;{}_tp^{M}+0.4\;{}_tp^{F}. \]
+    \item<3-> Kujdes: mbijetesa e portofolit \textbf{nuk} është mbijetesa e një personi ``mesatar''.
+  \end{itemize}
+  \onslide<4->{\small Pse? Pas disa vitesh, në portofol mbeten më shumë gra: peshat ndryshojnë me kohën (Ora 5).}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabela aktuariale klasike}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse numrat e komutimit?}
+  \begin{itemize}
+    \item<1-> Para kompjuterit, çdo $\ddot a_x$ kërkonte dhjetëra shumëzime.
+    \item<2-> Zgjidhja: llogarit \textbf{një herë} disa kolona (për çdo moshë), pastaj çdo funksion = një pjesëtim.
+    \item<3-> Shembull: $\ddot a_x=N_x/D_x$, \; $A_x=M_x/D_x$.
+    \item<4-> Sot: ende në shënimet teknike të tarifave, në provimet e aktuarëve, dhe si kontroll i shpejtë.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Kolonat e komutimit janë ``memoria'' e tabelës: nga to rindërtohet çdo vlerë aktuale e pritur.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Tabela e SOA në \Rkey{lifecontingencies}}
+<<w6h1-soa>>=
+data(soa08Act)
+c(interest = soa08Act@interest, min_age = min(soa08Act@x), max_age = max(soa08Act@x))
+d <- as(soa08Act, "data.frame")
+round(d[d$x %in% c(0, 40, 65, 100), ], 1)
+@
+  \small Tabela ilustruese e SOA (\emph{Society of Actuaries}) e përfshirë në paketë: moshat 0--140, $i=6\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kolonat $l_x$, $D_x$, $N_x$, $C_x$, $M_x$, $R_x$: tabela aktuariale klasike.
+    \item<2-> $D_x$ bie shumë më shpejt se $l_x$: përmban edhe skontimin $v^x$.
+    \item<3-> $N_x$ dhe $M_x$ janë shuma ``nga $x$ deri në fund'': prandaj bien me moshën.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Tabela e SOA është një tabelë \textbf{ilustruese} për mësim dhe provime, jo tabela e vdekshmërisë e një vendi. Nuk përdoret për çmime në Shqipëri.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Një pjesëtim në vend të një shume}
+<<w6h1-div>>=
+x65 <- d[d$x == 65, ]
+c(a65_commutation = x65$Nx / x65$Dx, a65_axn = axn(soa08Act, 65),
+  A65_commutation = x65$Mx / x65$Dx, A65_Axn = Axn(soa08Act, 65))
+@
+  \small $\ddot a_{65}=N_{65}/D_{65}$ dhe $A_{65}=M_{65}/D_{65}$: të njëjtat vlera si funksionet e Javës 5.
+\end{frame}
+
+\begin{frame}[label=w6par1]{Parashiko}
+  \begin{Parashiko}
+    Me $D_x=v^xl_x$ dhe $N_x=\sum_{k\ge0}D_{x+k}$:
+    \begin{enumerate}
+      \item Pse $\ddot a_x=N_x/D_x$? (Udhëzim: shkruaj ${}_kp_x\,v^k$ me $l$ dhe $v$.)
+      \item Si do të shkruhej ${}_nE_x$ me numrat $D$?
+      \item Po $\ddot a_{x:\overline n|}$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w6zgjPar1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Dy jetë pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Dy jetë të pavarura}
+  Dy persona $(x)$ dhe $(y)$, me probabilitetet e mbijetesës:
+  \begin{center}
+    \begin{tabular}{c|ccccc}
+      \toprule
+      $t$ & 0 & 1 & 2 & 3 & 4 \\
+      \midrule
+      ${}_tp_x$ & 1 & 0.6 & 0.3 & 0.1 & 0 \\
+      ${}_tp_y$ & 1 & 0.8 & 0.5 & 0.2 & 0 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item $(x)$: tabela e vogël e Javës 5 (mosha 100). $(y)$ jeton pak më gjatë.
+    \item Supozim: vdekjet e tyre janë \textbf{të pavarura}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Dy statuse}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (9.5,0) node[right,font=\small]{$t$};
+    \draw[very thick,uptblue] (0,0.9) -- (3.6,0.9) node[right,font=\small]{$\dagger$ $(x)$ vdes};
+    \draw[very thick,accent] (0,0.4) -- (6.4,0.4) node[right,font=\small]{$\dagger$ $(y)$ vdes};
+    \draw[dashed] (3.6,0) -- (3.6,1.2); \draw[dashed] (6.4,0) -- (6.4,1.2);
+    \node[below,font=\scriptsize] at (3.6,0) {$\min(T_x,T_y)$};
+    \node[below,font=\scriptsize] at (6.4,0) {$\max(T_x,T_y)$};
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> \textbf{Jeta e përbashkët} $(xy)$: ``të dy gjallë''; mbaron në vdekjen e \textbf{parë}.
+    \item<3-> \textbf{I mbijetuari i fundit} $(\overline{xy})$: ``të paktën njëri gjallë''; mbaron në vdekjen e \textbf{dytë}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Mbijetesa e dy statuseve}
+  \begin{itemize}
+    \item<1-> $(xy)$: \; ${}_tp_{xy}={}_tp_x\cdot{}_tp_y$ (pavarësia).
+    \item<2-> $(\overline{xy})$: \; ${}_tp_{\overline{xy}}=1-(1-{}_tp_x)(1-{}_tp_y)={}_tp_x+{}_tp_y-{}_tp_{xy}$.
+  \end{itemize}
+  \onslide<3->{
+  \begin{center}
+    \begin{tabular}{c|ccccc}
+      \toprule
+      $t$ & 0 & 1 & 2 & 3 & 4 \\
+      \midrule
+      ${}_tp_{xy}$ & 1 & 0.48 & 0.15 & 0.02 & 0 \\
+      ${}_tp_{\overline{xy}}$ & 1 & 0.92 & 0.65 & 0.28 & 0 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}}
+  \onslide<4->{\small Kontroll: $0.6+0.8-0.48=0.92$. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}{Jetëgjatësia e pritur e statuseve}
+  \begin{itemize}
+    \item<1-> $e_x=0.6+0.3+0.1=1.0$; \quad $e_y=0.8+0.5+0.2=1.5$.
+    \item<2-> $e_{xy}=0.48+0.15+0.02=0.65$: më pak se secili veç e veç.
+    \item<3-> $e_{\overline{xy}}=0.92+0.65+0.28=1.85$: më shumë se secili veç e veç.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}
+    $e_{\overline{xy}}=e_x+e_y-e_{xy}$. \; Këtu: $1.0+1.5-0.65=1.85$. \textcolor{okgreen}{$\checkmark$}
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}[label=w6ush1]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC, $i=5\%$)]
+    Me $v=0.952381$, $v^2=0.907029$, $v^3=0.863838$:
+    \begin{enumerate}
+      \item Llogarit $\ddot a_{xy}=\sum_tv^t\,{}_tp_{xy}$ dhe $\ddot a_{\overline{xy}}$.
+      \item Llogarit $\ddot a_y$ (dihet $\ddot a_x=1.929921$ nga Java 5).
+      \item Kontrollo $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjUsh1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w6h1-toy>>=
+px <- c(1, 0.6, 0.3, 0.1); py <- c(1, 0.8, 0.5, 0.2); v <- 1 / 1.05; t <- 0:3
+pxy <- px * py; plast <- px + py - pxy
+a <- function(p) sum(v^t * p)
+round(c(a_x = a(px), a_y = a(py), a_joint = a(pxy), a_last = a(plast),
+        check = a(px) + a(py) - a(pxy)), 6)
+@
+\end{frame}
+
+\begin{frame}[label=w6mc1]{Zgjedhje e shumëfishtë}
+  Për çdo çift $(x)$, $(y)$, cila renditje është gjithmonë e vërtetë?
+  \begin{enumerate}[A)]
+    \item $\ddot a_{xy}\le\ddot a_x\le\ddot a_{\overline{xy}}$
+    \item $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y$
+    \item $\ddot a_{xy}\ge\ddot a_x$
+    \item $\ddot a_{\overline{xy}}\le\ddot a_y$
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjMC1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Petriti dhe Drita}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Një përgjigje e parë}
+<<w6h1-couple>>=
+aM <- new("actuarialtable", x = mt$age, lx = mt$lx_male,   interest = 0.05)
+aF <- new("actuarialtable", x = mt$age, lx = mt$lx_female, interest = 0.05)
+c(Petrit_65 = axn(aM, 65), Drita_62 = axn(aF, 62),
+  joint = axyzn(list(aM, aF), x = c(65, 62), status = "joint"),
+  last  = axyzn(list(aM, aF), x = c(65, 62), status = "last"))
+@
+  \small Tabela sintetike M dhe F, $i=5\%$, 1 lek në vit në fillim të vitit.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Pensioni vetëm për Petritin: \Sexpr{fmt(axn(aM, 65), 2)}; vetëm për Dritën: \Sexpr{fmt(axn(aF, 62), 2)}.
+    \item<2-> Pensioni ``sa është gjallë njëri'': \Sexpr{fmt(axyzn(list(aM, aF), x = c(65, 62), status = "last"), 2)}, rreth \Sexpr{fmt(100 * (axyzn(list(aM, aF), x = c(65, 62), status = "last") / axn(aM, 65) - 1))}\% më i shtrenjtë se ai i Petritit vetëm.
+    \item<3-> Me 10\,000\,000 lekë kursime, pensioni i përbashkët vjetor $=10^7/\ddot a_{\overline{xy}}\approx\Sexpr{fmt(1e7 / axyzn(list(aM, aF), x = c(65, 62), status = "last"))}$ lekë.
+  \end{itemize}
+  \onslide<4->{\small Në Orën 5: pensioni 60\% për të venë/vejushën, dhe kontrolli i \texttt{axyzn()} nga zero.}
+\end{frame}
+
+\begin{frame}[label=w6tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Kompania ofron dy opsione me të njëjtin kursim:
+    \begin{itemize}
+      \item (A) 100\% e pensionit sa është gjallë njëri;
+      \item (B) 100\% sa janë të dy gjallë, pastaj 60\% për të mbijetuarin.
+    \end{itemize}
+    \begin{enumerate}
+      \item Cili opsion jep pension fillestar më të lartë? Pse?
+      \item Kë do t'i rekomandoje (B), dhe kë (A)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjTps1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item<1-> \textbf{Pensionet familjare}: në skemat publike dhe private, i mbijetuari merr një pjesë të pensionit.
+    \item<2-> \textbf{Sigurimet e kredisë për çiftin}: paguhet në vdekjen e \textbf{parë} (jeta e përbashkët).
+    \item<3-> \textbf{Solvency II}: rreziku i jetëgjatësisë është më i madh për anuitetet e çifteve: pagesat zgjasin deri në vdekjen e dytë.
+    \item<4-> \textbf{Tabelat}: për çdo jetë duhet tabela e gjinisë së saj, ose një tabelë ``unisex'' e miratuar.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Sa janë $\ddot a_x$ dhe $A_x$ me numrat e komutimit?
+    \item Shkruaj ${}_tp_{\overline{xy}}$ me ${}_tp_x$, ${}_tp_y$.
+    \item Pse $\ddot a_{\overline{xy}}\ne\ddot a_x+\ddot a_y$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $N_x/D_x$, $M_x/D_x$; (2) ${}_tp_x+{}_tp_y-{}_tp_x{}_tp_y$;
+  (3) vitet kur të dy janë gjallë do të numëroheshin dy herë: zbritet $\ddot a_{xy}$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item ``Funksionet e përziera'': përzierjet (Java 3) dhe funksionet për disa jetë (kjo javë).
+    \item Tabela aktuariale: $D_x$, $N_x$, $C_x$, $M_x$; \; $\ddot a_x=N_x/D_x$, $A_x=M_x/D_x$.
+    \item Dy jetë: ${}_tp_{xy}={}_tp_x{}_tp_y$, \; ${}_tp_{\overline{xy}}={}_tp_x+{}_tp_y-{}_tp_{xy}$.
+    \item $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria e numrave të komutimit: $D_x$, $N_x$, $C_x$, $M_x$, $R_x$, $S_x$ dhe të gjitha formulat e Javës 5.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT: tabelat aktuariale, funksionet e përziera.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për sigurimet e jetës).
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{soa08Act}, \texttt{axyzn}.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
