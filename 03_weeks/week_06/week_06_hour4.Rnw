@@ -1,0 +1,408 @@
+% ============================================================
+%  Java 6 · Ora 4 — Teoria II: funksionet për disa jetë
+% ============================================================
+\section{Teoria II: disa jetë}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Nga Petriti e Drita te teoria}
+  \begin{itemize}
+    \item<1-> Në Orën 1 llogaritëm $\ddot a_{xy}$ dhe $\ddot a_{\overline{xy}}$ për një shembull të vogël.
+    \item<2-> Sot: \textbf{sigurimet} për dy jetë, anuiteti \textbf{i të vesë} (reversionar) dhe opsioni 60\%.
+    \item<3-> Pastaj: kur supozimi i pavarësisë \textbf{nuk} vlen.
+    \item<4-> Në fund: kuptimi i dytë i ``funksioneve të përziera'' (tabela e përzier).
+  \end{itemize}
+  \onslide<5->{\vfill\LO{K2}\;\LO{C1}\;\LO{C3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Jeta e përbashkët}
+% ------------------------------------------------------------
+
+\begin{frame}{Rifreskim: shembulli i vogël}
+  \begin{center}
+    \begin{tabular}{c|ccccc}
+      \toprule
+      $t$ & 0 & 1 & 2 & 3 & 4 \\
+      \midrule
+      ${}_tp_x$ & 1 & 0.6 & 0.3 & 0.1 & 0 \\
+      ${}_tp_y$ & 1 & 0.8 & 0.5 & 0.2 & 0 \\
+      ${}_tp_{xy}$ & 1 & 0.48 & 0.15 & 0.02 & 0 \\
+      ${}_tp_{\overline{xy}}$ & 1 & 0.92 & 0.65 & 0.28 & 0 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item $i=5\%$, $v=1/1.05$, $d=i/(1+i)=0.047619$.
+    \item Nga Ora 1: $\ddot a_x=1.9299$, $\ddot a_y=2.3882$, $\ddot a_{xy}=1.6105$, $\ddot a_{\overline{xy}}=2.7076$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vdekja e parë brenda vitit}
+  \begin{Definicion}
+    $q_{xy}=1-p_{xy}$: probabiliteti që \textbf{të paktën njëri} të vdesë brenda vitit.
+  \end{Definicion}
+  \pause
+  \begin{align*}
+    q_{xy} &= 1-p_x\,p_y \\
+    \onslide<3->{&= 1-(1-q_x)(1-q_y)} \\
+    \onslide<4->{&= q_x+q_y-q_x\,q_y.}
+  \end{align*}
+  \onslide<5->{\small Shembull, $t=0$: \; $0.4+0.2-0.4\cdot0.2=0.52=1-0.48$. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}{Pse jo thjesht $q_x+q_y$?}
+  \begin{itemize}
+    \item<1-> $q_x+q_y$ numëron \textbf{dy herë} rastin ``vdesin të dy brenda vitit''.
+    \item<2-> Termi $-q_xq_y$ e heq numërimin e dyfishtë (parimi i përfshirje--përjashtimit).
+    \item<3-> Për moshat e reja $q_xq_y$ është i vogël, ndaj $q_{xy}\approx q_x+q_y$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Në moshat e larta ($q_x=0.3$, $q_y=0.4$) shuma jep $0.7$, ndërsa e vërteta është $0.58$. Mos e përdor përafrimin pas 80 vjeç.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Shpërndarja e vdekjes së parë}
+  $P(\text{vdekja e parë në vitin } k+1)={}_kp_{xy}-{}_{k+1}p_{xy}={}_kp_{xy}\,q_{x+k:y+k}$.
+  \pause
+  \begin{center}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $k$ & 0 & 1 & 2 & 3 \\
+      \midrule
+      ${}_kp_{xy}-{}_{k+1}p_{xy}$ & 0.52 & 0.33 & 0.13 & 0.02 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Shuma $=1$: vdekja e parë ndodh me siguri brenda 4 viteve. \textcolor{okgreen}{$\checkmark$}
+    \item Gjysma e çifteve ``humbin'' një partner që në vitin e parë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Sigurimi i vdekjes së parë $A_{xy}$}
+  \begin{Definicion}
+    $A_{xy}$: 1 lek paguhet në \textbf{fund të vitit} të vdekjes së parë.
+  \end{Definicion}
+  \pause
+  \begin{align*}
+    A_{xy} &= \sum_{k\ge0} v^{k+1}\,\big({}_kp_{xy}-{}_{k+1}p_{xy}\big) \\
+    \onslide<3->{&= 0.52v+0.33v^2+0.13v^3+0.02v^4} \\
+    \onslide<4->{&= 0.4952+0.2993+0.1123+0.0165=0.9233.}
+  \end{align*}
+  \onslide<5->{\small Pse kaq afër 1? Çifti është ``i moshuar'' (100 vjeç): pagesa vjen shpejt.}
+\end{frame}
+
+\begin{frame}{E njëjta lidhje si për një jetë}
+  \begin{Teoreme}
+    Për çdo status $u$ (një jetë, $(xy)$ ose $(\overline{xy})$): \quad $A_u=1-d\,\ddot a_u$.
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Prova është e njëjta si në Javën 5: $v^{K+1}=1-d\,\ddot a_{\overline{K+1}|}$, me $K$ = viti i plotë i \textbf{mbarimit të statusit}.
+    \pause
+    \item Kontroll: $1-0.047619\cdot1.6105=0.9233$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \pause
+  \begin{Keshille}Kjo lidhje është kontrolli më i shpejtë i çdo kodi për disa jetë.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Komutimet për dy jetë \Zgj}
+  \begin{itemize}
+    \item<1-> $D_{xy}=v^{(x+y)/2}\,l_x\,l_y$, \quad $N_{xy}=\sum_{t\ge0}D_{x+t:y+t}$.
+    \item<2-> Atëherë $\ddot a_{xy}=N_{xy}/D_{xy}$, sepse
+      $\dfrac{D_{x+t:y+t}}{D_{xy}}=v^t\,\dfrac{l_{x+t}}{l_x}\,\dfrac{l_{y+t}}{l_y}=v^t\,{}_tp_{xy}$.
+    \item<3-> Problemi: duhet një tabelë për \textbf{çdo diferencë moshash} $y-x$.
+  \end{itemize}
+  \onslide<4->{\small Pa kompjuter kjo kërkonte shumë tabela ose përafrime. Sot R e bën në një rresht (Ora 5).}
+\end{frame}
+
+\begin{frame}[label=w6ush4]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    Me shembullin e vogël dhe $i=5\%$:
+    \begin{enumerate}
+      \item Llogarit $A_x$ dhe $A_y$ me $A=1-d\,\ddot a$.
+      \item Llogarit $A_x$ edhe nga shuma $\sum v^{k+1}({}_kp_x-{}_{k+1}p_x)$. Përputhen?
+      \item Prima neto vjetore për $A_{xy}$: $P_{xy}=A_{xy}/\ddot a_{xy}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjUsh4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{I mbijetuari i fundit}
+% ------------------------------------------------------------
+
+\begin{frame}{Sigurimi i vdekjes së dytë $A_{\overline{xy}}$}
+  \begin{Definicion}
+    $A_{\overline{xy}}$: 1 lek paguhet në fund të vitit të vdekjes së \textbf{dytë}.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Ngjarja ``vdekja e dytë'' = ``vdekja e $x$'' + ``vdekja e $y$'' $-$ ``vdekja e parë''.
+    \pause
+    \item Prandaj, si për anuitetet:
+  \end{itemize}
+  \begin{center}
+    \fbox{$A_{\overline{xy}}=A_x+A_y-A_{xy}$, \qquad $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Pse vlen kjo lidhje?}
+  \begin{itemize}
+    \item<1-> Në çdo rast, dy vdekjet janë $\min(T_x,T_y)$ dhe $\max(T_x,T_y)$.
+    \item<2-> $v^{\min}+v^{\max}=v^{T_x}+v^{T_y}$: e njëjta çift vlerash, në renditje tjetër.
+    \item<3-> Merr pritjen: $A_{xy}+A_{\overline{xy}}=A_x+A_y$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Lidhja \textbf{nuk} kërkon pavarësi: vlen për çdo shpërndarje të përbashkët të $(T_x,T_y)$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Shembulli i vogël}
+  \begin{align*}
+    A_{\overline{xy}} &= A_x+A_y-A_{xy} \\
+    \onslide<2->{&= 0.9081+0.8863-0.9233=0.8711.} \\
+    \onslide<3->{\text{Kontroll: }\; 1-d\,\ddot a_{\overline{xy}} &= 1-0.047619\cdot2.7076=0.8711.\;\textcolor{okgreen}{\checkmark}}
+  \end{align*}
+  \onslide<4->{
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      Statusi & $\ddot a_u$ & $A_u$ \\
+      \midrule
+      $(xy)$ & 1.6105 & 0.9233 \\
+      $(x)$ & 1.9299 & 0.9081 \\
+      $(y)$ & 2.3882 & 0.8863 \\
+      $(\overline{xy})$ & 2.7076 & 0.8711 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Sa më gjatë jeton statusi, aq \textbf{më i madh} $\ddot a_u$ dhe aq \textbf{më i vogël} $A_u$.
+    \item<2-> Renditja: $(xy)\prec(x),(y)\prec(\overline{xy})$ vlen për çdo çift.
+    \item<3-> Në praktikë: $A_{\overline{xy}}$ përdoret p.sh.\ në SHBA për taksën e trashëgimisë, që paguhet pas vdekjes së dytë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6mc4]{Zgjedhje e shumëfishtë}
+  Një çift blen me të njëjtën primë të vetme ose $A_{xy}$, ose $A_{\overline{xy}}$. Cili jep shumë të siguruar më të \textbf{madhe}?
+  \begin{enumerate}[A)]
+    \item $A_{xy}$, sepse paguhet më shpejt.
+    \item $A_{\overline{xy}}$, sepse paguhet më vonë.
+    \item Të dyja japin të njëjtën shumë.
+    \item Varet nga norma e interesit: me $i>0$ gjithmonë $A_{xy}$.
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjMC4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Anuiteti i të vesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Anuiteti reversionar}
+  \begin{Definicion}
+    \termi{Anuiteti reversionar}{reversionary annuity} $\ddot a_{x|y}$: 1 lek në vit për $(y)$, \textbf{pas} vdekjes së $(x)$, sa kohë $(y)$ është gjallë.
+  \end{Definicion}
+  \pause
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (9.5,0) node[right,font=\small]{$t$};
+    \draw[very thick,uptblue] (0,0.9) -- (3.6,0.9) node[right,font=\small]{$\dagger$ $(x)$};
+    \draw[very thick,accent] (0,0.4) -- (6.4,0.4) node[right,font=\small]{$\dagger$ $(y)$};
+    \fill[okgreen!35] (3.6,-0.35) rectangle (6.4,-0.1);
+    \node[below,font=\scriptsize] at (5.0,-0.35) {paguhet $\ddot a_{x|y}$};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Formula}
+  \begin{align*}
+    \ddot a_{x|y} &= \sum_{t\ge0}v^t\;P\big((y)\text{ gjallë},\,(x)\text{ i vdekur}\big) \\
+    \onslide<2->{&= \sum_{t\ge0}v^t\big({}_tp_y-{}_tp_{xy}\big)} \\
+    \onslide<3->{&= \ddot a_y-\ddot a_{xy}.}
+  \end{align*}
+  \onslide<4->{\small Intuita: ``pensioni i $(y)$ gjithë jetën'' minus ``pjesa kur të dy janë gjallë''.}
+\end{frame}
+
+\begin{frame}{Shembulli i vogël}
+  \begin{itemize}
+    \item<1-> $\ddot a_{x|y}=2.3882-1.6105=0.7777$.
+    \item<2-> $\ddot a_{y|x}=\ddot a_x-\ddot a_{xy}=1.9299-1.6105=0.3194$.
+    \item<3-> $(y)$ jeton më gjatë: ka më shumë gjasa të jetë ``e veja''.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}
+    $\ddot a_{xy}+\ddot a_{x|y}+\ddot a_{y|x}=\ddot a_{\overline{xy}}$: \; $1.6105+0.7777+0.3194=2.7076$. \textcolor{okgreen}{$\checkmark$}
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}[label=w6gab4]{Gjej gabimin}
+  Një student shkruan për pensionin e Dritës pas vdekjes së Petritit:
+  \[
+    \ddot a_{x|y}=\ddot a_y-\ddot a_x=2.3882-1.9299=0.4583.
+  \]
+  \begin{enumerate}
+    \item Ku është gabimi?
+    \item Gjej një çift ku formula e tij jep vlerë \textbf{negative}.
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjGab4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Opsioni 60\% (Ora 1)}
+  100\% sa janë të dy gjallë, 60\% për të mbijetuarin:
+  \pause
+  \begin{align*}
+    \ddot a^{(60\%)} &= \ddot a_{xy}+0.6\big(\ddot a_{x|y}+\ddot a_{y|x}\big) \\
+    \onslide<3->{&= \ddot a_{xy}+0.6\big(\ddot a_{\overline{xy}}-\ddot a_{xy}\big)} \\
+    \onslide<4->{&= 0.6\,\ddot a_{\overline{xy}}+0.4\,\ddot a_{xy}.}
+  \end{align*}
+  \onslide<5->{\small Shembull: $0.6\cdot2.7076+0.4\cdot1.6105=2.2688$, midis $\ddot a_{xy}$ dhe $\ddot a_{\overline{xy}}$.}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me të njëjtin kursim $K$, pensioni fillestar është $K/\ddot a$.
+    \item<2-> Opsioni 60\% ka $\ddot a$ më të vogël se 100\%-shi, pra pension fillestar \textbf{më të lartë}.
+    \item<3-> Kjo i përgjigjet pyetjes së Orës 1; numrat për Petritin dhe Dritën vijnë në Orën 5.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Sigurime të kushtëzuara \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{$A^{\;1}_{xy}$: $(x)$ vdes i pari \Zgj}
+  \begin{Definicion}
+    $A^{\;1}_{xy}$: 1 lek në vdekjen e $(x)$, \textbf{vetëm nëse} $(y)$ është ende gjallë.
+  \end{Definicion}
+  \pause
+  Me vite të plota duhet një supozim për vdekjet në të njëjtin vit: me UDD, secili ``vdes i pari'' me gjasë $1/2$.
+  \pause
+  \[
+    A^{\;1}_{xy}\approx\sum_{k\ge0}v^{k+1}\,{}_kp_{xy}\;q_{x+k}\Big(1-\tfrac12 q_{y+k}\Big).
+  \]
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R \Zgj}
+<<w6h4-cont>>=
+px <- c(1, 0.6, 0.3, 0.1, 0); py <- c(1, 0.8, 0.5, 0.2, 0); v <- 1 / 1.05
+k <- 0:3; pxy <- px * py
+qx <- 1 - px[k + 2] / px[k + 1]; qy <- 1 - py[k + 2] / py[k + 1]
+A1x <- sum(v^(k + 1) * pxy[k + 1] * qx * (1 - qy / 2))   # x dies first
+A1y <- sum(v^(k + 1) * pxy[k + 1] * qy * (1 - qx / 2))   # y dies first
+round(c(A1x = A1x, A1y = A1y, sum = A1x + A1y,
+        Axy = sum(v^(k + 1) * (pxy[k + 1] - pxy[k + 2]))), 6)
+@
+  \small ($x$ i pari) + ($y$ i pari) $=A_{xy}$: vdekja e parë është e njërit ose e tjetrit. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kur pavarësia nuk vlen}
+% ------------------------------------------------------------
+
+\begin{frame}{Pavarësia: supozim, jo fakt}
+  \begin{itemize}
+    \item<1-> Çiftet ndajnë shtëpinë, ushqimin, të ardhurat, stilin e jetës.
+    \item<2-> Literatura aktuariale gjen \textbf{varësi pozitive} midis jetëgjatësive të bashkëshortëve.
+    \item<3-> Pas vdekjes së njërit, vdekshmëria e tjetrit rritet përkohësisht (efekti ``zemër e thyer'', \emph{broken heart}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6par4]{Parashiko}
+  \begin{Parashiko}
+    Supozo varësi pozitive: kur njëri jeton gjatë, edhe tjetri ka gjasa të jetojë gjatë. $\ddot a_x$ dhe $\ddot a_y$ nuk ndryshojnë.
+    \begin{enumerate}
+      \item $\ddot a_{xy}$ rritet apo zvogëlohet krahasuar me pavarësinë?
+      \item Po $\ddot a_{\overline{xy}}$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w6zgjPar4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Pasoja për çmimin}
+  \begin{itemize}
+    \item<1-> Me varësi pozitive, ${}_tp_{xy}\ge{}_tp_x\,{}_tp_y$: $\ddot a_{xy}$ \textbf{rritet}.
+    \item<2-> Nga $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$: $\ddot a_{\overline{xy}}$ \textbf{zvogëlohet}.
+    \item<3-> Pavarësia e \textbf{mbivlerëson} koston e pensionit të të mbijetuarit: gabim ``i kujdesshëm'' për kompaninë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Pavarësia e \textbf{nënvlerëson} $\ddot a_{xy}$: për një produkt që paguan sa janë të dy gjallë, supozimi nuk është i kujdesshëm.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuptimi i dytë: tabela e përzier}
+% ------------------------------------------------------------
+
+\begin{frame}{Një portofol me dy grupe}
+  \begin{itemize}
+    \item<1-> Një portofol ka dy grupe: $w$ me tabelën e $(x)$, $1-w$ me tabelën e $(y)$ (p.sh.\ duhanpirës dhe jo).
+    \item<2-> Për një person të zgjedhur rastësisht:
+      \[ {}_tp^{\text{mix}}=w\,{}_tp^{(1)}+(1-w)\,{}_tp^{(2)}. \]
+    \item<3-> Kjo është \termi{përzierja}{mixture} e Javës 3, tani për jetëgjatësinë.
+  \end{itemize}
+  \onslide<4->{\small Me $w=0.5$: \; ${}_tp^{\text{mix}}=1,\;0.7,\;0.4,\;0.15,\;0$.}
+\end{frame}
+
+\begin{frame}{Anuiteti i përzier}
+  \begin{itemize}
+    \item<1-> $\ddot a$ është \textbf{linear} në ${}_tp$: $\ddot a^{\text{mix}}=w\,\ddot a^{(1)}+(1-w)\,\ddot a^{(2)}$.
+    \item<2-> Shembull: $0.5\cdot1.9299+0.5\cdot2.3882=2.1591$.
+    \item<3-> Kontroll: $1+0.7v+0.4v^2+0.15v^3=2.1591$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Një kolege ndërton tabelën e portofolit duke marrë mesataren e $q$-ve:
+    $q^{\text{mix}}_{t}=\tfrac12\big(q^{(1)}_{t}+q^{(2)}_{t}\big)$.
+    \begin{enumerate}
+      \item Llogarit $q^{\text{mix}}_1$ në të dyja mënyrat (nga ${}_tp^{\text{mix}}$ dhe me mesatare).
+      \item Cila është e saktë? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj $\ddot a_{x|y}$ me $\ddot a_y$ dhe $\ddot a_{xy}$.
+    \item Pse $A_{xy}+A_{\overline{xy}}=A_x+A_y$ vlen edhe pa pavarësi?
+    \item Pse nuk merret mesatarja e $q$-ve për një portofol të përzier?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\ddot a_y-\ddot a_{xy}$; (2) $v^{\min}+v^{\max}=v^{T_x}+v^{T_y}$;
+  (3) përzihen ${}_tp$, jo $q$: pesha e grupit të fortë rritet me kohën.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item $q_{xy}=q_x+q_y-q_xq_y$; \; $A_u=1-d\,\ddot a_u$ për çdo status.
+    \item $A_{\overline{xy}}=A_x+A_y-A_{xy}$; \; $\ddot a_{x|y}=\ddot a_y-\ddot a_{xy}$.
+    \item Opsioni 60\%: $0.6\,\ddot a_{\overline{xy}}+0.4\,\ddot a_{xy}$.
+    \item Varësia pozitive: $\ddot a_{xy}\uparrow$, $\ddot a_{\overline{xy}}\downarrow$.
+    \item Tabela e përzier: përziej ${}_tp$, jo $q$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator R II: \texttt{axyzn()}, \texttt{Axyzn()}, kontrolli nga zero, Petriti dhe Drita me opsionin 60\%.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (red.), \emph{Computational Actuarial Science with R}, CRC Press, 2015: kapitulli për sigurimet e jetës.
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): funksionet për disa jetë.
+    \item E.~W.~Frees, J.~Carriere, E.~Valdez (1996), ``Annuity valuation with dependent mortality'', \emph{Journal of Risk and Insurance} 63(2).
+    \item Java 3 e këtij kursi: shpërndarjet e përziera.
+  \end{itemize}
+\end{frame}

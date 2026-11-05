@@ -1,0 +1,54 @@
+% ============================================================
+%  Java 6 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w6zgjUsh4]{Zgjidhja: Radha jote! ($A_x$, $A_y$, $P_{xy}$)}
+  \begin{enumerate}
+    \item $A_x=1-0.047619\cdot1.9299=0.9081$; \; $A_y=1-0.047619\cdot2.3882=0.8863$.
+    \item ${}_kp_x-{}_{k+1}p_x=0.4,\,0.3,\,0.2,\,0.1$: \;
+      $0.4v+0.3v^2+0.2v^3+0.1v^4=0.3810+0.2721+0.1728+0.0823=0.9081$. \textcolor{okgreen}{$\checkmark$}
+      \\ \small (E njëjta si $M_{100}/D_{100}=908.099/1000$ në Orën 2.)
+    \item $P_{xy}=0.9233/1.6105=0.5733$ për 1 lek të siguruar.
+  \end{enumerate}
+  \vfill\kthehu{w6ush4}
+\end{frame}
+
+\begin{frame}[label=w6zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Shuma e siguruar $=\Pi/A$. Meqë $A_{\overline{xy}}=0.8711<A_{xy}=0.9233$, me të njëjtën primë $\Pi$
+  $A_{\overline{xy}}$ jep shumë më të madhe.
+  \begin{itemize}
+    \item A) ngatërron vlerën e pagesës me madhësinë e saj.
+    \item D) me $i>0$, pagesa më e vonë ka vlerë aktuale më të vogël: pra $A_{\overline{xy}}$ është më e lirë.
+  \end{itemize}
+  \vfill\kthehu{w6mc4}
+\end{frame}
+
+\begin{frame}[label=w6zgjGab4]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item $\ddot a_y-\ddot a_x$ zbret pensionin e $(x)$ \textbf{gjithë jetën}, edhe vitet kur $(y)$ ka vdekur.
+      E sakta: $\ddot a_y-\ddot a_{xy}=0.7777$.
+    \item Çdo çift ku $(x)$ jeton më gjatë se $(y)$: p.sh.\ këmbe rolet në shembullin tonë,
+      $\ddot a_x-\ddot a_y=1.9299-2.3882=-0.4583<0$. Një anuitet nuk mund të ketë vlerë negative.
+  \end{enumerate}
+  \vfill\kthehu{w6gab4}
+\end{frame}
+
+\begin{frame}[label=w6zgjPar4]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $\ddot a_{xy}$ \textbf{rritet}: ``të dy gjallë'' ndodh më shpesh, ${}_tp_{xy}\ge{}_tp_x\,{}_tp_y$.
+    \item $\ddot a_{\overline{xy}}$ \textbf{zvogëlohet}: $\ddot a_x$ e $\ddot a_y$ nuk ndryshojnë, dhe $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$.
+  \end{enumerate}
+  \small Intuita: me varësi, të dy vdesin ``afër njëri-tjetrit''; periudha me një të mbijetuar shkurtohet.
+  \vfill\kthehu{w6par4}
+\end{frame}
+
+\begin{frame}[label=w6zgjTps4]{Zgjidhja: tabela e përzier}
+  \begin{enumerate}
+    \item Nga ${}_tp^{\text{mix}}$: \; $q^{\text{mix}}_1=1-0.4/0.7=0.4286$. \\
+      Me mesatare: \; $\tfrac12(0.5+0.375)=0.4375$.
+    \item E sakta është e para. Pas një viti, grupi $(y)$ (më i fortë) ka mbijetuar më shumë:
+      pesha e tij është $0.4/0.7=0.571$, jo $0.5$.
+  \end{enumerate}
+  \begin{Gabim}Mesatarja e $q$-ve me pesha fikse e mbivlerëson vdekshmërinë e portofolit, sepse injoron \textbf{përzgjedhjen} nga vdekja.\end{Gabim}
+  \vfill\kthehu{w6tps4}
+\end{frame}
