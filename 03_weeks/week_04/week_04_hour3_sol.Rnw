@@ -1,0 +1,64 @@
+% ============================================================
+%  Java 4 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w4s3-setup, include=FALSE>>=
+rt <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+n  <- 10
+C  <- matrix(NA_real_, n, n, dimnames = list(2016:2025, 1:n))
+C[cbind(rt$accident_year - 2015, rt$dev_year)] <- rt$cum_paid_eur
+latest <- C[cbind(1:n, n:1)]
+f <- sapply(1:(n - 1), function(j) { r <- 1:(n - j); sum(C[r, j + 1]) / sum(C[r, j]) })
+p_true <- c(0.40, 0.65, 0.80, 0.88, 0.93, 0.96, 0.98, 0.99, 0.995, 1)
+fill <- function(C, f) {
+  for (j in 1:(n - 1)) { m <- is.na(C[, j + 1]); C[m, j + 1] <- C[m, j] * f[j] }
+  C
+}
+@
+
+\begin{frame}[label=w4zgjGab3]{Zgjidhja: Gjej gabimin (\texttt{diag})}
+  \begin{enumerate}
+    \item \texttt{diag(C)} merr diagonalen \textbf{kryesore}: $C_{11},C_{22},\dots,C_{nn}$.
+    \item Për $i>5$, $C_{ii}$ ndodhet poshtë diagonales së fundit, në pjesën e panjohur: \texttt{NA}.
+    \item Jo: $C_{ii}$ me $i\le5$ janë të njohura, por nuk janë vlera e fundit (p.sh.\ $C_{11}$ kundrejt $C_{1,10}$).
+          Diagonalja e fundit është \textbf{anti-diagonalja} \texttt{C[cbind(1:n, n:1)]}.
+  \end{enumerate}
+  \vfill\kthehu{w4gab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjPar3]{Zgjidhja: Parashiko (faktorët e vërtetë)}
+  Me faktorët e vërtetë: $\hat C_{in}=C_{i,n+1-i}/p_{n+1-i}$, pra $R_i=C_{i,n+1-i}\,(1/p_{n+1-i}-1)$.
+<<w4s3-par>>=
+R_cl   <- fill(C, f)[, n] - latest
+R_true <- fill(C, p_true[-1] / p_true[-n])[, n] - latest
+c(CL = sum(R_cl), true_factors = sum(R_true)) / 1e6
+@
+  \small Më e vogël: shumica e $\hat f_j$ me peshë të madhe dalin mbi të vërtetën. Është ``e vërteta'' e Orës 3.
+  \vfill\kthehu{w4par3}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjNdr3]{Zgjidhja: Ndrysho parametrin ($f_6$)}
+<<w4s3-ndr>>=
+f_fix <- f; f_fix[6] <- 0.98 / 0.96
+R_fix <- fill(C, f_fix)[, n] - latest
+round(cbind(before = R_cl, after = R_fix, change = R_fix - R_cl) / 1e6, 3)[4:10, ]
+c(total_change_mln = sum(R_fix - R_cl) / 1e6)
+@
+  \small Preken vetëm vitet 2020--2025: vetëm ato kanë ende hapin 6$\to$7 përpara.
+  \vfill\kthehu{w4ndr3}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjUsh3]{Zgjidhja: Radha jote! (lognormalja)}
+<<w4s3-ush, warning=FALSE>>=
+suppressMessages(library(ChainLadder))
+trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year", value = "cum_paid_eur")
+tot <- summary(MackChainLadder(trc, est.sigma = "Mack"))$Totals[, 1]
+R <- tot[4]; cv <- tot[6]                       # IBNR and CV(IBNR)
+s2 <- log(1 + cv^2); mu <- log(R) - s2 / 2
+q <- qlnorm(c(0.75, 0.995), mu, sqrt(s2))
+round(c(mean = R, q75 = q[1], q995 = q[2], margin75 = q[1] - R,
+        margin995 = q[2] - R) / 1e6, 3)
+@
+  \small Kuantili 75\% përdoret shpesh për \emph{risk adjustment} në IFRS 17; 99.5\% për rrezikun e rezervës në Solvency II (Ora 6).
+  \vfill\kthehu{w4ush3}
+\end{frame}
