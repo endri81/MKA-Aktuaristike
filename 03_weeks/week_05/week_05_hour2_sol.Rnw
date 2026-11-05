@@ -1,0 +1,59 @@
+% ============================================================
+%  Java 5 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w5s2-setup, include=FALSE>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+@
+
+\begin{frame}[label=w5zgjMC2a]{Zgjidhja: zgjedhja e shumëfishtë ($\mu$ dhe $q$)}
+  \textbf{C)} $q_x$ është probabilitet: gjithmonë $0\le q_x\le1$.
+  \begin{itemize}
+    \item A) E vërtetë: $\mu_x$ është normë (për vit), jo probabilitet. Me $q_x=0.8$: $\mu\approx-\log0.2=1.61$.
+    \item B), D) Të vërteta (këtë orë).
+  \end{itemize}
+  \vfill\kthehu{w5mc2a}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjPar2]{Zgjidhja: Parashiko (dyfishimi)}
+  Nga $A+Bc^x=\mu$: \; $x=\log\big((\mu-A)/B\big)/\log c$.
+<<w5s2-par>>=
+age_mu <- function(mu, A = 0.0005, B = 0.000022, c = 1.105)
+  log((mu - A) / B) / log(c)
+c(mu_0.1 = age_mu(0.1), mu_0.2 = age_mu(0.2),
+  difference = age_mu(0.2) - age_mu(0.1), doubling = log(2) / log(1.105))
+@
+  \small Në këto mosha $A$ është i papërfillshëm: $\mu_x\approx Bc^x$, dhe dyfishimi kërkon $\log2/\log c\approx6.9$ vite.
+  \vfill\kthehu{w5par2}
+\end{frame}
+
+\begin{frame}[label=w5zgjUsh2]{Zgjidhja: Radha jote! (rekursioni)}
+  \begin{enumerate}
+    \item $e_{103}=0$; \; $e_{102}=p_{102}(1+e_{103})=\tfrac13\times1=0.333$.
+    \item $e_{101}=0.5\times(1+0.333)=0.667$; \; $e_{100}=0.6\times(1+0.667)=1.0$.
+    \item $\mathring e_x$: 1.50, 1.17, 0.83, 0.50 $=e_x+0.5$ për çdo moshë. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w5ush2}
+\end{frame}
+
+\begin{frame}[label=w5zgjMC2b]{Zgjidhja: zgjedhja e shumëfishtë (UDD)}
+  \textbf{B)} Nën UDD: ${}_sp_x=1-sq_x$, \; $f_{T_x}(s)=q_x$ (konstante), pra
+  \[ \mu_{x+s}=\frac{f_{T_x}(s)}{{}_sp_x}=\frac{q_x}{1-s\,q_x}, \]
+  që \textbf{rritet} me $s$.
+  \begin{itemize}
+    \item A) është forca konstante. \; C) është Balducci (zvogëlohet).
+  \end{itemize}
+  \vfill\kthehu{w5mc2b}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjGab2]{Zgjidhja: Gjej gabimin (${}_{10}p_{60}$)}
+  \begin{enumerate}
+    \item \texttt{px[60]} është mosha \textbf{59}: në R indeksi fillon nga 1, mosha nga 0. E saktë: \texttt{px[61]}.
+    \item ${}_{10}p_{60}\ne p_{60}^{10}$: duhet prodhimi $p_{60}p_{61}\cdots p_{69}$.
+  \end{enumerate}
+<<w5s2-gab>>=
+px <- 1 - mt$qx_male; lx <- mt$lx_male
+c(wrong = px[60]^10, prod = prod(px[61:70]), via_lx = lx[71] / lx[61])
+@
+  \vfill\kthehu{w5gab2}
+\end{frame}

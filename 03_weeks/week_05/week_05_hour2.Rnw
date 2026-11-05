@@ -1,0 +1,360 @@
+% ============================================================
+%  Java 5 · Ora 2 — Teoria I: funksionet e jetës
+% ============================================================
+\section{Teoria I: funksionet e jetës}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w5h2-setup, include=FALSE>>=
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Forca e vdekshmërisë}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga $q_x$ te forca e vdekshmërisë}
+  \begin{itemize}
+    \item<1-> $q_x$ = probabiliteti i vdekjes \textbf{brenda një viti}. Por çfarë ndodh brenda vitit?
+    \item<2-> Duam një masë të rrezikut \textbf{në çast}, si shpejtësia në fizikë.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Definicion}[(forca e vdekshmërisë, \emph{force of mortality})]
+    \[
+      \mu_x=\lim_{h\to0^+}\frac{\Pr(\text{vdes në }(x,x+h]\mid\text{gjallë në }x)}{h}
+      =-\frac{l'(x)}{l(x)}=-\frac{d}{dx}\log l(x).
+    \]
+  \end{Definicion}}
+  \onslide<4->{\small Në statistikë quhet \emph{hazard rate}; e njëjta ide si te modeli Cox (lapse, Java 1).}
+\end{frame}
+
+\begin{frame}{Mbijetesa nga forca e vdekshmërisë}
+  Nga $\mu_{x+s}=-\frac{d}{ds}\log l(x+s)$:
+  \begin{align*}
+    \int_0^t\mu_{x+s}\,ds &= -\big[\log l(x+s)\big]_0^t=-\log\frac{l(x+t)}{l(x)} \\
+    \onslide<2->{\Rightarrow\quad {}_tp_x &= \frac{l(x+t)}{l(x)}=\exp\Big(-\int_0^t\mu_{x+s}\,ds\Big).}
+  \end{align*}
+  \onslide<3->{
+  \begin{Teoreme}[(dendësia e $T_x$)]
+    \[ f_{T_x}(t)=-\frac{d}{dt}\,{}_tp_x={}_tp_x\,\mu_{x+t}. \]
+  \end{Teoreme}}
+  \onslide<4->{\small Me fjalë: ``mbijeton deri në $t$'' $\times$ ``vdes në çastin $t$''.}
+\end{frame}
+
+\begin{frame}{Një përafrim i dobishëm}
+  \begin{itemize}
+    \item<1-> Nëse $\mu$ është pothuajse konstant brenda vitit: \; $p_x=e^{-\mu}$.
+    \item<2-> Pra \; $\mu_{x+1/2}\approx-\log p_x=-\log(1-q_x)$.
+    \item<3-> Për $q_x$ të vogël: $-\log(1-q_x)\approx q_x$, pra $\mu\approx q$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Shembull pa ndihmën e PC}
+    Tabela e vogël e Orës 1: $p_{100}=0.6$ \; $\Rightarrow$ \; $\mu_{100.5}\approx-\log0.6=0.511$, ndërsa $q_{100}=0.4$.
+  \end{block}}
+  \onslide<5->{\small Në moshat e larta $\mu$ dhe $q$ ndryshojnë shumë: $q\le1$ gjithmonë, $\mu$ mund të jetë $>1$.}
+\end{frame}
+
+\begin{frame}[label=w5mc2a]{Zgjedhje e shumëfishtë}
+  Cili pohim është i \textbf{gabuar}?
+  \begin{enumerate}[A)]
+    \item $\mu_x$ mund të jetë më i madh se 1.
+    \item ${}_tp_x=\exp\big(-\int_0^t\mu_{x+s}\,ds\big)$.
+    \item $q_x$ mund të jetë më i madh se 1 në moshat shumë të larta.
+    \item Për $q_x$ të vogël, $\mu_{x+1/2}\approx q_x$.
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjMC2a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ligjet analitike}
+% ------------------------------------------------------------
+
+\begin{frame}{Gompertz (1825) dhe Makeham (1860)}
+  \begin{Definicion}[(ligjet e vdekshmërisë)]
+    \[
+      \text{Gompertz: }\mu_x=B\,c^x,\qquad
+      \text{Makeham: }\mu_x=A+B\,c^x,\qquad A,B>0,\;c>1.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $B\,c^x$: \textbf{plakja}, rritet eksponencialisht me moshën.
+    \item $A$: rreziku që nuk varet nga mosha (aksidente, sëmundje infektive).
+    \item<3-> $\log\mu_x=\log B+x\log c$ (Gompertz): vijë e drejtë në shkallë log. Ora 1, figura e $\log q_x$!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Mbijetesa nën Makeham}
+  \begin{align*}
+    \int_0^t\big(A+Bc^{x+s}\big)ds &= At+Bc^x\int_0^tc^s\,ds \\
+    \onslide<2->{&= At+Bc^x\,\frac{c^t-1}{\log c}} \\
+    \onslide<3->{\Rightarrow\quad{}_tp_x &= \exp\Big(-At-\frac{B\,c^x\,(c^t-1)}{\log c}\Big).}
+  \end{align*}
+  \onslide<4->{
+  \begin{Keshille}Me $t=1$: $q_x=1-\exp\big(-A-Bc^x(c-1)/\log c\big)$. Kështu janë ndërtuar qelizat e tabelës sintetike.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{E vërteta e tabelës sintetike}
+<<w5h2-truth>>=
+x <- mt$age
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+qM <- gm_q(x, A = 0.0005, B = 0.000022, c = 1.105)
+round(cbind(age = x, csv = mt$qx_male, formula = qM)[c(1, 2, 41, 81, 101), ], 6)
+c(max_diff_ages_1_109 = max(abs(mt$qx_male[2:110] - qM[2:110])))
+@
+  \small README: Makeham M ($A=0.0005$, $B=0.000022$, $c=1.105$). Mosha 0 dhe mosha 110 janë vendosur veçmas.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Për moshat 1--109, $q_x$ i CSV-së = formula e Makeham-it saktësisht.
+    \item<2-> Mosha 0: $q_0=0.0095$, vdekshmëria foshnjore, jashtë ligjit.
+    \item<3-> Mosha 110: $q_{110}=1$, ``mbyllja'' e tabelës ($\omega=111$).
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Vlerësimi kundrejt së vërtetës}
+    Në Orën 3 i vlerësojmë $A$, $B$, $c$ nga tabela me \texttt{nls()} dhe i krahasojmë me këto vlera.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Figura: $\mu_x$ sipas Makeham-it}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=10cm,height=5.2cm,domain=20:100,samples=80,ymode=log,
+        xlabel={mosha $x$},ylabel={$\mu_x$},
+        tick label style={font=\scriptsize},label style={font=\small},
+        legend style={font=\scriptsize,at={(0.03,0.97)},anchor=north west}]
+      \addplot[very thick,uptblue] {0.0005+0.000022*1.105^x};  \addlegendentry{M: $A=0.0005$, $c=1.105$}
+      \addplot[very thick,accent] {0.0003+0.000009*1.112^x};   \addlegendentry{F: $A=0.0003$, $c=1.112$}
+    \end{axis}
+  \end{tikzpicture}\par
+  \small Në moshat e reja dominon $A$ (kurba e sheshtë); pas 40 vjeç dominon $Bc^x$ (vijë e drejtë).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Koha e \textbf{dyfishimit} të vdekshmërisë: $\log2/\log c$.
+    \item<2-> Meshkuj: $\log2/\log1.105\approx6.9$ vite; femra: $\log2/\log1.112\approx6.5$ vite.
+    \item<3-> Femrat kanë $B$ shumë më të vogël: fillojnë nga një nivel më i ulët, por plaken pak më shpejt.
+  \end{itemize}
+  \onslide<4->{\small Në popullsitë reale, $c$ është zakonisht midis 1.08 dhe 1.12.}
+\end{frame}
+
+\begin{frame}[label=w5par2]{Parashiko}
+  \begin{Parashiko}
+    Me Makeham M ($A=0.0005$, $B=0.000022$, $c=1.105$):
+    \begin{enumerate}
+      \item Në cilën moshë $\mu_x$ arrin 0.1 (një në dhjetë në vit)?
+      \item Në cilën moshë arrin 0.2?
+      \item Pse diferenca midis dy përgjigjeve është afër 7 vite?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w5zgjPar2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Jetëgjatësia e plotë}
+% ------------------------------------------------------------
+
+\begin{frame}{Jetëgjatësia e plotë $\mathring e_x$}
+  \begin{Definicion}
+    \[ \mathring e_x=E[T_x]=\int_0^\infty{}_tp_x\,dt. \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Si $e_x=\sum_k{}_kp_x$, por me integral: sipërfaqja nën kurbën e mbijetesës.
+    \item<3-> Nëse vdekjet ndodhin mesatarisht në mes të vitit: $\mathring e_x\approx e_x+\tfrac12$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}README jep $e_0\approx76.3$ (M). Kjo është $\mathring e_0$. Nga kolona $l_x$ me shumë merret $e_0\approx75.8$: diferenca është $\tfrac12$.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{$L_x$ dhe $T_x$}
+  \begin{Definicion}[(vitet e jetuara)]
+    \[
+      L_x=\int_0^1l_{x+t}\,dt\approx\frac{l_x+l_{x+1}}{2},\qquad
+      T_x=\sum_{k\ge x}L_k,\qquad \mathring e_x=\frac{T_x}{l_x}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $L_x$: numri total i viteve që jeton kohorta midis $x$ dhe $x+1$.
+    \item $T_x$: numri total i viteve që do të jetojë kohorta pas moshës $x$.
+    \item<3-> Kolonat \texttt{L(x)} dhe \texttt{T(x)} të tabelave HLD janë pikërisht këto.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC}
+  Tabela e vogël: $l_{100},\dots,l_{104}=1\,000,\;600,\;300,\;100,\;0$.
+  \begin{center}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 100 & 101 & 102 & 103 \\
+      \midrule
+      $L_x=(l_x+l_{x+1})/2$ & 800 & 450 & 200 & 50 \\
+      $T_x$ & 1\,500 & 700 & 250 & 50 \\
+      $\mathring e_x=T_x/l_x$ & 1.50 & 1.17 & 0.83 & 0.50 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small $\mathring e_{100}=1.5=e_{100}+0.5$: me $L_x$ trapezoidal, ky është saktësisht supozimi i ``mes të vitit''.
+\end{frame}
+
+\begin{frame}{Një rekursion për $e_x$}
+  \begin{align*}
+    e_x &= \sum_{k\ge1}{}_kp_x=p_x+\sum_{k\ge2}p_x\,{}_{k-1}p_{x+1} \\
+    \onslide<2->{&= p_x\Big(1+\sum_{j\ge1}{}_jp_{x+1}\Big)=p_x\,(1+e_{x+1}).}
+  \end{align*}
+  \onslide<3->{
+  \begin{itemize}
+    \item Llogaritet nga mosha më e madhe drejt më të voglës: $e_\omega=0$.
+    \item Në R: një cikël \texttt{for} mbrapsht, ose \texttt{rev(cumsum(rev(lx)))} (Ora 3).
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}[label=w5ush2]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Me tabelën e vogël:
+    \begin{enumerate}
+      \item Kontrollo $e_{102}$ me rekursionin, duke filluar nga $e_{103}=0$.
+      \item Llogarit $e_{101}$ dhe $e_{100}$ me rekursionin.
+      \item Krahaso me $\mathring e_x$ në tabelë.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjUsh2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Moshat jo të plota \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Problemi: mosha 40 vjeç e 6 muaj}
+  \begin{itemize}
+    \item<1-> Tabela jep vetëm moshat e plota: $l_{40}$, $l_{41}$.
+    \item<2-> Por pagesat mujore, polica që fillon në mes të vitit, vdekja në mes të vitit kërkojnë ${}_sp_x$ me $0<s<1$.
+    \item<3-> Duhet një \textbf{supozim} për sjelljen brenda vitit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{center}
+    \renewcommand{\arraystretch}{1.4}
+    \begin{tabular}{lll}
+      \toprule
+      Supozimi & ${}_sp_x$ & Ideja \\
+      \midrule
+      UDD & $1-s\,q_x$ & $l_{x+s}$ linear (vdekje uniforme) \\
+      Forca konstante & $p_x^{\,s}$ & $\mu_{x+s}=\mu$ konstant \\
+      Balducci & $\dfrac{p_x}{1-(1-s)\,q_x}$ & ${}_{1-s}q_{x+s}=(1-s)\,q_x$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC}
+  $q_{100}=0.4$, \; $s=0.5$:
+  \begin{itemize}
+    \item<2-> UDD: \; ${}_{0.5}p_{100}=1-0.5\times0.4=0.8$.
+    \item<3-> Forca konstante: \; $0.6^{0.5}=0.7746$.
+    \item<4-> Balducci: \; $0.6/(1-0.5\times0.4)=0.6/0.8=0.75$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Teoreme}
+    Për $0<s<1$: \; UDD $>$ forca konstante $>$ Balducci.
+  \end{Teoreme}}
+  \onslide<6->{\small Për $q_x$ të vogël (moshat e punës) diferencat janë të papërfillshme; në moshat 90+ jo.}
+\end{frame}
+
+\begin{frame}{Figura: tri supozimet}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=9.5cm,height=5.2cm,domain=0:1,samples=60,
+        xlabel={$s$},ylabel={${}_sp_{100}$},ymin=0.55,ymax=1.02,
+        tick label style={font=\scriptsize},label style={font=\small},
+        legend style={font=\scriptsize,at={(0.03,0.03)},anchor=south west}]
+      \addplot[very thick,uptblue] {1-0.4*x};           \addlegendentry{UDD}
+      \addplot[very thick,uptmid,dashed] {0.6^x};       \addlegendentry{forca konstante}
+      \addplot[very thick,accent] {0.6/(1-(1-x)*0.4)};  \addlegendentry{Balducci}
+    \end{axis}
+  \end{tikzpicture}\par
+  \small Të tri fillojnë në 1 dhe mbarojnë në $p_{100}=0.6$; ndryshojnë vetëm brenda vitit.
+\end{frame}
+
+\begin{frame}[label=w5mc2b]{Zgjedhje e shumëfishtë}
+  Nën UDD, si sillet $\mu_{x+s}$ brenda vitit?
+  \begin{enumerate}[A)]
+    \item Konstant: $\mu_{x+s}=-\log p_x$.
+    \item Rritet: $\mu_{x+s}=q_x/(1-s\,q_x)$.
+    \item Zvogëlohet: $\mu_{x+s}=q_x/(1-(1-s)\,q_x)$.
+    \item $\mu_{x+s}=q_x$ për çdo $s$.
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjMC2b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabelat në praktikë}
+% ------------------------------------------------------------
+
+\begin{frame}{Tabelë periudhe dhe tabelë kohorte}
+  \begin{itemize}
+    \item<1-> \textbf{Periudhe}: $q_x$ të vrojtuara në \textbf{një vit} (p.sh.\ 2011), për të gjitha moshat. Tabelat HLD dhe INSTAT.
+    \item<2-> \textbf{Kohorte}: $q_x$ të një brezi të lindur në të njëjtin vit, gjatë gjithë jetës.
+    \item<3-> Kur vdekshmëria bie me kohën, $\mathring e_0$ e periudhës \textbf{nënvlerëson} jetëgjatësinë e një të linduri sot.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Të çmosh një anuitet pensioni për 30 vite me një tabelë periudhe pa përmirësime të ardhshme: kompania humbet. Modeli Lee--Carter (Zgjerim, Java 6) parashikon këto përmirësime.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile,label=w5gab2]{Gjej gabimin}
+  Një student llogarit probabilitetin e mbijetesës 10-vjeçare për 60-vjeçarin:
+<<w5h2-bug, eval=FALSE>>=
+px  <- 1 - mt$qx_male
+p60 <- px[60]                   # p_60
+p10_60 <- p60^10                # 10 p_60
+@
+  \begin{enumerate}
+    \item Gjej \textbf{dy} gabime.
+    \item Shkruaj kodin e saktë me \texttt{prod()} dhe me \texttt{lx}.
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjGab2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj ${}_tp_x$ me forcën e vdekshmërisë.
+    \item Sa është koha e dyfishimit të vdekshmërisë me $c=1.1$?
+    \item Nën UDD, sa është ${}_{0.25}p_x$ me $q_x=0.2$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\exp(-\int_0^t\mu_{x+s}ds)$; (2) $\log2/\log1.1\approx7.3$ vite; (3) $1-0.25\times0.2=0.95$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item $\mu_x=-\frac{d}{dx}\log l(x)$; \; ${}_tp_x=\exp(-\int_0^t\mu_{x+s}ds)$; \; $f_{T_x}(t)={}_tp_x\mu_{x+t}$.
+    \item Makeham: $\mu_x=A+Bc^x$; dyfishim në $\log2/\log c$ vite.
+    \item $\mathring e_x=\int{}_tp_xdt\approx e_x+\tfrac12$; \; $L_x$, $T_x$, $\mathring e_x=T_x/l_x$.
+    \item $e_x=p_x(1+e_{x+1})$.
+    \item Moshat jo të plota: UDD $>$ forca konstante $>$ Balducci.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator nga zero: tabela e plotë në R, $e_x$, përshtatja e Makeham-it me \texttt{nls()}.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për sigurimet e jetës).
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021 (variablat e rastit të vazhdueshme).
+    \item G.~A.~Spedicato, vinjeta e paketës \Rkey{lifecontingencies}.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
