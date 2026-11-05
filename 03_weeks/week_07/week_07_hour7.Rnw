@@ -1,0 +1,292 @@
+% ============================================================
+%  Java 7 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Tabela e kuizit: mosha 80, $i=4\%$, \; $l_{80..84}=1000,\;900,\;600,\;200,\;0$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w7qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cila formulë jep $(IA)^1_{x:\overline n|}$?
+    \begin{enumerate}
+      \item[A)] $(R_x-R_{x+n})/D_x$
+      \item[B)] $(R_x-R_{x+n}-n\,M_{x+n})/D_x$
+      \item[C)] $(n\,M_x-R_{x+1}+R_{x+n+1})/D_x$
+      \item[D)] $(M_x-M_{x+n})/D_x$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w7sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Rezerva prospektive ${}_tV$ e një kontrate në fuqi llogaritet:
+    \begin{enumerate}
+      \item[A)] me primën që do të paguante sot një klient i ri në moshën $x+t$;
+      \item[B)] me primën origjinale të kontratës dhe me supozimet e vlerësimit;
+      \item[C)] si shuma e primave të paguara deri tani, me interes;
+      \item[D)] gjithmonë si $1-\ddot a_{x+t}/\ddot a_x$, për çdo produkt.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w7sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU1]{U1 · Komutimet pa ndihmën e PC}
+  \begin{Ushtrim}[(baza e moshës 80, $D_{80+k}=v^kl_{80+k}$)]
+    \begin{enumerate}
+      \item Llogarit $D_{80..83}$ dhe $N_{80..83}$.
+      \item Llogarit $C_{80..83}$, $M_{80..83}$ dhe $R_{80..83}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU2]{U2 · Sigurime rritëse dhe zbritëse}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Llogarit $A^1_{80:\overline3|}$, $(IA)^1_{80:\overline3|}$, $(DA)^1_{80:\overline3|}$.
+      \item Kontrollo identitetin $(IA)^1+(DA)^1=4\,A^1$.
+      \item Llogarit $(IA)_{80}$ (pa afat).
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU3]{U3 · Anuitetet}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Llogarit $\ddot a_{80}$, $a_{80}$ dhe $\ddot a_{80:\overline2|}$.
+      \item Llogarit ${}_{1|}\ddot a_{80}$. Me cilin anuitet të pikës 1 është i barabartë?
+      \item Kontrollo $A_{80}=1-d\,\ddot a_{80}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU4]{U4 · Primat neto}
+  \begin{Ushtrim}[(shuma e siguruar 1\,000\,000 lekë)]
+    \begin{enumerate}
+      \item Prima vjetore e sigurimit të përjetshëm, $P_{80}=M_{80}/N_{80}$.
+      \item Prima vjetore e sigurimit me afat 3 vjet.
+      \item Prima vjetore e sigurimit zbritës 3, 2, 1 milionë, me prima për 3 vjet.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU5]{U5 · Rezervat e sigurimit të përjetshëm}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Llogarit $\ddot a_{81}$, $\ddot a_{82}$, $\ddot a_{83}$.
+      \item Llogarit ${}_tV_{80}=1-\ddot a_{80+t}/\ddot a_{80}$ për $t=1,2,3$.
+      \item Kontrollo ${}_3V$ me $A_{83}-P_{80}\,\ddot a_{83}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU6]{U6 · Rezerva e sigurimit zbritës}
+  \begin{Ushtrim}[(sigurimi zbritës i U4.3)]
+    \begin{enumerate}
+      \item Llogarit ${}_1V$ dhe ${}_2V$ me prima për 3 vjet.
+      \item A dalin negative? Krahaso me 100-vjeçarin e Orës 2 dhe shpjego diferencën.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU7]{U7 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Krijo \texttt{actuarialtable} për tabelën e kuizit, \texttt{interest = 0.04}.
+      \item Kontrollo U2 me \texttt{Axn}, \texttt{IAxn}, \texttt{DAxn}.
+      \item Llogarit \texttt{IAxn(q, 80)} pa \texttt{n} dhe me \texttt{n = 4}. Çfarë vëren?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w7qU8]{U8 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Me \texttt{reserve()} të Orës 5, ndërto rezervat e sigurimit të \textbf{përzier} 3 vjet (1 lek) për 80-vjeçarin.
+      \item Gjej primën me \texttt{AExn()} dhe \texttt{axn()}; kontrollo ${}_0V=0$.
+      \item Pse ${}_tV$ e të përzierit është më e madhe se ajo e sigurimit të përjetshëm të U5?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w7sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): formulat}
+  \begin{enumerate}
+    \item $(IA)^1_{x:\overline n|}$ pa termin $-n\,M_{x+n}$: shtresat nuk ndalen.
+    \item $(DA)^1_{x:\overline n|}$ me $R_x$ në vend të $R_{x+1}$: shtresa e parë numërohet dy herë.
+    \item $a_{x:\overline n|}$ me $N_x$ në vend të $N_{x+1}$: pagesa e kohës 0 nuk ekziston.
+    \item Rezerva me primën e moshës së re: del gjithmonë 0.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): R dhe praktika}
+  \begin{enumerate}
+    \item \texttt{DAxn()} për kredi me këste konstante: nënvlerëson primën (Ora 3: $-18\%$).
+    \item Mbetja e kredisë në fund të vitit: harron këstin e papaguar.
+    \item \texttt{IAxn()} dhe \texttt{Axyzn()} pa \texttt{n}: horizonti i paracaktuar mund të jetë i shkurtër (U7).
+    \item Rekursioni pa $p_{x+t}$: rezerva e të vdekurve ``mbetet'' në portofol.
+    \item Rillogaritja e primave kur ndryshon tabela e vlerësimit.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w7qGab7]{Gjej gabimin: raundi i shpejtë}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{V1 <- 1 - axn(q, 81) / axn(q, 81)}
+    \item[(b)] \texttt{P <- Axn(q, 80, 3) / axn(q, 80)}
+    \item[(c)] \texttt{a\_imm <- axn(q, 80) - 1}
+  \end{enumerate}
+  \vfill\shkoTe{w7sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): \Rkey{lifecontingencies}}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Funksioni & Çfarë jep \\
+      \midrule
+      \texttt{Axn(act, x, n)} & $A_x$, $A^1_{x:\overline n|}$ \\
+      \texttt{IAxn(act, x, n)}, \texttt{DAxn(act, x, n)} & $(IA)^1_{x:\overline n|}$, $(DA)^1_{x:\overline n|}$ \\
+      \texttt{AExn(act, x, n)} & $A_{x:\overline n|}$ (i përzier) \\
+      \texttt{axn(act, x, n, m, k)} & $\ddot a$, me afat $n$, i shtyrë $m$, $k$ pagesa në vit \\
+      \texttt{Exn(act, x, n)} & ${}_nE_x$ \\
+      \texttt{..., i = 0.06} & normë tjetër pa krijuar tabelë të re \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      $(IA)_x=R_x/D_x$ & $(IA)^1_{x:\overline n|}=(R_x-R_{x+n}-nM_{x+n})/D_x$ \\
+      $(DA)^1_{x:\overline n|}=(nM_x-R_{x+1}+R_{x+n+1})/D_x$ & $(IA)^1+(DA)^1=(n+1)A^1$ \\
+      $a_x=N_{x+1}/D_x$ & ${}_{m|}\ddot a_x=N_{x+m}/D_x$ \\
+      $\ddot a_{x:\overline n|}=(N_x-N_{x+n})/D_x$ & $A_{x:\overline n|}=1-d\,\ddot a_{x:\overline n|}$ \\
+      ${}_tV_x=1-\ddot a_{x+t}/\ddot a_x$ & $({}_tV+P)(1+i)=q\,b+p\,{}_{t+1}V$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w7h7-cheat, eval=FALSE>>=
+varA <- function(act, x, b, i = act@interest) {...}       # Hour 3: any benefits
+reserve <- function(act, x, b, c, prem, i = act@interest) # Hour 5: recursion
+P  <- pmt(amt = 8e6, maturity = 20, rate = 0.06)          # tvm: loan payment
+B  <- P * (1 - 1.06^-(20 - 0:19)) / 0.06                  # outstanding balance
+SP <- varA(act, 40, B)                                    # loan insurance
+prem <- SP / axn(act, 40, 15)                             # 15 annual premiums
+V  <- reserve(act, 40, b, c, prem)                        # reserve curve
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 8)}
+  \begin{enumerate}
+    \item Përsërit rastin e Orës 6 me \textbf{gratë} (tabela sintetike F dhe Shqipëria 2011 F). Si ndryshojnë rezervat?
+    \item Ndrysho primat e kredive në \textbf{primë të vetme}. A zhduken rezervat negative?
+    \item Shto pagesat mujore ($k=12$) te pensionet dhe krahaso rezervën totale.
+  \end{enumerate}
+  \small Dorëzim: një skript R i riprodhueshëm (\texttt{set.seed}) dhe një faqe me interpretim.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 8}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 8: R në ekonomi dhe financë}
+  \begin{itemize}
+    \item<1-> Kthimet dhe vlerësimi i volatilitetit nga çmimet e aksioneve.
+    \item<2-> Të dhënat: \texttt{stock\_prices\_gbm\_synthetic.csv} (GBM, me $\mu$ dhe $\sigma$ të njohura).
+    \item<3-> Parimi \textbf{put--call parity}: teoria, arbitrazhi, kontrolli numerik.
+    \item<4-> Lidhja me aktuaristikën: opsionet e përfshira në kontratat e jetës (garancitë).
+  \end{itemize}
+  \onslide<5->{\vfill\LO{S1}\;\LO{K3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse sigurimi i kredisë me mbetjen reale kushton më shumë se \texttt{DAxn()}?
+    \item Pse rezerva e sigurimit me afat bie në zero në fund?
+    \item Pse rezerva e pensioneve bie kur tabela e vlerësimit ka vdekshmëri më të lartë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) mbetja reale është mbi vijën e drejtë; (2) nuk ka më përfitime të ardhshme;
+  (3) pensionet paguhen për më pak vite.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 7}
+  \begin{itemize}
+    \item $(IA)$ dhe $(DA)$: shtresat, komutimet me $R_x$, identiteti $(n+1)A^1$. \LO{C3}
+    \item Kredia e Arbenit: mbetja reale, \texttt{varA()}, ndjeshmëria ndaj interesit. \LO{S2}
+    \item Anuitetet: $\ddot a$, $a$, me afat, të shtyra, mujore. \LO{C3}
+    \item Primat neto dhe rezervat prospektive; \texttt{reserve()} me rekursion. \LO{C2}
+    \item Portofoli: 800 kontrata, tri tabela, rezervat negative. \LO{C2}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (red.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10), dhe vinjeta e \Rkey{lifecontingencies}.
+    \item Human Life-Table Database: Shqipëria 2011.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}

@@ -1,0 +1,117 @@
+% ============================================================
+%  Java 7 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7sT1]{Zgjidhja T1}
+  \textbf{B)} $(R_x-R_{x+n}-n\,M_{x+n})/D_x$.
+  \begin{itemize}
+    \item A) shtresat nuk ndalen: paguan $\min(K+1,n)$ gjithë jetën.
+    \item C) është $(DA)^1_{x:\overline n|}$. \; D) është $A^1_{x:\overline n|}$.
+  \end{itemize}
+  \vfill\kthehu{w7qT1}
+\end{frame}
+
+\begin{frame}[label=w7sT2]{Zgjidhja T2}
+  \textbf{B)} Primën origjinale dhe supozimet e vlerësimit.
+  \begin{itemize}
+    \item A) jep gjithmonë 0. \; C) është ide retrospektive pa koston e vdekjeve.
+    \item D) vlen vetëm për sigurimin e përjetshëm me prima gjithë jetën.
+  \end{itemize}
+  \vfill\kthehu{w7qT2}
+\end{frame}
+
+\begin{frame}[label=w7sU1]{Zgjidhja U1}
+  \begin{center}
+    \small
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 80 & 81 & 82 & 83 \\
+      \midrule
+      $D_x$ & 1000 & 865.385 & 554.734 & 177.799 \\
+      $N_x$ & 2597.918 & 1597.918 & 732.533 & 177.799 \\
+      $C_x$ & 96.154 & 277.367 & 355.599 & 170.961 \\
+      $M_x$ & 900.080 & 803.926 & 526.559 & 170.961 \\
+      $R_x$ & 2401.527 & 1501.446 & 697.520 & 170.961 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \small $d_x=100,300,400,200$; \; $C_x=v^{k+1}d_x$.
+  \vfill\kthehu{w7qU1}
+\end{frame}
+
+\begin{frame}[label=w7sU2]{Zgjidhja U2}
+  \begin{itemize}
+    \item $A^1_{80:\overline3|}=(900.080-170.961)/1000=0.729119$.
+    \item $(IA)^1_{80:\overline3|}=(2401.527-170.961-3\cdot170.961)/1000=1.717683$.
+    \item $(DA)^1_{80:\overline3|}=(3\cdot900.080-1501.446+0)/1000=1.198794$.
+    \item $1.717683+1.198794=2.916477\approx4\cdot0.729119=2.916476$ \textcolor{okgreen}{$\checkmark$} (rrumbullakim).
+    \item $(IA)_{80}=R_{80}/D_{80}=2.401527$.
+  \end{itemize}
+  \vfill\kthehu{w7qU2}
+\end{frame}
+
+\begin{frame}[label=w7sU3]{Zgjidhja U3}
+  \begin{enumerate}
+    \item $\ddot a_{80}=2.597918$; \; $a_{80}=N_{81}/D_{80}=1.597918$; \; $\ddot a_{80:\overline2|}=(2597.918-732.533)/1000=1.865385$.
+    \item ${}_{1|}\ddot a_{80}=N_{81}/D_{80}=1.597918=a_{80}$.
+    \item $1-0.038462\cdot2.597918=0.900080=M_{80}/D_{80}$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w7qU3}
+\end{frame}
+
+\begin{frame}[label=w7sU4]{Zgjidhja U4}
+  \begin{enumerate}
+    \item $P_{80}=900.080/2597.918=0.346462$: \; 346\,462 lekë në vit.
+    \item $\ddot a_{80:\overline3|}=(2597.918-177.799)/1000=2.420118$; \; $P=0.729119/2.420118=0.301274$: \; 301\,274 lekë.
+    \item $P=1.198794/2.420118=0.495345$ (për shumat 3, 2, 1 milionë): \; 495\,345 lekë.
+  \end{enumerate}
+  \vfill\kthehu{w7qU4}
+\end{frame}
+
+\begin{frame}[label=w7sU5]{Zgjidhja U5}
+  \begin{enumerate}
+    \item $\ddot a_{81}=1597.918/865.385=1.846483$; \; $\ddot a_{82}=1.320513$; \; $\ddot a_{83}=1$.
+    \item ${}_1V=0.289245$, \; ${}_2V=0.491703$, \; ${}_3V=0.615076$.
+    \item $A_{83}-P\,\ddot a_{83}=v-0.346462=0.961538-0.346462=0.615076$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w7qU5}
+\end{frame}
+
+\begin{frame}[label=w7sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item ${}_1V=(DA)^1_{81:\overline2|}-P\,\ddot a_{81:\overline2|}=0.239065$ (milionë); \; ${}_2V=0.145681$.
+    \item Jo negative. Këtu $q_{80+t}=0.1,\;0.33,\;0.67,\;1$ rritet shumë shpejt: kostoja e rrezikut nuk bie, edhe pse shuma zbret.
+      Te 100-vjeçari, $q_{100+t}=0.4,\;0.5,\;0.67$ rritet më ngadalë në raport me rënien e shumës.
+  \end{enumerate}
+  \vfill\kthehu{w7qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=w7sU7]{Zgjidhja U7}
+<<w7s7-u7>>=
+q <- new("actuarialtable", x = 80:84, lx = c(1000, 900, 600, 200, 0), interest = 0.04)
+round(c(A1 = Axn(q, 80, 3), IA = IAxn(q, 80, 3), DA = DAxn(q, 80, 3),
+        IA_default = IAxn(q, 80), IA_n4 = IAxn(q, 80, 4)), 6)
+@
+  \small Pa \texttt{n}, \texttt{IAxn()} ndalet pas 3 vitesh: humbet vitin e fundit. Jep gjithmonë \texttt{n}.
+  \vfill\kthehu{w7qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w7sU8]{Zgjidhja U8}
+<<w7s7-u8>>=
+Pe <- AExn(q, 80, 3) / axn(q, 80, 3)
+Ve <- reserve(q, 80, b = c(1, 1, 1, 0), c = c(0, 0, 0, 1), prem = c(Pe, Pe, Pe, 0))
+Vw <- 1 - sapply(80:83, function(a) axn(q, a)) / axn(q, 80)
+round(rbind(endowment = Ve, whole_life = Vw), 6)
+@
+  \small I përziri paguan me siguri në 83 (vdekje ose maturim): rezerva rritet drejt 1 më shpejt.
+  \vfill\kthehu{w7qU8}
+\end{frame}
+
+\begin{frame}[label=w7sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{itemize}
+    \item (a) gabim: emëruesi duhet \texttt{axn(q, 80)}; si është, jep 0.
+    \item (b) gabim: primat paguhen 3 vjet, pra \texttt{axn(q, 80, 3)}.
+    \item (c) \textbf{e saktë}: $a_x=\ddot a_x-1$.
+  \end{itemize}
+  \vfill\kthehu{w7qGab7}
+\end{frame}

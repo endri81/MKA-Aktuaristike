@@ -200,7 +200,7 @@ ggplot(db, aes(year, amount, colour = type)) + geom_step(linewidth = 1, directio
 <<w7h1-toy>>=
 toy <- new("actuarialtable", x = 100:104, lx = c(1000, 600, 300, 100, 0), interest = 0.05)
 round(c(A1 = Axn(toy, 100, 3), IA1 = IAxn(toy, 100, 3), DA1 = DAxn(toy, 100, 3),
-        IA_whole = IAxn(toy, 100)), 6)
+        IA_whole = IAxn(toy, 100, 4)), 6)      # n = 4: always give n (Hour 7)
 @
   \small \texttt{IAxn()} dhe \texttt{DAxn()}: emrat ndjekin simbolet $(IA)$ dhe $(DA)$.
 \end{frame}
