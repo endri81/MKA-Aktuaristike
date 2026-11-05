@@ -1,0 +1,250 @@
+% ============================================================
+%  Java 8 · Ora 3 — Laborator R I: kthimet, vlerësimi, simulimi
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w8h3-setup, include=FALSE>>=
+suppressMessages(library(xts))
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> Nga CSV te një seri kohore \texttt{xts}.
+    \item<2-> Kthimet: histogrami, grafiku QQ, kthimet vjetore.
+    \item<3-> $\hat\mu$, $\hat\sigma$ me intervale besimi: vlerësimi kundrejt së vërtetës.
+    \item<4-> Volatiliteti rrëshqitës.
+    \item<5-> 1\,000 botë të simuluara: sa ``fat'' kemi pasur?
+  \end{enumerate}
+  \onslide<6->{\vfill\LO{S1}\;\LO{K3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Seria kohore}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Nga CSV te \texttt{xts}}
+<<w8h3-xts>>=
+S  <- xts(st$close, order.by = st$date)        # st: read in Hour 1
+rx <- diff(log(S))[-1]                          # drop the first NA
+head(rx, 3)
+c(class = class(rx)[1], n = length(rx))
+@
+  \small \texttt{xts} mban datën bashkë me vlerën: \texttt{diff()} dhe \texttt{log()} punojnë direkt.
+\end{frame}
+
+\begin{frame}[fragile,label=w8gab3]{Gjej gabimin}
+<<w8h3-bug, warning=TRUE>>=
+r_bad <- log(diff(st$close))
+c(n_NaN = sum(is.nan(r_bad)), n = length(r_bad))
+@
+  \begin{enumerate}
+    \item Pse rreth gjysma e vlerave janë \texttt{NaN}?
+    \item Cili është rendi i saktë i \texttt{log} dhe \texttt{diff}? Pse?
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjGab3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kthimet vjetore}
+<<w8h3-year>>=
+round(apply.yearly(rx, sum), 4)                 # log returns add up (Hour 2)
+@
+  \pause
+  \begin{itemize}
+    \item 2023: $\approx-4\%$; 2024: $\approx-17\%$; 2025 (deri në nëntor): $\approx+8\%$.
+    \item Me $\mu=7\%$, $\sigma=25\%$, kthimet vjetore luhaten rreth $\pm25\%$: këto vlera janë krejt normale.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shpërndarja e kthimeve}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Histogrami kundrejt normales}
+<<w8h3-hist, echo=FALSE, fig.height=3>>=
+rv <- as.numeric(rx)
+ggplot(data.frame(r = rv), aes(r)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "#2C5AA0", colour = "white") +
+  stat_function(fun = dnorm, args = list(mean = mean(rv), sd = sd(rv)), colour = "#E67E22", linewidth = 1) +
+  labs(x = "kthimi log ditor", y = "dendesia") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Grafiku QQ dhe testi}
+<<w8h3-qq, echo=FALSE, fig.height=2.6>>=
+ggplot(data.frame(r = rv), aes(sample = r)) + stat_qq(colour = "#2C5AA0", size = 0.8) +
+  stat_qq_line(colour = "#E67E22", linewidth = 1) + labs(x = "kuantilet teorike", y = "kuantilet e kthimeve") + th
+@
+<<w8h3-test>>=
+round(c(skewness = mean(((rv - mean(rv)) / sd(rv))^3),
+        kurtosis = mean(((rv - mean(rv)) / sd(rv))^4),
+        shapiro_p = shapiro.test(rv)$p.value), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Pikat QQ janë mbi vijë; asimetria $\approx0$, kurtosis $\approx3$: kthimet duken normale.
+    \item<2-> Testi Shapiro--Wilk nuk e hedh poshtë normalitetin ($p=\Sexpr{fmt(shapiro.test(rv)$p.value, 2)}$).
+    \item<3-> E pritshme: të dhënat janë \textbf{sintetike} nga GBM.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Me të dhëna reale aksionesh, grafiku QQ zakonisht ``hapet'' në skaje (bishta të trashë). Mos e merr normalitetin si të mirëqenë: kontrolloje gjithmonë.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlerësimi}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{$\hat\mu$, $\hat\sigma$ dhe intervalet e besimit}
+<<w8h3-ci>>=
+est_gbm <- function(r, dt = 1 / 252) {
+  n <- length(r); s <- sd(r) / sqrt(dt); m <- mean(r) / dt + s^2 / 2
+  se <- c(mu = s / sqrt(n * dt), sigma = s / sqrt(2 * n))
+  rbind(estimate = c(mu = m, sigma = s), lower = c(m, s) - 1.96 * se,
+        upper = c(m, s) + 1.96 * se, truth = c(0.07, 0.25))
+}
+round(est_gbm(rv), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Intervali i $\sigma$ ka gjerësi rreth 2.5 pikë përqindje dhe përmban 25\%. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Intervali i $\mu$ ka gjerësi rreth 56 pikë përqindje: përmban edhe 7\%, edhe $-20\%$, edhe $+20\%$.
+    \item<3-> Funksioni \texttt{est\_gbm()} e kthen Orën 2 në 5 rreshta kodi.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8ush3]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Ndaj \texttt{rx} sipas viteve (\texttt{rx["2023"]}, \texttt{rx["2024"]}, \texttt{rx["2025"]}) dhe zbato \texttt{est\_gbm()} për secilin.
+      \item A ndryshon $\hat\sigma$ shumë nga viti në vit? Po $\hat\mu$?
+      \item Shpjego me një fjali, duke përdorur formulat e gabimeve standarde.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjUsh3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Volatiliteti rrëshqitës}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Dritare 60 ditore}
+<<w8h3-roll, fig.height=2.5>>=
+vol60 <- rollapply(rx, width = 60, FUN = sd) * sqrt(252)
+p <- ggplot(data.frame(date = index(vol60), v = as.numeric(vol60)), aes(date, v)) +
+  geom_line(colour = "#2C5AA0") + geom_hline(yintercept = 0.25, linetype = 2, colour = "#E67E22") +
+  labs(x = NULL, y = "volatiliteti (60 dite)") + th
+suppressWarnings(print(p))
+@
+\end{frame}
+
+\begin{frame}[label=w8ndr3]{Ndrysho parametrin: gjerësia e dritares}
+  \begin{Ushtrim}[(5 minuta)]
+    Ndrysho \texttt{width} në 20, 60 dhe 250.
+    \begin{enumerate}
+      \item Si ndryshon forma e kurbës?
+      \item Me $\sigma$ konstant (25\%), sa duhet të jetë devijimi standard i $\hat\sigma$ për çdo dritare?
+        (Ndihmë: $\sigma/\sqrt{2\cdot\text{width}}$.)
+      \item A tregon kurba ``ndryshime'' të vërteta të volatilitetit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjNdr3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{1\,000 botë të simuluara}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w8par3]{Parashiko}
+  \begin{Parashiko}
+    Simulojmë 1\,000 seri GBM me $\mu=7\%$, $\sigma=25\%$ dhe 755 ditë, si të dhënat tona.
+    \begin{enumerate}
+      \item Në sa \% të botëve do të dalë $\hat\mu<0$?
+      \item Sa do të jetë devijimi standard i $\hat\sigma$ ndër botët?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w8zgjPar3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi}
+<<w8h3-mc>>=
+set.seed(808)
+M <- 1000; nd <- length(rv); mu <- 0.07; sg <- 0.25; dt <- 1 / 252
+sims <- t(replicate(M, est_gbm(rnorm(nd, (mu - sg^2 / 2) * dt, sg * sqrt(dt)))["estimate", ]))
+round(rbind(mean = colMeans(sims), sd = apply(sims, 2, sd)), 4)
+c(share_mu_negative = mean(sims[, "mu"] < 0))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Shpërndarja e vlerësuesve}
+<<w8h3-mcplot, echo=FALSE, fig.height=2.8>>=
+ds <- rbind(data.frame(par = "mu", est = sims[, "mu"], truth = mu, ours = est_gbm(rv)["estimate", "mu"]),
+            data.frame(par = "sigma", est = sims[, "sigma"], truth = sg, ours = est_gbm(rv)["estimate", "sigma"]))
+ggplot(ds, aes(est)) + geom_histogram(bins = 40, fill = "#2C5AA0", colour = "white") +
+  geom_vline(aes(xintercept = truth), colour = "#27AE60", linewidth = 1) +
+  geom_vline(aes(xintercept = ours), colour = "#E67E22", linewidth = 1, linetype = 2) +
+  facet_wrap(~ par, scales = "free") + labs(x = "vleresimi", y = "numri i boteve") + th
+@
+  \small E gjelbër: e vërteta. Portokalli: vlerësimi nga të dhënat tona.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mesatarja e $\hat\mu$ ndër botët $\approx7\%$: vlerësuesi është i pazhvendosur. Por devijimi $\approx14\%$.
+    \item<2-> Në \Sexpr{fmt(100 * mean(sims[, "mu"] < 0))}\% të botëve $\hat\mu<0$: bota jonë nuk është e jashtëzakonshme.
+    \item<3-> Devijimi i $\hat\sigma$: \Sexpr{fmt(100 * sd(sims[, "sigma"]), 2)}\%, si formula $\sigma/\sqrt{2n}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Mbulimi i intervaleve}
+<<w8h3-cov>>=
+se_mu  <- sims[, "sigma"] / sqrt(nd * dt)
+se_sig <- sims[, "sigma"] / sqrt(2 * nd)
+c(coverage_mu    = mean(abs(sims[, "mu"] - mu) < 1.96 * se_mu),
+  coverage_sigma = mean(abs(sims[, "sigma"] - sg) < 1.96 * se_sig))
+@
+  \small Të dy intervalet 95\% mbulojnë të vërtetën në rreth 95\% të botëve. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse \texttt{log(diff(S))} është gabim?
+    \item Çfarë tregon grafiku QQ?
+    \item Çfarë do të thotë ``mbulimi 95\%'' i një intervali?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) diferencat negative nuk kanë logaritëm; rendi i saktë është \texttt{diff(log(S))};
+  (2) sa afër normales janë kuantilet; (3) në 95\% të botëve, intervali përmban të vërtetën.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item \texttt{xts}: \texttt{diff(log(S))}, \texttt{apply.yearly()}, \texttt{rollapply()}.
+    \item Kthimet sintetike janë normale (QQ, Shapiro--Wilk); të dhënat reale zakonisht jo.
+    \item \texttt{est\_gbm()}: $\hat\sigma\in[\Sexpr{fmt(100 * est_gbm(rv)["lower", "sigma"], 1)}\%,\;\Sexpr{fmt(100 * est_gbm(rv)["upper", "sigma"], 1)}\%]$, $\hat\mu$ shumë i pasigurt.
+    \item 1\,000 botë: $\hat\mu<0$ në \Sexpr{fmt(100 * mean(sims[, "mu"] < 0))}\% të tyre; mbulimi i intervaleve $\approx95\%$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria II: opsionet, arbitrazhi, put--call parity.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketave \Rkey{xts} dhe \Rkey{zoo}: \texttt{apply.yearly()}, \texttt{rollapply()}.
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021: intervalet e besimit, testet e normalitetit.
+  \end{itemize}
+\end{frame}

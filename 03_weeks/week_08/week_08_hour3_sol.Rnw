@@ -1,0 +1,38 @@
+% ============================================================
+%  Java 8 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8zgjGab3]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item \texttt{diff(st\$close)} jep ndryshimet në lekë, që janë negative kur çmimi bie. Logaritmi i një numri negativ nuk ekziston: \texttt{NaN}.
+    \item Rendi i saktë: \texttt{diff(log(S))}, pra $\ln S_t-\ln S_{t-1}=\ln(S_t/S_{t-1})$.
+  \end{enumerate}
+  \small Këshillë: kontrollo gjithmonë \texttt{sum(is.na(r))} pas llogaritjes së kthimeve.
+  \vfill\kthehu{w8gab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w8zgjUsh3]{Zgjidhja: Radha jote!}
+<<w8h3-sol-ush>>=
+round(sapply(c("2023", "2024", "2025"), function(y)
+  est_gbm(as.numeric(rx[y]))["estimate", ]), 4)
+@
+  \small $\hat\sigma$ ndryshon pak (SE $\approx\sigma/\sqrt{2\cdot252}\approx1.1\%$), $\hat\mu$ ndryshon shumë (SE $\approx\sigma/\sqrt1=25\%$ për një vit).
+  \vfill\kthehu{w8ush3}
+\end{frame}
+
+\begin{frame}[label=w8zgjNdr3]{Zgjidhja: Ndrysho parametrin}
+  \begin{enumerate}
+    \item Dritare e vogël: kurbë ``e zhurmshme''; dritare e madhe: kurbë e lëmuar, por me vonesë.
+    \item $25\%/\sqrt{40}=3.95\%$, \; $25\%/\sqrt{120}=2.28\%$, \; $25\%/\sqrt{500}=1.12\%$.
+    \item Jo: $\sigma$ i vërtetë është konstant. Luhatjet e kurbës janë vetëm \textbf{zhurmë vlerësimi}, me madhësinë e pikës 2.
+  \end{enumerate}
+  \vfill\kthehu{w8ndr3}
+\end{frame}
+
+\begin{frame}[label=w8zgjPar3]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Rreth \Sexpr{fmt(100 * mean(sims[, "mu"] < 0))}\%. Teori: $P(\hat\mu<0)\approx\Phi(-0.07/0.144)=\Phi(-0.49)\approx31\%$.
+    \item Rreth $\sigma/\sqrt{2n}=0.25/\sqrt{1510}=0.64\%$; simulimi jep \Sexpr{fmt(100 * sd(sims[, "sigma"]), 2)}\%.
+  \end{enumerate}
+  \vfill\kthehu{w8par3}
+\end{frame}
