@@ -1,0 +1,314 @@
+% ============================================================
+%  Java 5 · Ora 5 — Laborator R II: lifecontingencies
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w5h5-setup, include=FALSE>>=
+suppressMessages(library(lifecontingencies))
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> Objekti \texttt{lifetable}: $l_x$, $p_x$, $e_x$ me funksionet e paketës.
+    \item<2-> Objekti \texttt{actuarialtable}: ${}_nE_x$, $A_x$, $\ddot a_x$, anuitetet e shtyra dhe mujore.
+    \item<3-> Prima e Arbenit (Ora 1) dhe ndjeshmëria ndaj normës teknike.
+    \item<4-> Tabelat reale: Shqipëria 1960 (HLD) dhe jetëgjatësia e Eurostat 2013--2024.
+  \end{enumerate}
+  \onslide<5->{\small Çdo rezultat krahasohet me kodin nga zero (Ora 3) ose me llogaritjet pa ndihmën e PC (Ora 4).}
+\end{frame}
+
+\begin{frame}[fragile]{Instalimi dhe versioni}
+<<w5h5-ver>>=
+library(lifecontingencies)
+packageVersion("lifecontingencies")
+@
+  \begin{itemize}
+    \item<2-> Në laborator (R $\ge$ 4.4): \texttt{install.packages("lifecontingencies")} instalon versionin 1.6.x.
+    \item<3-> Këtu përdorim 1.3.12 nga arkivi i CRAN (R 4.3). Funksionet e javës janë të njëjta në të dy versionet.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Objekti \texttt{lifetable}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Krijimi i një \texttt{lifetable}}
+<<w5h5-lt>>=
+ltM <- new("lifetable", x = mt$age, lx = mt$lx_male, name = "Sintetike M")
+ltF <- new("lifetable", x = mt$age, lx = mt$lx_female, name = "Sintetike F")
+head(as(ltM, "data.frame"), 4)
+@
+  \small \texttt{new("lifetable", x, lx, name)}: moshat duhet të jenë numra të plotë \textbf{të njëpasnjëshëm}.
+\end{frame}
+
+\begin{frame}[fragile]{Nga $q_x$ me \texttt{probs2lifetable()}}
+<<w5h5-probs>>=
+ltM2 <- probs2lifetable(mt$qx_male, type = "qx", name = "M nga qx")
+c(radix = ltM2@lx[1], e0_from_lx = exn(ltM, 0), e0_from_qx = exn(ltM2, 0))
+@
+  \begin{itemize}
+    \item<2-> Rrënja (\emph{radix}) e parazgjedhur është 10\,000, jo 100\,000: probabilitetet nuk ndryshojnë.
+    \item<3-> Diferenca e vogël në $e_0$ vjen nga rrumbullakimi i $l_x$ në CSV.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Funksionet e jetës}
+<<w5h5-fun>>=
+c(p10_60  = pxt(ltM, x = 60, t = 10),
+  q20_40  = qxt(ltM, x = 40, t = 20),
+  e40     = exn(ltM, x = 40),
+  e0_curt = exn(ltM, x = 0),
+  e0_comp = exn(ltM, x = 0, type = "complete"))
+@
+  \small \texttt{exn()} jep $e_x$ e reduktuar si parazgjedhje; \texttt{type = "complete"} jep $\mathring e_x$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> ${}_{20}q_{40}=\Sexpr{fmt(qxt(ltM, 40, 20), 5)}$: e njëjtë me Orën 1. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> $\mathring e_0=\Sexpr{fmt(exn(ltM, 0, type = "complete"), 2)}$: e njëjtë me README dhe me Orën 3. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> \texttt{type = "complete"} shton $\tfrac12$ (supozimi UDD i Orës 2).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kur dy rrugë të ndryshme japin të njëjtin numër, mund t'i besojmë të dyjave. Kur jo, njëra ka gabim.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile,label=w5gab5]{Gjej gabimin}
+<<w5h5-bug>>=
+lt_bad <- new("lifetable", x = 1:111, lx = mt$lx_male, name = "?")
+c(e40_bad = exn(lt_bad, 40), e40_ok = exn(ltM, 40),
+  q20_40_bad = qxt(lt_bad, 40, 20))
+@
+  \begin{enumerate}
+    \item Pse nuk del asnjë gabim, por rezultatet ndryshojnë?
+    \item Cilën moshë llogarit në të vërtetë \texttt{exn(lt\_bad, 40)}?
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjGab5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Objekti \texttt{actuarialtable}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tabelë aktuariale me normë teknike}
+<<w5h5-act>>=
+actM <- new("actuarialtable", x = mt$age, lx = mt$lx_male,
+            interest = 0.05, name = "Sintetike M, 5%")
+c(E20_40 = Exn(actM, x = 40, n = 20),      # pure endowment
+  A40    = Axn(actM, x = 40),              # whole life
+  a40    = axn(actM, x = 40),              # annuity-due
+  A1_40_20 = Axn(actM, x = 40, n = 20),    # term
+  a40_20 = axn(actM, x = 40, n = 20),      # temporary annuity-due
+  AE40_20 = AExn(actM, x = 40, n = 20))    # endowment
+@
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll me Orën 4}
+<<w5h5-check>>=
+d <- 0.05 / 1.05
+c(A40_identity = 1 - d * axn(actM, 40),
+  AE_identity  = 1 - d * axn(actM, 40, 20),
+  AE_sum       = Axn(actM, 40, 20) + Exn(actM, 40, 20))
+@
+  \begin{itemize}
+    \item<2-> $A_{40}=1-d\,\ddot a_{40}$ \textcolor{okgreen}{$\checkmark$}; \; $A_{40:\overline{20}|}=1-d\,\ddot a_{40:\overline{20}|}=A^1+{}_{20}E_{40}$ \textcolor{okgreen}{$\checkmark$}
+    \item<3-> Vlerat përputhen me funksionin \texttt{epv()} nga zero (zgjidhja e Parashikimit të Orës 4).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Prima e Arbenit}
+<<w5h5-arben>>=
+actF <- new("actuarialtable", x = mt$age, lx = mt$lx_female, interest = 0.05)
+prem <- function(act) 1e6 * Axn(act, 40, 20) / axn(act, 40, 20)
+c(male = prem(actM), female = prem(actF),
+  approx_hour1 = 1e6 * qxt(ltM, 40, 20) / 20)
+@
+  \small Sigurim me afat 20 vite, 1\,000\,000 lekë, 40 vjeç, $i=5\%$, tabela sintetike.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Prima neto e Arbenit: \textbf{\Sexpr{fmt(prem(actM))} lekë në vit}.
+    \item<2-> Përafrimi i Orës 1 (\Sexpr{fmt(1e6 * qxt(ltM, 40, 20) / 20)}) ishte më i lartë: ai nuk skontonte pagesën e vdekjes, që vjen kryesisht në vitet e fundit (rreziku rritet me moshën).
+    \item<3-> Një grua 40-vjeçare paguan rreth \Sexpr{fmt(100 * (1 - prem(actF) / prem(actM)))}\% më pak.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Kjo është prima \textbf{neto}. Prima komerciale shton shpenzimet, komisionet dhe marzhin (Java 7).\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Anuitetet e shtyra dhe mujore}
+<<w5h5-ann>>=
+c(deferred_40_65 = axn(actM, x = 40, m = 25),   # 1 per year from 65, bought at 40
+  annual_65      = axn(actM, x = 65),
+  monthly_65     = axn(actM, x = 65, k = 12),   # 1 per year, paid monthly
+  check          = Exn(actM, 40, 25) * axn(actM, 65))
+@
+  \begin{itemize}
+    \item<2-> \texttt{m}: shtyrja (vite); \texttt{k}: numri i pagesave në vit (shuma vjetore 1).
+    \item<3-> ${}_{25|}\ddot a_{40}={}_{25}E_{40}\,\ddot a_{65}$ \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Një pension prej 1 leku në vit nga 65 vjeç kushton sot, në 40 vjeç, \Sexpr{fmt(axn(actM, 40, m = 25), 3)} lekë (primë e vetme).
+    \item<2-> Në 65 vjeç i njëjti pension kushton \Sexpr{fmt(axn(actM, 65), 2)}: 25 vite interes dhe mbijetesë e bëjnë më të shtrenjtë.
+    \item<3-> Pagesat mujore kushtojnë pak më pak se vjetoret në fillim të vitit: paratë paguhen më vonë, mesatarisht.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w5ush5]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Një 40-vjeçar do pension \textbf{12\,000 lekë në muaj} nga 65 vjeç, dhe paguan prima vjetore nga 40 deri në 64 vjeç.
+    \begin{enumerate}
+      \item Llogarit EPV e pensionit (\texttt{axn} me \texttt{m} dhe \texttt{k}).
+      \item Llogarit primën vjetore të nivelit: emëruesi është $\ddot a_{40:\overline{25}|}$.
+      \item Përsërite për një grua. Pse ndryshon kaq shumë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjUsh5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: norma e harruar}
+<<w5h5-int>>=
+act_default <- new("actuarialtable", x = mt$age, lx = mt$lx_male)
+c(default_interest = act_default@interest,
+  A40_default = Axn(act_default, 40), A40_5pct = Axn(actM, 40))
+@
+  \begin{Gabim}Pa argumentin \texttt{interest}, paketa përdor 3\%. Rezultati del pa asnjë paralajmërim, por me normë tjetër nga ajo e kontratës.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile,label=w5ndr5]{Ndrysho parametrin dhe shiko}
+<<w5h5-sens>>=
+sens <- t(sapply(c(0.02, 0.03, 0.05, 0.08), function(i) {
+  a <- new("actuarialtable", x = mt$age, lx = mt$lx_male, interest = i)
+  c(i = i, term_premium = 1e6 * Axn(a, 40, 20) / axn(a, 40, 20),
+    pension_cost_65 = axn(a, 65))
+}))
+round(sens, 3)
+@
+  Cila ndryshon më shumë me normën: prima e Arbenit apo kostoja e pensionit? Pse?
+  \vfill\shkoTe{w5zgjNdr5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabelat e Shqipërisë}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Shqipëria 1960: tabelë e plotë}
+<<w5h5-hld60>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+h60 <- subset(hld, Year1 == 1960 & TypeLT == 1 & Sex == 1)
+lt60 <- new("lifetable", x = h60$Age, lx = h60$l.x., name = "Shqiperia 1960 M")
+c(e0_package = exn(lt60, 0, type = "complete"), e0_HLD = h60$e.x.[1],
+  e65_package = exn(lt60, 65, type = "complete"), e65_HLD = h60$e.x.[66])
+@
+  \small \textbf{Reale}: Human Life-Table Database, Shqipëria 1960, meshkuj (\texttt{Sex} = 1), tabelë e plotë.
+\end{frame}
+
+\begin{frame}[fragile]{Shqipëria 2011: tabelë e shkurtuar}
+<<w5h5-hld11>>=
+h11 <- subset(hld, Year1 == 2011 & Sex == 1)
+head(h11$Age, 6)
+try(new("lifetable", x = h11$Age, lx = h11$l.x.))
+@
+  \begin{itemize}
+    \item<2-> Moshat 0, 1, 5, 10, \dots nuk janë të njëpasnjëshme: \texttt{lifetable} i refuzon.
+    \item<3-> Duhet të ndërtojmë $l_x$ për çdo moshë 0--110: \textbf{interpolim} (Ora 6).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Eurostat: jetëgjatësia 2013--2024}
+<<w5h5-euro, echo=FALSE, fig.height=3.1>>=
+eu <- read.csv(file.path(DATA, "albania_life_expectancy_eurostat_demo_mlexpec.csv"))
+eu0 <- subset(eu, age == "Y_LT1" & sex %in% c("M", "F"))
+ggplot(eu0, aes(time, value, colour = sex)) + geom_line(linewidth = 1) + geom_point() +
+  scale_colour_manual(values = c("#C0392B", "#2C5AA0"), labels = c("Femra", "Meshkuj")) +
+  scale_x_continuous(breaks = 2013:2024) +
+  labs(x = "viti", y = "jetegjatesia ne lindje (vite)", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+  \small \textbf{Reale}: Eurostat \texttt{demo\_mlexpec}, Shqipëria, \texttt{age = "Y\_LT1"} (nën 1 vjeç).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> 2013--2019: rritje e ngadaltë, rreth 0.25 vite në vit.
+    \item<2-> 2020--2021: rënie e fortë (pandemia COVID-19): meshkujt humbën rreth 4 vite midis 2019 dhe 2021.
+    \item<3-> 2024: $\mathring e_0$ \Sexpr{eu0$value[eu0$sex == "M" & eu0$time == 2024]} (M) dhe \Sexpr{eu0$value[eu0$sex == "F" & eu0$time == 2024]} (F), mbi nivelin e 2019.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Për aktuarin}
+    Një tabelë periudhe e 2021 do të nënvlerësonte shumë jetëgjatësinë e ardhshme. Zgjedhja e vitit të tabelës është vendim aktuarial.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Sintetike kundrejt reale}
+<<w5h5-cmp>>=
+eu24 <- subset(eu, time == 2024 & sex %in% c("M", "F") & age %in% c("Y_LT1", "Y65"))
+real <- with(eu24, tapply(value, list(age, sex), sum))
+synth <- rbind(Y_LT1 = c(F = exn(ltF, 0, type = "complete"), M = exn(ltM, 0, type = "complete")),
+               Y65   = c(F = exn(ltF, 65, type = "complete"), M = exn(ltM, 65, type = "complete")))
+round(cbind(Eurostat_2024 = real[, c("F", "M")], synthetic = synth), 1)
+@
+  \small Tabela sintetike është afër Shqipërisë së sotme, por \textbf{nuk} është e njëjtë me të: mos e paraqit si reale.
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: burime të ndryshme, përkufizime të ndryshme}
+  \begin{Gabim}
+    Krahasohet $e_0$ i HLD 2011 (74.8) me Eurostat 2013 (76.0) dhe konkludohet ``+1.2 vite në 2 vite''.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Burime të ndryshme përdorin metoda të ndryshme (popullsia, mbyllja e tabelës, korrigjimet).
+    \item Krahaso brenda të njëjtit burim, ose shpjego metodën e secilit.
+    \item Kontrollo gjithmonë: e plotë apo e reduktuar? Periudhe apo kohorte?
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Cili është ndryshimi midis \texttt{lifetable} dhe \texttt{actuarialtable}?
+    \item Çfarë bëjnë argumentet \texttt{n}, \texttt{m} dhe \texttt{k} te \texttt{axn()}?
+    \item Pse \texttt{new("lifetable", ...)} refuzon tabelën HLD 2011?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) i dyti ka edhe normën e interesit; (2) afati, shtyrja, pagesa në vit;
+  (3) moshat 0, 1, 5, \dots nuk janë të njëpasnjëshme.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{new("lifetable")}, \texttt{probs2lifetable()}; \texttt{pxt}, \texttt{qxt}, \texttt{exn}.
+    \item \texttt{new("actuarialtable", interest = )}; \texttt{Exn}, \texttt{Axn}, \texttt{axn}, \texttt{AExn}.
+    \item Prima e Arbenit: \Sexpr{fmt(prem(actM))} lekë/vit (M), \Sexpr{fmt(prem(actF))} lekë/vit (F).
+    \item HLD 1960: $\mathring e_0$ e paketës = HLD. HLD 2011: duhet interpolim.
+    \item Eurostat: rënia e 2020--2021 dhe rimëkëmbja deri në 2024.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6 \Zgj}
+    Rast studimi: tabela e plotë e Shqipërisë 2011 me interpolim, 1950 $\to$ 2011, çmimet reale.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), ``The lifecontingencies package: performing financial and actuarial mathematics calculations in R'', \emph{Journal of Statistical Software} 55(10), dhe vinjeta e paketës.
+    \item Human Life-Table Database (lifetable.de): Shqipëria 1960, 2011.
+    \item Eurostat, \texttt{demo\_mlexpec}: jetëgjatësia sipas moshës, Shqipëria 2013--2024.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

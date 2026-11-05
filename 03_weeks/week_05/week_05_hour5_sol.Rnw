@@ -1,0 +1,53 @@
+% ============================================================
+%  Java 5 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w5s5-setup, include=FALSE>>=
+suppressMessages(library(lifecontingencies))
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+@
+
+\begin{frame}[fragile,label=w5zgjGab5]{Zgjidhja: Gjej gabimin (moshat)}
+  \begin{enumerate}
+    \item \texttt{x = 1:111} janë numra të plotë të njëpasnjëshëm: objekti është ``i vlefshëm''. Por mosha 0 është emërtuar 1.
+    \item \texttt{exn(lt\_bad, 40)} përdor rreshtin që në të vërtetë është mosha \textbf{39}.
+  \end{enumerate}
+<<w5s5-gab>>=
+ltM <- new("lifetable", x = mt$age, lx = mt$lx_male)
+lt_bad <- new("lifetable", x = 1:111, lx = mt$lx_male)
+c(bad_40 = exn(lt_bad, 40), true_39 = exn(ltM, 39))
+@
+  \small Kontroll i shpejtë: \texttt{lt@x[1]} duhet të jetë 0, dhe \texttt{lt@lx[1]} rrënja.
+  \vfill\kthehu{w5gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjUsh5]{Zgjidhja: Radha jote! (pensioni)}
+<<w5s5-ush>>=
+pens <- function(lx) {
+  a <- new("actuarialtable", x = mt$age, lx = lx, interest = 0.05)
+  epv <- 12000 * 12 * axn(a, x = 40, m = 25, k = 12)   # 144 000 per year, monthly
+  c(EPV = epv, annual_premium = epv / axn(a, x = 40, n = 25))
+}
+round(rbind(male = pens(mt$lx_male), female = pens(mt$lx_female)))
+@
+  \small Gruaja jeton më gjatë pas 65 vjeç ($\mathring e_{65}$: 20.2 kundrejt 17.2 vite): pensioni i saj kushton më shumë.
+  \vfill\kthehu{w5ush5}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjNdr5]{Zgjidhja: Ndrysho parametrin (norma)}
+<<w5s5-ndr>>=
+f <- function(i) {
+  a <- new("actuarialtable", x = mt$age, lx = mt$lx_male, interest = i)
+  c(term = Axn(a, 40, 20) / axn(a, 40, 20), pension = axn(a, 65))
+}
+r <- sapply(c(0.02, 0.08), f)
+round(c(change_term_pct = 100 * unname(r[1, 2] / r[1, 1] - 1),
+        change_pension_pct = 100 * unname(r[2, 2] / r[2, 1] - 1)), 1)
+@
+  \begin{itemize}
+    \item Të dyja bien kur norma rritet.
+    \item Kostoja e pensionit ndryshon më shumë në përqindje: pagesat zgjasin 15--20 vite, ndaj skontimi ka më shumë efekt.
+    \item Prima me afat: numëruesi dhe emëruesi skontohen bashkë, ndaj efekti pjesërisht anulohet.
+  \end{itemize}
+  \vfill\kthehu{w5ndr5}
+\end{frame}
