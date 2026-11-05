@@ -1,0 +1,222 @@
+% ============================================================
+%  Java 9 · Ora 5 — Laborator R II: prima e ushtrimit të hershëm
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w9h5-setup, include=FALSE>>=
+amq <- function(S, K, sig, r, T, put, q = 0)            # American, with dividend yield q
+  unname(binomopt(S, K, sig, r, T, q, nstep = 300, american = TRUE, putopt = put))
+eep <- function(S, K, sig, r, T) amq(S, K, sig, r, T, TRUE) - bsput(S, K, sig, r, T, 0)
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> Prima e ushtrimit të hershëm $P_A-P$ si funksion i $S_0$.
+    \item<2-> Ndjeshmëria ndaj $r$, $\sigma$ dhe $T$.
+    \item<3-> Call-i me dividend: $C_A-C$ si funksion i $q$.
+    \item<4-> Kufiri i ushtrimit $S^*(t)$ nga pema \Zgj.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{K3}\;\LO{S2}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Prima e ushtrimit të hershëm}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Dy funksione}
+<<w9h5-show, eval=FALSE>>=
+amq <- function(S, K, sig, r, T, put, q = 0)            # American, with dividend yield q
+  unname(binomopt(S, K, sig, r, T, q, nstep = 300, american = TRUE, putopt = put))
+eep <- function(S, K, sig, r, T) amq(S, K, sig, r, T, TRUE) - bsput(S, K, sig, r, T, 0)
+@
+<<w9h5-one>>=
+c(eep_ATM = eep(100, 100, 0.25, 0.03, 1))
+@
+  \small \texttt{eep}: \emph{early exercise premium}, prima e ushtrimit të hershëm.
+\end{frame}
+
+\begin{frame}[fragile]{$P_A-P$ si funksion i $S_0$}
+<<w9h5-S, echo=FALSE, fig.height=3>>=
+Sg5 <- seq(50, 150, by = 2)
+de <- data.frame(S = Sg5, eep = sapply(Sg5, eep, K = 100, sig = 0.25, r = 0.03, T = 1))
+ggplot(de, aes(S, eep)) + geom_line(colour = "#2C5AA0", linewidth = 1) +
+  geom_vline(xintercept = 71, linetype = 2, colour = "#E67E22") +
+  annotate("text", x = 76, y = 2.8, label = "S* = 71", colour = "#E67E22", size = 4) +
+  labs(x = "S0", y = "P_A - P") + th
+@
+  \small $K=100$, $\sigma=25\%$, $r=3\%$, $T=1$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Prima është më e madhe kur put-i është thellë në para: \Sexpr{fmt(de$eep[1], 2)} për $S_0=50$.
+    \item<2-> Majtas $S^*$, $P_A=K-S_0$ dhe prima $\approx K(1-e^{-rT})-C\approx2.9$: interesi i humbur nga europiani.
+    \item<3-> Për $S_0$ të madh, prima $\to0$: ushtrimi i hershëm bëhet i pamundshëm në praktikë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w9par5]{Parashiko}
+  \begin{Parashiko}
+    Për put-in ``në para'' ($S_0=K=100$, $T=1$):
+    \begin{enumerate}
+      \item Si ndryshon $P_A-P$ kur $r$ rritet nga 0 në 8\%?
+      \item Kur $T$ rritet nga 3 muaj në 10 vjet?
+      \item Kur $\sigma$ rritet nga 10\% në 60\%?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w9zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Ndjeshmëria}
+<<w9h5-sens>>=
+sens <- list(
+  r     = sapply(c(0, 0.01, 0.03, 0.05, 0.08), function(x) eep(100, 100, 0.25, x, 1)),
+  T     = sapply(c(0.25, 1, 3, 5, 10),         function(x) eep(100, 100, 0.25, 0.03, x)),
+  sigma = sapply(c(0.10, 0.25, 0.40, 0.60),    function(x) eep(100, 100, x, 0.03, 1)))
+lapply(sens, round, 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \textbf{$r$}: prima rritet fort me $r$. Me $r=0$ është $\approx0$ (gabim i pemës): si në Orën 4.
+    \item<2-> \textbf{$T$}: prima rritet me afatin: interesi mbi $K$ grumbullohet për më shumë kohë.
+    \item<3-> \textbf{$\sigma$}: efekt i vogël dhe jo monoton. $\sigma$ rrit edhe $P_A$, edhe $P$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Ushtrimi i hershëm i put-it është kryesisht një fenomen \textbf{interesi}. Me norma të ulëta, put-i amerikan $\approx$ europiani.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile,label=w9gab5]{Gjej gabimin}
+<<w9h5-bug>>=
+eep_bad <- function(S, K, sig, r, T)
+  unname(binomopt(S, K, sig, r, T, 0, nstep = 300, american = TRUE, putopt = FALSE)) -
+  bsput(S, K, sig, r, T, 0)
+c(eep_bad = eep_bad(100, 100, 0.25, 0.03, 1), eep = eep(100, 100, 0.25, 0.03, 1))
+@
+  \begin{enumerate}
+    \item Pse \texttt{eep\_bad} del rreth 3?
+    \item Çfarë numri të njohur është ky? (Ndihmë: parity, Java 8.)
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjGab5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Call-i me dividend}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{$C_A-C$ si funksion i $q$}
+<<w9h5-q>>=
+qg <- c(0, 0.02, 0.03, 0.05, 0.08)
+dq <- sapply(qg, function(q) amq(100, 100, 0.25, 0.03, 1, FALSE, q) - bscall(100, 100, 0.25, 0.03, 1, q))
+round(rbind(q = qg, CA_minus_C = dq), 4)
+@
+  \pause
+  \begin{itemize}
+    \item Me $q=0$: $C_A-C\approx0$ (gabim i pemës). \textcolor{okgreen}{$\checkmark$}
+    \item Kur $q$ kalon $r=3\%$, prima e ushtrimit të hershëm të call-it rritet shpejt.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Simetria call--put}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Call amerikan & Put amerikan \\
+      \midrule
+      ``Fitimi'' nga ushtrimi & dividendi $q$ & interesi $r$ mbi $K$ \\
+      ``Kostoja'' e ushtrimit & interesi $r$ mbi $K$ & dividendi $q$ \\
+      Pa ushtrim të hershëm kur & $q=0$ & $r=0$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Në GBM me dividend, call-i dhe put-i amerikan janë ``pasqyrë'' të njëri-tjetrit, me rolet e $r$ dhe $q$ të këmbyera.
+\end{frame}
+
+\begin{frame}[label=w9ush5]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Llogarit put-in amerikan me $q=5\%$ dhe me $q=0$ ($S_0=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$).
+        Si ndikon dividendi në primën e ushtrimit të hershëm të put-it?
+      \item Kontrollo simetrinë: $C_A(S_0,K,r,q)\approx P_A(K,S_0,q,r)$ (ndërro $S_0\leftrightarrow K$ dhe $r\leftrightarrow q$), me $S_0=110$, $K=100$, $r=3\%$, $q=5\%$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjUsh5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kufiri i ushtrimit \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Nga pema te $S^*(t)$ \Zgj}
+<<w9h5-tree>>=
+nst <- 200
+bt  <- binomopt(100, 100, 0.25, 0.03, 1, 0, nst, american = TRUE, putopt = TRUE,
+                returntrees = TRUE)
+bnd <- sapply(1:(nst + 1), function(j) {                # largest S with exercise at step j
+  s <- bt$stree[1:j, j]; e <- bt$exertree[1:j, j]
+  if (any(e)) max(s[e]) else NA })
+round(bnd[c(51, 101, 151, 191, 201)], 1)               # t = 0.25, 0.5, 0.75, 0.95, 1
+@
+  \small \texttt{stree}: çmimet në çdo nyje; \texttt{exertree}: \texttt{TRUE} ku ushtrimi është optimal.
+\end{frame}
+
+\begin{frame}[fragile]{Kufiri $S^*(t)$ \Zgj}
+<<w9h5-bplot, echo=FALSE, fig.height=2.9>>=
+db5 <- data.frame(t = (0:nst) / nst, S = bnd)
+ggplot(subset(db5, !is.na(S)), aes(t, S)) + geom_point(colour = "#2C5AA0", size = 0.8) +
+  geom_hline(yintercept = 100, linetype = 2) +
+  labs(x = "koha t (vite)", y = "S*(t)") + th
+@
+  \small Zona e ushtrimit: poshtë pikave. Shkallët vijnë nga pema diskrete; me më shumë hapa, kurba lëmohet.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $S^*(t)$ rritet me kohën dhe shkon drejt $K=100$ në maturim: si skica e Orës 4. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Afër maturimit, edhe një put pak në para ushtrohet: nuk ka më kohë për ``sigurim''.
+    \item<3-> Në fillim, $S^*\approx\Sexpr{fmt(bnd[51])}$ (në $t=0.25$), afër vlerës 71 të Orës 3 (që mat vlerën në $t=0$).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Nga cili parametër varet më shumë prima e ushtrimit të hershëm të put-it?
+    \item Pse $C_A-C\approx0$ kur $q=0$?
+    \item Si ndryshon $S^*(t)$ afër maturimit?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) nga $r$ (dhe $T$); (2) call-i pa dividend nuk ushtrohet herët;
+  (3) rritet drejt $K$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{eep()}: prima e ushtrimit të hershëm; maksimale thellë në para.
+    \item Rritet me $r$ dhe $T$; $\sigma$ ka efekt të vogël.
+    \item Call me dividend: $C_A-C$ rritet kur $q$ kalon $r$; simetria call--put.
+    \item $S^*(t)$ nga pema: rritet drejt $K$ \Zgj.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: opsioni i anulimit në ``Kursimi Plus''.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{binomopt(..., returntrees = TRUE)}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson: simetria call--put për opsionet amerikane.
+  \end{itemize}
+\end{frame}
