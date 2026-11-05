@@ -1,0 +1,41 @@
+% ============================================================
+%  Java 4 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[fragile,label=w4zgjPar6]{Zgjidhja: Parashiko (normat +1\%)}
+<<w4s6-par>>=
+BE_up <- sum(cf * (1 + spot + 0.01)^(-t_mid))
+dur   <- sum(t_mid * cf * dfac) / BE              # Macaulay-type duration
+c(BE = BE / 1e6, BE_up = BE_up / 1e6, change_pct = 100 * (BE_up / BE - 1),
+  duration_years = dur)
+@
+  \begin{enumerate}
+    \item BE \textbf{bie}, afërsisht kohëzgjatja $\times$ 1\%.
+    \item RA dhe marzhi i rrezikut, të skontuara në të njëjtën mënyrë, bien pak.
+    \item Kohëzgjatja e pagesave është e shkurtër ($\approx$\Sexpr{fmt(dur, 1)} vite): shumica paguhen në 2026--2027.
+  \end{enumerate}
+  \vfill\kthehu{w4par6}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjUsh6a]{Zgjidhja: Radha jote! (inflacioni)}
+<<w4s6-ush>>=
+cf_inf <- cf * 1.02^seq_along(cf)
+c(reserve = sum(cf), reserve_inf = sum(cf_inf),
+  BE = BE, BE_inf = sum(cf_inf * dfac)) / 1e6
+c(increase_pct = 100 * (sum(cf_inf) / sum(cf) - 1),
+  mean_time_years = sum(seq_along(cf) * cf) / sum(cf))
+@
+  \small Rritja $\approx2\%\times$ koha mesatare deri te pagesat ($\approx$\Sexpr{fmt(sum(seq_along(cf) * cf) / sum(cf), 1)} vite).
+  Për një linjë më të gjatë, i njëjti 2\% do të kishte efekt shumë më të madh.
+  \vfill\kthehu{w4ush6a}
+\end{frame}
+
+\begin{frame}[label=w4zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item ``Raporti 0.59 vjen nga 6 vite me vëllim të kufizuar; një pjesë e tij është fat. Kredibiliteti i jep flotës
+          \Sexpr{fmt(100 * fit$cred[5])}\% të meritës së vet dhe pjesën tjetër nga portofoli.''
+    \item Ndryshojnë vendimin: masa parandaluese të reja (GPS, trajnim shoferësh), ndryshime në përbërjen e flotës,
+          të dhëna të tjera (frekuenca, ashpërsia veç e veç), ose çmimet e konkurrencës.
+  \end{enumerate}
+  \vfill\kthehu{w4tps6}
+\end{frame}

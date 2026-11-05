@@ -1,0 +1,365 @@
+% ============================================================
+%  Java 4 · Ora 6 — Rast studimi (Zgjerim)
+% ============================================================
+\section{Rast studimi \Zgj}
+
+\begin{frame}{Ora 6 · Rast studimi \Zgj}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w4h6-setup, include=FALSE>>=
+suppressMessages({library(ChainLadder); library(actuar)})
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mln <- function(x, d = 2) fmt(x / 1e6, d)
+@
+
+% ------------------------------------------------------------
+\subsection{Detyra}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyra e rastit}
+  Kompania fiktive \textbf{AutoSig sh.a.} përgatit raportin vjetor për 31.12.2025.
+  \begin{block}{Katër pyetje}
+    \begin{enumerate}
+      \item<2-> \textbf{Best estimate}: sa është rezerva e pritur, e skontuar?
+      \item<3-> \textbf{IFRS 17}: sa është \emph{risk adjustment} me nivel besueshmërie 75\%?
+      \item<4-> \textbf{Solvency II}: sa kapital duhet për rrezikun e rezervës (99.5\%) dhe sa është marzhi i rrezikut?
+      \item<5-> \textbf{Tarifimi 2026}: çfarë primash për 12 flotat, me kredibilitet?
+    \end{enumerate}
+  \end{block}
+  \onslide<6->{\small Të dhëna \textbf{sintetike}: \texttt{runoff\_triangle\_synthetic.csv}, \texttt{credibility\_portfolio\_synthetic.csv}.}
+\end{frame}
+
+\begin{frame}{Harta e rastit}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.4cm,
+                minimum height=0.95cm,align=center,font=\footnotesize}]
+    \node[b] (a) at (0,0) {\textbf{1.} Mack\\flukset e ardhshme};
+    \node[b] (b) at (3.2,0) {\textbf{2.} Skontimi\\best estimate};
+    \node[b] (c) at (6.4,0) {\textbf{3.} Bootstrap\\RA 75\%, VaR 99.5\%};
+    \node[b] (d) at (9.6,0) {\textbf{4.} Ndjeshmëria\\$f_6$, diagonalja};
+    \node[b] (e) at (3.2,-2) {\textbf{5.} \texttt{glmReserve}\\kontroll ODP};
+    \node[b,fill=accent!15,draw=accent] (f) at (6.4,-2) {\textbf{6.} Kredibiliteti\\primat 2026};
+    \draw[->,thick,uptmid] (a) -- (b); \draw[->,thick,uptmid] (b) -- (c);
+    \draw[->,thick,uptmid] (c) -- (d); \draw[->,thick,uptmid] (a) |- (e);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 1--2: flukset dhe best estimate}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Hapi 1: trekëndëshi i plotë}
+<<w4h6-full, warning=FALSE>>=
+rt  <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year",
+                   value = "cum_paid_eur")
+mk   <- MackChainLadder(trc, est.sigma = "Mack")
+full <- mk$FullTriangle                         # cumulative, completed
+inc  <- cbind(full[, 1], t(apply(full, 1, diff)))   # incremental payments
+round(inc[8:10, 1:5] / 1e6, 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Pagesat e ardhshme sipas vitit kalendarik}
+<<w4h6-cf>>=
+n <- 10
+cal <- row(inc) + col(inc) - 1                  # calendar index 1..19
+cf  <- tapply(inc[cal > n], cal[cal > n], sum)  # future diagonals
+names(cf) <- 2025 + as.numeric(names(cf)) - n
+round(cf / 1e6, 3)
+c(total_mln = sum(cf) / 1e6)
+@
+  \small Diagonalet e ardhshme: çdo diagonale $i+j-1=\text{konstante}$ është një vit pagesash.
+\end{frame}
+
+\begin{frame}[fragile]{Flukset në një figurë}
+<<w4h6-cfplot, echo=FALSE, fig.height=3.1>>=
+ggplot(data.frame(year = names(cf), cf = cf / 1e6), aes(year, cf)) +
+  geom_col(fill = "#2C5AA0") +
+  labs(x = "viti i pageses", y = "pagesa te pritura (mln EUR)") + th
+@
+  \small \Sexpr{fmt(100 * cf[1] / sum(cf))}\% e rezervës paguhet në 2026; pagesat zgjasin deri në 2034.
+\end{frame}
+
+\begin{frame}[fragile]{Hapi 2: skontimi}
+<<w4h6-disc>>=
+spot <- c(0.025, 0.027, 0.029, 0.030, 0.031,  # assumed EUR spot curve
+          0.032, 0.033, 0.034, 0.035)        # (illustrative, not EIOPA)
+t_mid <- seq_along(cf) - 0.5                 # mid-year payments
+dfac  <- (1 + spot)^(-t_mid)
+BE <- sum(cf * dfac)
+c(undiscounted = sum(cf), best_estimate = BE,
+  discount_effect = sum(cf) - BE) / 1e6
+@
+  \small Supozim: pagesat ndodhin në mes të vitit; kurba e normave është \textbf{ilustruese}, jo kurba zyrtare e EIOPA-s.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Skontimi ul rezervën me \Sexpr{mln(sum(cf) - BE)} mln € (\Sexpr{fmt(100 * (1 - BE / sum(cf)), 1)}\%).
+    \item<2-> Efekti është i vogël sepse shumica e pagesave bëhen në 1--3 vitet e para.
+    \item<3-> Në linja më të gjata (përgjegjësi, dëme trupore të rënda), skontimi ka efekt shumë më të madh.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}E njëjta llogaritje si NPV në Javën 2 (\Rkey{tvm}): \texttt{sum(cf * (1 + r)\textasciicircum(-t))}.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 3: IFRS 17 dhe Solvency II}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Bootstrap për pasigurinë}
+<<w4h6-boot>>=
+set.seed(2026)
+bt <- BootChainLadder(trc, R = 9999, process.distr = "od.pois")
+Rb <- bt$IBNR.Totals                          # 9 999 simulated reserves
+q  <- quantile(Rb, c(0.75, 0.995), names = FALSE)
+c(mean = mean(Rb), q75 = q[1], q995 = q[2]) / 1e6
+@
+  \small Shpërndarja e rezervës \textbf{pa skontim}; shkallën e skontimit e aplikojmë pastaj si raport $\text{BE}/\text{rezerva}$.
+\end{frame}
+
+\begin{frame}{IFRS 17: \emph{risk adjustment}}
+  \begin{Definicion}[(\emph{risk adjustment}, IFRS 17)]
+    Kompensimi që kërkon kompania për pasigurinë e flukseve jo-financiare.
+    Kompania zgjedh metodën, por duhet të raportojë \textbf{nivelin e besueshmërisë} përkatës.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Metoda e kuantilit: RA = kuantili $p$ $-$ mesatarja.
+    \item<3-> Me $p=75\%$: \; RA $\approx\Sexpr{mln(q[1] - mean(Rb))}$ mln € (pa skontim).
+    \item<4-> Me skontim proporcional: RA $\approx\Sexpr{mln((q[1] - mean(Rb)) * BE / sum(cf))}$ mln €.
+  \end{itemize}
+  \onslide<5->{\small Detyrimi për dëmet e ndodhura (LIC) $=$ BE $+$ RA $\approx\Sexpr{mln(BE + (q[1] - mean(Rb)) * BE / sum(cf))}$ mln €.}
+\end{frame}
+
+\begin{frame}{Solvency II: kapitali për rrezikun e rezervës}
+  \begin{itemize}
+    \item<1-> Kapitali (një vit, 99.5\%): \; SCR $\approx$ kuantili 99.5\% $-$ mesatarja.
+    \item<2-> Nga bootstrap: \; SCR $\approx\Sexpr{mln(q[2] - mean(Rb))}$ mln € (pa skontim).
+  \end{itemize}
+  \onslide<3->{
+  \begin{Gabim}Bootstrap-i i Mack-ut/ODP jep pasigurinë deri në \textbf{mbylljen} e të gjitha dëmeve (``ultimate view''). Solvency II kërkon pasigurinë brenda \textbf{një viti} (``one-year view''), zakonisht më të vogël.\end{Gabim}}
+  \onslide<4->{\small Për pikëpamjen një-vjeçare: \texttt{CDR()} në \Rkey{ChainLadder} (Merz--Wüthrich). Këtu përdorim ultimate view si kufi të sipërm.}
+\end{frame}
+
+\begin{frame}[fragile]{Marzhi i rrezikut (thjeshtuar)}
+<<w4h6-rm>>=
+SCR0 <- (q[2] - mean(Rb)) * BE / sum(cf)       # discounted, time 0
+run  <- rev(cumsum(rev(cf))) / sum(cf)         # share of reserve still open
+SCRt <- SCR0 * run                             # SCR runs off with reserves
+RM   <- 0.06 * sum(SCRt / (1 + spot)^(seq_along(cf)))   # cost of capital 6%
+c(SCR0 = SCR0, risk_margin = RM, technical_provisions = BE + RM) / 1e6
+@
+  \small Thjeshtim i zakonshëm: SCR-ja e ardhshme bie proporcionalisht me rezervën e mbetur.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \centering
+  \begin{tabular}{lr}
+    \toprule
+    Madhësia & mln € \\
+    \midrule
+    Rezerva chain-ladder (pa skontim) & \Sexpr{mln(sum(cf))} \\
+    Best estimate (e skontuar) & \Sexpr{mln(BE)} \\
+    IFRS 17: RA (75\%) & \Sexpr{mln((q[1] - mean(Rb)) * BE / sum(cf))} \\
+    Solvency II: SCR rezervës (ultimate view) & \Sexpr{mln(SCR0)} \\
+    Solvency II: marzhi i rrezikut & \Sexpr{mln(RM)} \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \small I njëjti trekëndësh, tre rregulla të ndryshme, tre numra të ndryshëm. Aktuari duhet t'i shpjegojë të tre.
+\end{frame}
+
+\begin{frame}[label=w4par6]{Parashiko}
+  \begin{Parashiko}
+    Normat e interesit rriten me 1 pikë përqindjeje në të gjithë kurbën.
+    \begin{enumerate}
+      \item Best estimate rritet apo bie? Përafërsisht sa?
+      \item Po RA dhe marzhi i rrezikut?
+      \item Pse efekti është i vogël për këtë linjë?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w4zgjPar6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 4: ndjeshmëria}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Ndjeshmëria e rezervës}
+<<w4h6-sens>>=
+C <- unclass(trc); latest <- C[cbind(1:n, n:1)]
+fill <- function(C, f) {
+  for (j in 1:(n - 1)) { m <- is.na(C[, j + 1]); C[m, j + 1] <- C[m, j] * f[j] }
+  C
+}
+f_cl <- sapply(1:(n - 1), function(j) { r <- 1:(n - j)
+  sum(C[r, j + 1]) / sum(C[r, j]) })
+f_6 <- f_cl; f_6[6] <- 0.98 / 0.96               # column-7 anomaly corrected
+f_xd <- c(sapply(1:(n - 2), function(j) { r <- 1:(n - j - 1)   # drop last diagonal
+  sum(C[r, j + 1]) / sum(C[r, j]) }), f_cl[n - 1])
+res <- function(f) sum(fill(C, f)[, n] - latest) / 1e6
+round(c(base = res(f_cl), f6_corrected = res(f_6),
+        without_last_diag = res(f_xd)), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Korrigjimi i anomalisë së kolonës 7 rrit rezervën me $\approx\Sexpr{fmt(res(f_6) - res(f_cl), 2)}$ mln €.
+    \item<2-> Pa diagonalen e fundit (2025), rezerva rritet me $\approx\Sexpr{fmt(res(f_xd) - res(f_cl), 2)}$ mln €: viti 2025 pagoi \textbf{pak} krahasuar me të shkuarën.
+    \item<3-> Të dyja ndryshimet janë brenda $\pm1$ gabim standard (\Sexpr{mln(summary(mk)$Totals[5, 1])} mln €), por ndikojnë drejtpërdrejt te fitimi.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Raporti aktuarial përmban gjithmonë një tabelë ndjeshmërie: mbikëqyrësi do të dijë sa varet rezultati nga zgjedhjet e aktuarit.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w4ush6a]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Departamenti i dëmeve parashikon që, për shkak të rritjes së kompensimeve për dëmet trupore,
+    çdo pagesë e ardhshme do të jetë \textbf{2\% në vit} më e lartë se trendi i së kaluarës.
+    \begin{enumerate}
+      \item Shumëzo \texttt{cf} me $1.02^t$, $t=1,\dots,9$. Sa rritet rezerva pa skontim?
+      \item Sa rritet best estimate?
+      \item Si lidhet rritja me kohën mesatare (në vite) deri te pagesat?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjUsh6a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 5: \texttt{glmReserve()}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Chain-ladder si GLM}
+<<w4h6-glm>>=
+gr <- glmReserve(trc)                    # ODP: quasipoisson, log link
+sg <- gr$summary[c("2024", "2025", "total"), c("IBNR", "S.E", "CV")]
+sg[, 1:2] <- sg[, 1:2] / 1e6; round(sg, 3)
+c(glm_total = gr$summary["total", "IBNR"],
+  chain_ladder = summary(mk)$Totals[4, 1]) / 1e6
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> GLM ODP jep \textbf{të njëjtën} rezervë si chain-ladder: teorema e Renshaw--Verrall (Ora 2). \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Gabimi standard i GLM-së (\Sexpr{mln(gr$summary["total", "S.E"])} mln €) është afër bootstrap-it ODP (\Sexpr{mln(sd(Rb))} mln €).
+    \item<3-> Avantazhi i GLM-së: mund të shtojmë variabla, p.sh.\ një efekt për vitin kalendarik ose për kolonën 7.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Lidhja me Javën 3}
+    I njëjti \texttt{glm()} me lidhje log; këtu variablat janë viti i aksidentit dhe viti i zhvillimit.
+  \end{block}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 6: primat e flotave 2026}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Kredibiliteti në tarifim}
+<<w4h6-cm>>=
+cp  <- read.csv(file.path(DATA, "credibility_portfolio_synthetic.csv"))
+Rm  <- xtabs(loss_ratio ~ contract + year, data = cp)
+Wm  <- xtabs(volume ~ contract + year, data = cp)
+dat <- data.frame(contract = 1:12, unclass(Rm), unclass(Wm))
+names(dat) <- c("contract", paste0("r", 2020:2025), paste0("w", 2020:2025))
+fit <- cm(~ contract, data = dat, ratios = r2020:r2025, weights = w2020:w2025)
+w26 <- Wm[, "2025"]                              # assume 2026 volume = 2025
+price <- data.frame(own = fit$means[[2]] * w26,  # own experience only
+                    flat = fit$means[[1]] * w26, # portfolio rate only
+                    cred = predict(fit) * w26)   # credibility
+round(colSums(price), 1)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Kush fiton dhe kush humbet?}
+<<w4h6-cmplot, echo=FALSE, fig.height=3.1>>=
+d <- data.frame(contract = factor(1:12), change = 100 * (predict(fit) / fit$means[[1]] - 1))
+ggplot(d, aes(contract, change, fill = change > 0)) + geom_col() +
+  scale_fill_manual(values = c("#27AE60", "#C0392B"), guide = "none") +
+  labs(x = "kontrata", y = "prima vs tarifa e sheshte (%)") + th
+@
+  \small Jeshile: flota paguan më pak se tarifa e sheshtë. E kuqe: paguan më shumë.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Tri qasjet japin të ardhura totale të ngjashme, por shpërndarje shumë të ndryshme midis flotave.
+    \item<2-> Flota 5 (raporti më i ulët) merr uljen më të madhe; flota 8 rritjen më të madhe.
+    \item<3-> Me tarifë të sheshtë, flotat e mira largohen te konkurrenca dhe mbeten flotat e këqija (\termi{antiselektim}{adverse selection}).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Me vetëm përvojën e vet ($Z=1$), një vit i keq i një flote të vogël rrit primën shumë: klienti humbet për shkak të fatit.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w4tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Je aktuari i AutoSig. Drejtori i shitjeve thotë: ``Flota 5 ka raport 0.59. Jepi primën 0.59, përndryshe e humbasim.''
+    \begin{enumerate}
+      \item Si ia shpjegon me një fjali pse prima e kredibilitetit është më e lartë?
+      \item Çfarë informacioni shtesë do të ndryshonte vendimin?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjTps6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Raporti për bordin}
+  \begin{block}{Përmbledhje (rast studimi, të dhëna sintetike)}
+    \begin{enumerate}
+      \item Rezerva chain-ladder: \Sexpr{mln(sum(cf))} mln €; best estimate \Sexpr{mln(BE)} mln €.
+      \item IFRS 17: RA (75\%) $\approx$ \Sexpr{mln((q[1] - mean(Rb)) * BE / sum(cf))} mln €; LIC $\approx$ \Sexpr{mln(BE + (q[1] - mean(Rb)) * BE / sum(cf))} mln €.
+      \item Solvency II: provizionet teknike $\approx$ \Sexpr{mln(BE + RM)} mln €.
+      \item Anomalia e të dhënave (kolona 7) mund ta rrisë rezervën me $\approx$ \Sexpr{fmt(res(f_6) - res(f_cl), 2)} mln €: kërkohet verifikim nga departamenti i dëmeve.
+      \item Tarifimi i flotave me kredibilitet Bühlmann--Straub, $\hat k\approx\Sexpr{fmt(fit$unbiased[2] / fit$unbiased[1])}$.
+    \end{enumerate}
+  \end{block}
+  \pause
+  \small Kufizimet: kurba e normave dhe metoda e marzhit të rrezikut janë të thjeshtuara; SCR me ``ultimate view''.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si merren pagesat e ardhshme sipas vitit kalendarik nga trekëndëshi i plotë?
+    \item Cili është ndryshimi midis RA të IFRS 17 dhe SCR të Solvency II?
+    \item Pse \texttt{glmReserve()} jep të njëjtën rezervë si chain-ladder?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) inkrementalet e ardhshme, të mbledhura sipas diagonales $i+j-1$;
+  (2) RA: kuantil i zgjedhur nga kompania (p.sh.\ 75\%), SCR: 99.5\% në një vit; (3) teorema Renshaw--Verrall për ODP.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item Flukset e ardhshme = diagonalet e ardhshme të trekëndëshit inkremental.
+    \item Best estimate = flukset e skontuara; RA = kuantili 75\% $-$ mesatarja.
+    \item Marzhi i rrezikut = 6\% $\times$ SCR-të e ardhshme të skontuara.
+    \item Ndjeshmëria: anomalitë e të dhënave dhe zgjedhjet e aktuarit ndryshojnë rezervën.
+    \item Kredibiliteti shmang antiselektimin pa ndëshkuar fatin.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, klinika e gabimeve, fletë-kujtesa, paraqitja e Javës 5.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item IFRS 17 \emph{Insurance Contracts} (IASB): \emph{risk adjustment} dhe detyrimi për dëmet e ndodhura.
+    \item EIOPA, \emph{Solvency II}: best estimate dhe marzhi i rrezikut me koston e kapitalit 6\%.
+    \item M.~Merz, M.~V.~Wüthrich (2008), ``Modelling the claims development result for solvency purposes'', \emph{CAS E-Forum}.
+    \item M.~Gesmann et al., vinjeta e \Rkey{ChainLadder}: \texttt{?glmReserve}, \texttt{?CDR}.
+    \item README i të dhënave (sintetike).
+  \end{itemize}
+\end{frame}
