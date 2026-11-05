@@ -1,0 +1,47 @@
+% ============================================================
+%  Java 9 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w9zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Vlera e opsionit është rreptësisht mbi vlerën e ushtrimit në çdo $t<T$.
+  \begin{itemize}
+    \item A) call-et amerikane tregtohen. \; C) aksioni mund të bjerë.
+    \item D) $\mu$ nuk ka rol: argumenti është vetëm arbitrazh.
+  \end{itemize}
+  \vfill\kthehu{w9mc4}
+\end{frame}
+
+\begin{frame}[label=w9zgjPar4]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Me $r=0$, $K(1-e^{0})=0$: nuk humbet asnjë interes.
+    \item $P=(K-S_0)+C\ge K-S_0$: vlera kohore $\ge0$, ushtrimi i hershëm nuk ka vlerë, pra $P_A=P$.
+  \end{enumerate}
+  \small Kontroll me R: \texttt{binomopt(100, 100, 0.25, 0, 1, 0, 500, TRUE, TRUE)} $=9.9427$, \texttt{bsput(...)} $=9.9476$: diferenca është gabimi i pemës.
+  \vfill\kthehu{w9par4}
+\end{frame}
+
+\begin{frame}[label=w9zgjGab4]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item Volatiliteti punon \textbf{kundër} ushtrimit të hershëm: me $\sigma$ më të madh, vlera e pritjes (``sigurimi'' $C$) rritet.
+      Arsyeja e ushtrimit të hershëm është \textbf{interesi} mbi $K$.
+    \item Ora 3: $\sigma=25\%\to40\%$ e ul $S^*$ nga 71 në 53: zona e ushtrimit ngushtohet.
+  \end{enumerate}
+  \vfill\kthehu{w9gab4}
+\end{frame}
+
+\begin{frame}[label=w9zgjUsh4]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $Ke^{-rT}=76.8631$, interesi $=3.1369$; \; $C=20+3.1369+0.80=23.9369$.
+    \item $P=30-3.1369+0.10=26.9631<30$: europiani vlen më pak se intrinsikja. Amerikani vlen të paktën 30; jemi qartë në zonën e ushtrimit.
+    \item Pragu $80(1-0.990050)=0.796$; \; $D=2>0.796$: ushtrimi para dividendit \textbf{mund} të jetë optimal, nëse call-i është mjaft në para.
+  \end{enumerate}
+  \vfill\kthehu{w9ush4}
+\end{frame}
+
+\begin{frame}[label=w9zgjTps4]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Si te put-i: klienti \textbf{merr} $K$ kur anulon dhe mund ta investojë me normat e tregut. Interesi i tregut luan rolin e $r$; nëse normat rriten, anulimi bëhet më tërheqës.
+    \item Ndëshkimi ul përfitimin e ushtrimit ($0.98K$): kufiri $S^*$ bie, zona e anulimit ngushtohet. Këtë e matim në Orën 6.
+  \end{enumerate}
+  \vfill\kthehu{w9tps4}
+\end{frame}

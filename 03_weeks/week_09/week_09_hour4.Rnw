@@ -1,0 +1,295 @@
+% ============================================================
+%  Java 9 · Ora 4 — Teoria II: ushtrimi i hershëm
+% ============================================================
+\section{Teoria II: ushtrimi i hershëm}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Call-i pa dividendë}
+% ------------------------------------------------------------
+
+\begin{frame}{Teorema kryesore}
+  \begin{Teoreme}
+    Për një aksion pa dividendë deri në $T$, call-i amerikan \textbf{nuk ushtrohet kurrë herët} në mënyrë optimale. Pra $C_A=C$.
+  \end{Teoreme}
+  \pause
+  \textbf{Prova.} Në çdo kohë $t<T$, me $\tau=T-t>0$:
+  \begin{align*}
+    C_A(t) &\ge C(t) \\
+    \onslide<3->{&\ge S_t-Ke^{-r\tau}\qquad\text{(kufiri i Orës 2)}} \\
+    \onslide<4->{&> S_t-K\qquad\text{(sepse } r>0\text{)}.}
+  \end{align*}
+  \onslide<5->{\small Vlera e opsionit $>$ vlera e ushtrimit: më mirë shite (ose mbaje) sesa ta ushtrosh. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}{Dy arsye për të pritur}
+  \begin{enumerate}
+    \item<1-> \textbf{Interesi}: duke pritur, $K$ paguhet më vonë. Vlera: $K(1-e^{-r\tau})$.
+    \item<2-> \textbf{Sigurimi}: nëse çmimi bie nën $K$, mbajtësi i call-it nuk e ushtron. Kush ka ushtruar, ka aksionin dhe humbet.
+  \end{enumerate}
+  \onslide<3->{
+  \begin{Keshille}Ushtrimi i hershëm i call-it heq dorë nga të dyja, pa marrë asgjë në këmbim.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Zbërthimi i vlerës së call-it}
+  Nga parity: $C=S_0-Ke^{-rT}+P$. Pra
+  \pause
+  \[
+    C=\underbrace{(S_0-K)}_{\text{intrinsike}}+\underbrace{K(1-e^{-rT})}_{\text{interesi}}+\underbrace{P}_{\text{sigurimi}}.
+  \]
+  \pause
+  \begin{itemize}
+    \item Të dy termat e fundit janë $\ge0$: vlera kohore e call-it është gjithmonë pozitive.
+    \item Ky zbërthim vlen për çdo $S_0$, edhe kur $S_0<K$ (atëherë ``intrinsikja'' është negative).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull: call thellë në para}
+  $S_0=150$, $K=100$, $\sigma=25\%$, $r=3\%$, $T=1$:
+  \pause
+  \begin{center}
+    \begin{tabular}{lr}
+      \toprule
+      Intrinsike $S_0-K$ & 50.0000 \\
+      Interesi $K(1-e^{-rT})$ & 2.9554 \\
+      Sigurimi $P$ & 0.4948 \\
+      \midrule
+      \textbf{Call} $C$ & \textbf{53.4503} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Ushtrimi sot humbet $3.45$ lekë për çdo njësi: interesin dhe sigurimin.
+\end{frame}
+
+\begin{frame}{``Por unë dua fitimin tani!''}
+  \begin{itemize}
+    \item<1-> Mbajtësi i call-it që do para \textbf{sot} ka një alternativë më të mirë se ushtrimi: \textbf{shitja} e call-it, me $C>S_0-K$.
+    \item<2-> Nëse do të ``fiksojë'' fitimin pa e shitur: shit aksionin (short) dhe mbaj call-in.
+    \item<3-> Në të dy rastet, ai merr më shumë se $S_0-K$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}``Call-i është thellë në para, pra duhet ushtruar.'' Jo: thellë në para, call-i vlen $\approx S_0-Ke^{-rT}$, gjithmonë më shumë se $S_0-K$.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w9mc4]{Zgjedhje e shumëfishtë}
+  Cili pohim e shpjegon më mirë pse $C_A=C$ pa dividendë?
+  \begin{enumerate}[A)]
+    \item Sepse call-i amerikan nuk tregtohet.
+    \item Sepse $C\ge S_0-Ke^{-rT}>S_0-K$: vlera e opsionit kalon vlerën e ushtrimit.
+    \item Sepse aksioni rritet gjithmonë me kohën.
+    \item Sepse $\mu>r$.
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjMC4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Put-i amerikan}
+% ------------------------------------------------------------
+
+\begin{frame}{Zbërthimi i vlerës së put-it}
+  Nga parity: $P=Ke^{-rT}-S_0+C$. Pra
+  \pause
+  \[
+    P=\underbrace{(K-S_0)}_{\text{intrinsike}}-\underbrace{K(1-e^{-rT})}_{\text{interesi i humbur}}+\underbrace{C}_{\text{sigurimi}}.
+  \]
+  \pause
+  \begin{itemize}
+    \item Interesi tani \textbf{zbritet}: mbajtësi i put-it pret për të \textbf{marrë} $K$.
+    \item Kur $S_0$ është i vogël, $C\approx0$ dhe vlera kohore bëhet \textbf{negative}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull: put thellë në para}
+  $S_0=60$, $K=100$, $\sigma=25\%$, $r=3\%$, $T=1$:
+  \pause
+  \begin{center}
+    \begin{tabular}{lr}
+      \toprule
+      Intrinsike $K-S_0$ & 40.0000 \\
+      Interesi i humbur $-K(1-e^{-rT})$ & $-2.9554$ \\
+      Sigurimi $C$ & 0.1972 \\
+      \midrule
+      \textbf{Put europian} $P$ & \textbf{37.2418} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Europiani vlen 2.76 më pak se vlera intrinsike. Amerikani ushtrohet dhe merr 40 (Ora 3: $S^*=71$).
+\end{frame}
+
+\begin{frame}{Vendimi në një nyje}
+  \begin{itemize}
+    \item<1-> Në çdo moment, mbajtësi i put-it amerikan krahason:
+      \begin{itemize}
+        \item \textbf{ushtrimin}: $K-S_t$;
+        \item \textbf{vazhdimin}: vlera e put-it nëse e mban edhe pak.
+      \end{itemize}
+    \item<2-> $P_A(t)=\max\big(K-S_t,\;\text{vlera e vazhdimit}\big)$.
+    \item<3-> Këtë rregull e zbaton pema binomiale në çdo nyje, nga fundi drejt fillimit (Java 11).
+  \end{itemize}
+  \onslide<4->{\small Shembull: me $S_t=60$ dhe një vit të mbetur, vazhdimi vlen $\approx37.24$ (si europiani), ushtrimi 40: ushtro.}
+\end{frame}
+
+\begin{frame}{Kufiri i ushtrimit $S^*(t)$}
+  \centering
+  \begin{tikzpicture}[x=0.8cm,y=0.06cm,>=Stealth]
+    \draw[->] (0,40) -- (8.4,40) node[right,font=\small]{$t$};
+    \draw[->] (0,40) -- (0,108) node[above,font=\small]{$S$};
+    \draw[dashed,gray] (0,100) -- (8,100) node[right,font=\scriptsize,gray]{$K$};
+    \draw[very thick,uptblue] (0,62) .. controls (4,66) and (6.5,74) .. (8,100);
+    \node[font=\scriptsize,uptblue] at (5.5,63) {$S^*(t)$};
+    \fill[warnred!15] (0,40) -- (0,62) .. controls (4,66) and (6.5,74) .. (8,100) -- (8,40) -- cycle;
+    \node[font=\scriptsize,warnred] at (3.5,50) {ushtro};
+    \node[font=\scriptsize,okgreen] at (3.5,88) {vazhdo};
+    \node[below,font=\scriptsize] at (8,40) {$T$};
+  \end{tikzpicture}\par
+  \small Skicë cilësore: afër maturimit, $S^*\to K$. Në Orën 5 e llogarisim me R.
+\end{frame}
+
+\begin{frame}[label=w9par4]{Parashiko}
+  \begin{Parashiko}
+    Supozo $r=0$.
+    \begin{enumerate}
+      \item Sa është ``interesi i humbur'' në zbërthimin e put-it?
+      \item A ushtrohet ndonjëherë herët put-i amerikan? A del $P_A=P$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w9zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Dividendët}
+% ------------------------------------------------------------
+
+\begin{frame}{Call-i me dividendë}
+  \begin{itemize}
+    \item<1-> Mbajtësi i aksionit merr dividendin $D$; mbajtësi i call-it \textbf{jo}.
+    \item<2-> Pas dividendit, çmimi bie me rreth $D$: call-i humbet vlerë.
+    \item<3-> Ushtrimi menjëherë \textbf{para} datës së dividendit mund të jetë optimal: merr aksionin dhe dividendin.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}[(një dividend $D$ në $t_D$)]
+    Nëse $D\le K\big(1-e^{-r(T-t_D)}\big)$, call-i amerikan \textbf{nuk} ushtrohet herët.
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}{Shembull me dividend}
+  $K=100$, $r=3\%$, dividendi gjashtë muaj para maturimit ($T-t_D=0.5$):
+  \pause
+  \begin{itemize}
+    \item Pragu: $K(1-e^{-0.015})=1.4888$.
+    \item $D=1$: nën prag $\Rightarrow$ asnjëherë ushtrim i hershëm, $C_A=C$.
+    \item $D=3$: mbi prag $\Rightarrow$ ushtrimi para dividendit mund të jetë optimal (nëse call-i është mjaft në para).
+  \end{itemize}
+  \pause
+  \small Intuita: dividendi (që fitohet duke ushtruar) krahasohet me interesin mbi $K$ (që humbet duke ushtruar).
+\end{frame}
+
+\begin{frame}{Dividend i vazhdueshëm $q$}
+  $S_0=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$, $q=5\%$:
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Europian & Amerikan (\texttt{binomopt}) \\
+      \midrule
+      Call & 8.6277 & 8.8827 \\
+      Put & 10.5493 & 10.5496 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Me $q>r$, call-i amerikan vlen më shumë: ushtrimi i hershëm ka vlerë.
+    \item Put-i: dividendët e bëjnë ushtrimin e hershëm më pak tërheqës (këtu pothuajse zero).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Përmbledhje: kur ushtrohet herët?}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Pa dividendë & Me dividendë \\
+      \midrule
+      Call amerikan & \textbf{kurrë} ($C_A=C$) & ndoshta, para dividendit \\
+      Put amerikan & ndoshta, kur $S<S^*$ & më rrallë \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Dy forca: \textbf{interesi} mbi $K$ dhe \textbf{dividendët}. Interesi favorizon ushtrimin e put-it, dividendët ushtrimin e call-it.
+\end{frame}
+
+\begin{frame}[label=w9gab4]{Gjej gabimin}
+  Një student shkruan:
+  \begin{quote}
+    ``Put-i amerikan ushtrohet herët sepse çmimi i aksionit mund të rritet dhe put-i të humbasë vlerën. Pra ushtrimi i hershëm vjen nga \textbf{volatiliteti}.''
+  \end{quote}
+  \begin{enumerate}
+    \item Çfarë është e gabuar në arsyetim?
+    \item Si ndikon në fakt $\sigma$ në ushtrimin e hershëm (Ora 3)?
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjGab4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w9ush4]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta, pa ndihmën e PC)]
+    $K=80$, $r=4\%$, $T=1$; \; $e^{-0.04}=0.960789$.
+    \begin{enumerate}
+      \item Zbërthe call-in me $S_0=100$, nëse $P=0.80$: intrinsike, interesi, sigurimi. Sa është $C$?
+      \item Zbërthe put-in me $S_0=50$, nëse $C=0.10$. A ushtrohet put-i amerikan?
+      \item Dividend $D=2$, tre muaj para maturimit. A ushtrohet ndonjëherë herët call-i amerikan? ($e^{-0.01}=0.990050$.)
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjUsh4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w9tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Kontrata ``Kursimi Plus'' (Ora 1) ka një rimarrje të garantuar $K$ në çdo kohë.
+    \begin{enumerate}
+      \item Cila forcë e shtyn klientin racional ta anulojë herët: interesi apo ``dividendi''? Çfarë luan rolin e tyre në kontratë?
+      \item Si ndikon një \textbf{ndëshkim anulimi} (rimarrja = $K$ minus 2\%) në kufirin e ushtrimit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse $C_A=C$ për aksion pa dividendë?
+    \item Zbërthe vlerën e put-it europian në tri pjesë.
+    \item Kur mund të ushtrohet herët call-i amerikan?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $C\ge S-Ke^{-r\tau}>S-K$; (2) intrinsike $-$ interesi $+$ call;
+  (3) para një dividendi më të madh se $K(1-e^{-r(T-t_D)})$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item Call pa dividendë: kurrë ushtrim i hershëm; $C=$ intrinsike $+$ interes $+$ put.
+    \item Put: $P=$ intrinsike $-$ interes $+$ call; vlera kohore mund të jetë negative.
+    \item Kufiri i ushtrimit $S^*(t)$; me $r=0$, $P_A=P$.
+    \item Dividendët: favorizojnë ushtrimin e call-it, pengojnë atë të put-it.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator R II: prima e ushtrimit të hershëm, kufiri $S^*(t)$, dividendët.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: ushtrimi i hershëm dhe dividendët.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson.
+  \end{itemize}
+\end{frame}
