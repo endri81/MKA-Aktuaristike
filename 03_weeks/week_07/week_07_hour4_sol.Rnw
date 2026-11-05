@@ -1,0 +1,52 @@
+% ============================================================
+%  Java 7 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{C)} $(N_{x+1}-N_{x+n+1})/D_x$: pagesa e parë në kohën 1, e fundit në kohën $n$, pra e para që \textbf{nuk} paguhet është në $n+1$.
+  \begin{itemize}
+    \item A) është $\ddot a_{x:\overline n|}$. \; B) ka vetëm $n-1$ pagesa.
+    \item D) emëruesi $D_{x+1}$ e vlerëson në moshën $x+1$, jo në $x$.
+  \end{itemize}
+  \vfill\kthehu{w7mc4}
+\end{frame}
+
+\begin{frame}[label=w7zgjGab4]{Zgjidhja: Gjej gabimin (prima e re)}
+  \begin{enumerate}
+    \item ${}_1V=A_{101}-\dfrac{A_{101}}{\ddot a_{101}}\,\ddot a_{101}=0$, për çdo tabelë dhe çdo $t$.
+    \item Klienti vazhdon të paguajë primën e kontratës $P_{100}=0.470537$, jo primën e një 101-vjeçari të ri ($P_{101}$, më të lartë).
+      Rezerva mat pikërisht këtë diferencë.
+  \end{enumerate}
+  \vfill\kthehu{w7gab4}
+\end{frame}
+
+\begin{frame}[label=w7zgjUsh4]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item ${}_1V=A_{101:\overline1|}-P\cdot1=v-0.588745=0.952381-0.588745=0.363636$.
+    \item ${}_2V=1$: kontrata do të paguajë me siguri 1 lek (maturimi).
+    \item I përziri ka një pjesë \textbf{kursimi}: shuma paguhet me siguri, ndaj rezerva rritet drejt shumës së siguruar.
+      Sigurimi me afat mbulon vetëm rrezikun: rezerva e tij mbetet e vogël.
+  \end{enumerate}
+  \small Kontroll me R: \texttt{AExn(toy, 101, 1) - 0.588745} $=0.363636$.
+  \vfill\kthehu{w7ush4}
+\end{frame}
+
+\begin{frame}[label=w7zgjTps4]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Prospektive: varet nga vdekshmëria e \textbf{ardhshme}. Retrospektive (me bazën e kaluar): varet nga e kaluara.
+      Barazia vlen vetëm kur të dyja përdorin të njëjtat baza; pas ndryshimit, rezerva prospektive është ajo që mat detyrimin.
+    \item Rekursioni përditëson çdo kontratë me një rresht në vit: ideal për projeksione vjetore dhe për kontroll të kodeve.
+  \end{enumerate}
+  \vfill\kthehu{w7tps4}
+\end{frame}
+
+\begin{frame}[label=w7zgjPar4]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item I përjetshëm: rritet ngadalë drejt 1 (shumës së siguruar).
+    \item Me afat: rritet pak dhe bie në 0 në fund të afatit.
+    \item I përzier: rritet drejt 1 në maturim.
+    \item Pension i shtyrë: rritet deri në 65 (kursim), pastaj bie, sepse pagesat e pensionit e ``harxhojnë''.
+  \end{enumerate}
+  \small Orën 5 e nisim duke i kontrolluar këto skica me R.
+  \vfill\kthehu{w7par4}
+\end{frame}

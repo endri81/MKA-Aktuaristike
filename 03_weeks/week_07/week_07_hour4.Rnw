@@ -1,0 +1,319 @@
+% ============================================================
+%  Java 7 · Ora 4 — Teoria II: anuitetet, primat, rezervat
+% ============================================================
+\section{Teoria II: anuitete e rezerva}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Anuitetet}
+% ------------------------------------------------------------
+
+\begin{frame}{Katër anuitete}
+  \centering
+  \begin{tikzpicture}[>=Stealth,x=1.25cm]
+    \draw[->] (0,0) -- (7.4,0) node[right,font=\small]{$t$};
+    \node[below,font=\scriptsize] at (0,0) {0}; \node[below,font=\scriptsize] at (1,0) {1};
+    \node[below,font=\scriptsize] at (2,0) {2}; \node[below,font=\scriptsize] at (3,0) {$m$};
+    \node[below,font=\scriptsize] at (5,0) {$m+n$};
+    \fill[uptblue] (0,0.6) circle (2pt); \fill[uptblue] (1,0.6) circle (2pt); \fill[uptblue] (2,0.6) circle (2pt);
+    \draw[uptblue,thick,dotted] (2.2,0.6) -- (7,0.6); \node[left,font=\scriptsize,uptblue] at (-0.1,0.6) {$\ddot a_x$};
+    \fill[accent] (1,1.2) circle (2pt); \fill[accent] (2,1.2) circle (2pt);
+    \draw[accent,thick,dotted] (2.2,1.2) -- (7,1.2); \node[left,font=\scriptsize,accent] at (-0.1,1.2) {$a_x$};
+    \fill[okgreen] (0,1.8) circle (2pt); \fill[okgreen] (1,1.8) circle (2pt); \fill[okgreen] (2,1.8) circle (2pt);
+    \draw[okgreen,thick,dotted] (2.2,1.8) -- (4.8,1.8); \node[left,font=\scriptsize,okgreen] at (-0.1,1.8) {$\ddot a_{x:\overline n|}$};
+    \fill[purple] (3,2.4) circle (2pt); \fill[purple] (4,2.4) circle (2pt);
+    \draw[purple,thick,dotted] (4.2,2.4) -- (7,2.4); \node[left,font=\scriptsize,purple] at (-0.1,2.4) {${}_{m|}\ddot a_x$};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Çdo pikë: 1 lek, i paguar vetëm nëse $(x)$ është gjallë në atë moment.
+\end{frame}
+
+\begin{frame}{Formulat me komutime}
+  \begin{center}
+    \begin{tabular}{lll}
+      \toprule
+      Anuiteti & Shuma & Komutime \\
+      \midrule
+      $\ddot a_x$ & $\sum_{k\ge0}v^k\,{}_kp_x$ & $N_x/D_x$ \\
+      $a_x$ & $\sum_{k\ge1}v^k\,{}_kp_x$ & $N_{x+1}/D_x$ \\
+      $\ddot a_{x:\overline n|}$ & $\sum_{k=0}^{n-1}v^k\,{}_kp_x$ & $(N_x-N_{x+n})/D_x$ \\
+      ${}_{m|}\ddot a_x$ & $\sum_{k\ge m}v^k\,{}_kp_x$ & $N_{x+m}/D_x$ \\
+      ${}_{m|}\ddot a_{x:\overline n|}$ & $\sum_{k=m}^{m+n-1}v^k\,{}_kp_x$ & $(N_{x+m}-N_{x+m+n})/D_x$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Rregulli: indeksi i \textbf{parë} që paguhet minus indeksi i parë që \textbf{nuk} paguhet.
+\end{frame}
+
+\begin{frame}{Lidhjet kryesore}
+  \begin{itemize}
+    \item<1-> $\ddot a_x=1+a_x$: e njëjta varg, plus pagesa e kohës 0.
+    \item<2-> ${}_{m|}\ddot a_x={}_mE_x\;\ddot a_{x+m}$: \; prit $m$ vjet (nëse jeton), pastaj anuitet i ri.
+    \item<3-> $\ddot a_x=\ddot a_{x:\overline m|}+{}_{m|}\ddot a_x$: \; ``para'' + ``pas''.
+    \item<4-> $a_x={}_{1|}\ddot a_x$: anuiteti në fund = anuiteti në fillim i shtyrë 1 vit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Tabela e vogël}
+  $N_{100..103}=1929.921,\;929.921,\;358.493,\;86.384$; \; $D_{100..103}=1000,\;571.429,\;272.109,\;86.384$.
+  \pause
+  \begin{align*}
+    a_{100} &= N_{101}/D_{100}=0.929921 \\
+    \onslide<3->{\ddot a_{100:\overline2|} &= (1929.921-358.493)/1000=1.571428} \\
+    \onslide<4->{{}_{2|}\ddot a_{100} &= 358.493/1000=0.358493} \\
+    \onslide<5->{\text{kontroll: }\; 1.571428+0.358493 &= 1.929921=\ddot a_{100}.\;\textcolor{okgreen}{\checkmark}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}[label=w7mc4]{Zgjedhje e shumëfishtë}
+  Cila formulë jep $a_{x:\overline n|}$ (pagesat në kohët $1,\dots,n$)?
+  \begin{enumerate}[A)]
+    \item $(N_x-N_{x+n})/D_x$
+    \item $(N_{x+1}-N_{x+n})/D_x$
+    \item $(N_{x+1}-N_{x+n+1})/D_x$
+    \item $(N_{x+1}-N_{x+n+1})/D_{x+1}$
+  \end{enumerate}
+  \vfill\shkoTe{w7zgjMC4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Anuitete dhe sigurime}
+  \begin{Teoreme}
+    $A_x=1-d\,\ddot a_x$ \qquad dhe \qquad $A_{x:\overline n|}=1-d\,\ddot a_{x:\overline n|}$,
+  \end{Teoreme}
+  ku $A_{x:\overline n|}=A^1_{x:\overline n|}+{}_nE_x$ është sigurimi i \termi{përzier}{endowment}.
+  \pause
+  \begin{itemize}
+    \item Shembull: $1-0.047619\cdot1.571428=0.925170$.
+    \item Direkt: $A^1_{100:\overline2|}+{}_2E_{100}=0.653061+0.272109=0.925170$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pagesat mujore \Zgj}
+  \begin{itemize}
+    \item<1-> Pensioni paguhet çdo muaj: $\ddot a^{(12)}_x$, me $1/12$ lek në çdo muaj.
+    \item<2-> Përafrimi i Woolhouse (dy terma): \; $\ddot a^{(m)}_x\approx\ddot a_x-\dfrac{m-1}{2m}$.
+    \item<3-> Me $m=12$: \; $\ddot a^{(12)}_x\approx\ddot a_x-0.4583$.
+    \item<4-> Në R: \texttt{axn(act, x, k = 12)} përdor mbijetesë lineare brenda vitit.
+  \end{itemize}
+  \onslide<5->{\small Për 100-vjeçarin: Woolhouse jep 1.4716, paketa 1.4638. Në mosha me vdekshmëri të lartë, përafrimet ndryshojnë (Ora 5: mosha 65).}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Primat neto}
+% ------------------------------------------------------------
+
+\begin{frame}{Parimi i ekuivalencës}
+  \begin{Definicion}
+    Prima neto $P$: vlera aktuale e pritur e primave = vlera aktuale e pritur e përfitimeve.
+  \end{Definicion}
+  \pause
+  \begin{center}
+    \begin{tabular}{lll}
+      \toprule
+      Produkti & Prima vjetore & Tabela e vogël \\
+      \midrule
+      I përjetshëm & $A_x/\ddot a_x=M_x/N_x$ & 0.470537 \\
+      Me afat 2 & $A^1_{x:\overline2|}/\ddot a_{x:\overline2|}$ & 0.415584 \\
+      I përzier 2 & $A_{x:\overline2|}/\ddot a_{x:\overline2|}$ & 0.588745 \\
+      Zbritës 3, prima 2 vjet & $(DA)^1_{x:\overline3|}/\ddot a_{x:\overline2|}$ & 1.183536 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> I përziri është më i shtrenjti me afat 2: paguan \textbf{gjithmonë} (vdekje ose mbijetesë).
+    \item<2-> Sigurimi zbritës me prima për 2 vjet: prima më e lartë, sepse paguhet më pak herë.
+    \item<3-> Emëruesi $\ddot a$ përshkruan \textbf{sa gjatë} paguhen primat, jo sa gjatë zgjat mbulimi.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rezerva prospektive}
+% ------------------------------------------------------------
+
+\begin{frame}{Përkufizimi}
+  \begin{Definicion}
+    \termi{Rezerva matematike prospektive}{prospective reserve} në kohën $t$, për një kontratë ende në fuqi:
+    \[
+      {}_tV=\text{VAP(përfitimet e ardhshme)}-\text{VAP(primat e ardhshme)},
+    \]
+    e llogaritur në moshën $x+t$, me primën \textbf{origjinale} $P$.
+  \end{Definicion}
+  \pause
+  \small VAP = vlera aktuale e pritur. Në $t=0$, nga parimi i ekuivalencës, ${}_0V=0$.
+\end{frame}
+
+\begin{frame}{Sigurimi i përjetshëm}
+  \begin{align*}
+    {}_tV_x &= A_{x+t}-P_x\,\ddot a_{x+t} \\
+    \onslide<2->{&= (1-d\,\ddot a_{x+t})-\frac{1-d\,\ddot a_x}{\ddot a_x}\,\ddot a_{x+t}} \\
+    \onslide<3->{&= 1-d\,\ddot a_{x+t}-\frac{\ddot a_{x+t}}{\ddot a_x}+d\,\ddot a_{x+t}} \\
+    \onslide<4->{&= 1-\frac{\ddot a_{x+t}}{\ddot a_x}.}
+  \end{align*}
+  \onslide<5->{\small Një formulë e bukur: rezerva varet vetëm nga dy anuitete.}
+\end{frame}
+
+\begin{frame}{Tabela e vogël: rezervat}
+  $\ddot a_{101}=929.921/571.429=1.627362$, \; $\ddot a_{102}=1.317460$, \; $\ddot a_{103}=1$.
+  \pause
+  \begin{center}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $t$ & 0 & 1 & 2 & 3 \\
+      \midrule
+      ${}_tV_{100}=1-\ddot a_{100+t}/\ddot a_{100}$ & 0 & 0.156773 & 0.317350 & 0.481844 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Kontroll në $t=3$: $A_{103}-P\,\ddot a_{103}=0.952381-0.470537=0.481844$. \textcolor{okgreen}{$\checkmark$}
+    \item Rezerva rritet: i siguruari plaket, prima mbetet e njëjtë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Sigurimi me afat}
+  ${}_tV^1_{x:\overline n|}=A^1_{x+t:\overline{n-t}|}-P\,\ddot a_{x+t:\overline{n-t}|}$, me $P=A^1_{x:\overline n|}/\ddot a_{x:\overline n|}$.
+  \pause
+  \begin{itemize}
+    \item Tabela e vogël, $n=3$: \; $P=0.825829/1.843537=0.447959$.
+    \item $t=1$: \; $0.778535-0.447959\cdot1.476190=0.117261$.
+    \item $t=2$: \; $0.634921-0.447959\cdot1=0.186962$.
+    \item $t=3$: \; $0$ (kontrata mbaron).
+  \end{itemize}
+  \pause
+  \small Rezerva e sigurimit me afat rritet, pastaj \textbf{bie në zero} në fund.
+\end{frame}
+
+\begin{frame}{Sigurimi zbritës: rezerva negative}
+  Nga Ora 2: me prima për gjithë afatin ($n=3$), ${}_1V=-0.2345$, ${}_2V=-0.3739$.
+  \pause
+  \begin{itemize}
+    \item Me prima vetëm për 2 vjet: $P=1.859842/1.571428=1.183536$.
+    \item ${}_1V=(DA)^1_{101:\overline2|}-P\,\ddot a_{101:\overline1|}=1.254725-1.183536=0.071189$.
+    \item ${}_2V=(DA)^1_{102:\overline1|}=0.634921$ (nuk ka më prima).
+  \end{itemize}
+  \pause
+  \begin{Gabim}Rezerva negative do të thotë që klienti i ``detyrohet'' kompanisë, por klienti mund ta ndërpresë kontratën. Produkti ndërtohet që ${}_tV\ge0$, p.sh.\ me prima për një periudhë më të shkurtër.\end{Gabim}
+\end{frame}
+
+\begin{frame}[label=w7gab4]{Gjej gabimin}
+  Një student llogarit rezervën e sigurimit të përjetshëm në $t=1$:
+  \[
+    {}_1V=A_{101}-P_{101}\,\ddot a_{101},\qquad P_{101}=A_{101}/\ddot a_{101}.
+  \]
+  \begin{enumerate}
+    \item Sa del rezerva e tij, për çdo tabelë?
+    \item Ku është gabimi konceptual?
+  \end{enumerate}
+  \vfill\shkoTe{w7zgjGab4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w7ush4]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    Sigurimi i përzier me afat 2 për 100-vjeçarin, $P=0.588745$.
+    \begin{enumerate}
+      \item Llogarit ${}_1V$. (Ndihmë: në moshën 101 mbetet 1 vit; paguhet 1 lek në fund të vitit, në vdekje ose mbijetesë.)
+      \item Llogarit ${}_2V$, menjëherë para pagesës së maturimit.
+      \item Pse rezerva e të përzierit është shumë më e madhe se ajo e sigurimit me afat?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjUsh4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rekursioni dhe rezerva retrospektive \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Rekursioni i rezervës \Zgj}
+  Nga $t$ në $t+1$, për një kontratë me shumë $b_{t+1}$ në vdekje:
+  \[
+    ({}_tV+P)(1+i)=q_{x+t}\,b_{t+1}+p_{x+t}\;{}_{t+1}V.
+  \]
+  \pause
+  \begin{itemize}
+    \item Majtas: rezerva + prima, me interes.
+    \item Djathtas: paguaj vdekjet, mbaj rezervën për të mbijetuarit.
+  \end{itemize}
+  \pause
+  \small Kontroll, $t=0$, i përjetshëm: \; $0.470537\cdot1.05=0.494064$; \; $0.4\cdot1+0.6\cdot0.156773=0.494064$. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}{Rezerva retrospektive \Zgj}
+  \begin{itemize}
+    \item<1-> Shiko \textbf{prapa}: primat e mbledhura minus kostot e vdekjeve, të akumuluara për të mbijetuarit.
+      \[ {}_tV=\frac{P\,\ddot a_{x:\overline t|}-A^1_{x:\overline t|}}{{}_tE_x}. \]
+    \item<2-> Shembull, $t=1$: \; $(0.470537-0.380952)/0.571429=0.156773$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \onslide<3->{
+  \begin{Teoreme}
+    Me primën neto dhe të njëjtat baza (tabelë, normë), rezerva retrospektive = rezerva prospektive.
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}[label=w7tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    \begin{enumerate}
+      \item Pas 5 vitesh, kompania kalon në një tabelë të re me vdekshmëri më të ulët. Cila rezervë ndryshon: prospektive apo retrospektive? Pse?
+      \item Rekursioni kërkon vetëm $q_{x+t}$ dhe $i$. Pse kjo e bën të dobishëm për portofole me mijëra kontrata?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w7par4]{Parashiko për Orën 5}
+  \begin{Parashiko}
+    Skico në letër kurbën ${}_tV$, $t=0,\dots,n$, për:
+    \begin{enumerate}
+      \item sigurimin e përjetshëm (40 vjeç);
+      \item sigurimin me afat 20 vjet;
+      \item sigurimin e përzier 20 vjet;
+      \item pensionin e shtyrë (prima deri në 65, pastaj pension).
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w7zgjPar4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj ${}_{m|}\ddot a_x$ me komutime.
+    \item Pse ${}_tV_x=1-\ddot a_{x+t}/\ddot a_x$?
+    \item Pse rezerva llogaritet me primën \textbf{origjinale}?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $N_{x+m}/D_x$; (2) nga $A=1-d\ddot a$ dhe $P_x=A_x/\ddot a_x$;
+  (3) klienti paguan primën e kontratës, jo primën e moshës së re.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item Anuitetet: $\ddot a_x$, $a_x$, me afat, të shtyra; rregulli i indekseve të $N$.
+    \item $A_u=1-d\,\ddot a_u$, edhe për të përzierin.
+    \item Prima neto: $P=\text{VAP(përfitime)}/\text{VAP(prima njësi)}$.
+    \item ${}_tV$ = përfitimet e ardhshme $-$ primat e ardhshme; \; ${}_tV_x=1-\ddot a_{x+t}/\ddot a_x$.
+    \item Rekursioni dhe rezerva retrospektive \Zgj.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator R II: primat dhe kurbat e rezervës për pesë produkte.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (red.), \emph{Computational Actuarial Science with R}, CRC Press, 2015: kapitulli për sigurimet e jetës.
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{axn}, \texttt{AExn}.
+    \item Tabela e vogël: Javët 5--6 të këtij kursi.
+  \end{itemize}
+\end{frame}
