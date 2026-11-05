@@ -1,0 +1,326 @@
+% ============================================================
+%  Java 3 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): pa ndihmën e PC dhe në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Shtyp \textbf{Shiko zgjidhjen} vetëm pasi ta kesh provuar vetë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w3qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    $S=X_1+\dots+X_N$ me $N\sim\text{Poisson}(\lambda)$, i pavarur nga $X_i$ i.i.d. Sa është $\mathrm{Var}[S]$?
+    \begin{enumerate}
+      \item[A)] $\lambda\,\mathrm{Var}[X]$
+      \item[B)] $\lambda\,E[X^2]$
+      \item[C)] $\lambda^2\,E[X^2]$
+      \item[D)] $\lambda\,E[X]^2$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w3sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Për cilat shpërndarje të $N$ vlen rekursioni Panjer në formën $p_k=(a+b/k)\,p_{k-1}$?
+    \begin{enumerate}
+      \item[A)] Për çdo shpërndarje diskrete.
+      \item[B)] Vetëm për Poisson.
+      \item[C)] Për Poisson, binomialen dhe binomialen negative.
+      \item[D)] Vetëm për binomialen negative.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w3sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU1]{U1 · Pa ndihmën e PC}
+  \begin{Ushtrim}[(shpërndarja e $S$)]
+    $\Pr(N=0)=0.6$, $\Pr(N=1)=0.3$, $\Pr(N=2)=0.1$; \; $X\in\{1\,000,\;2\,000\}$ €, secila me probabilitet 0.5.
+    \begin{enumerate}
+      \item Gjej shpërndarjen e plotë të $S$.
+      \item Llogarit $E[S]$ nga tabela dhe me formulën $E[N]E[X]$.
+      \item Llogarit $\mathrm{Var}[S]$ me formulën e modelit kolektiv.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU2]{U2 · Pa ndihmën e PC}
+  \begin{Ushtrim}[(Poisson i përbërë)]
+    $\lambda=50$; \; $X\sim$ Gamma(formë 3, shkallë 200).
+    \begin{enumerate}
+      \item Llogarit $E[S]$ dhe $\mathrm{sd}[S]$. (Udhëzim: $E[X^2]=\alpha(\alpha+1)\theta^2$.)
+      \item Jep VaR$_{0.995}$ me përafrimin normal ($z_{0.995}=2.5758$).
+      \item A e nënvlerëson apo e mbivlerëson ky përafrim VaR-in e vërtetë? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU3]{U3 · Panjer pa ndihmën e PC}
+  \begin{Ushtrim}[(rekursioni)]
+    $N\sim\text{Poisson}(2)$; \; $X\in\{1,2\}$ (në njësi 1\,000 €) me $f_1=f_2=0.5$.
+    \begin{enumerate}
+      \item Llogarit $g_0$, $g_1$ dhe $g_2$ me Panjer.
+      \item Kontrollo $g_1$ me arsyetim të drejtpërdrejtë: kur ndodh $S=1$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU4]{U4 · Franshiza dhe limiti}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $X\sim$ Eksponenciale me mesatare 2\,000 €; franshiza $d=500$ €, humbja maksimale e mbuluar $u=5\,000$ €.
+    \begin{enumerate}
+      \item Shkruaj $E[X\wedge t]$ për eksponencialen.
+      \item Llogarit $E[Y^L]$, pagesën e pritur për humbje.
+      \item Llogarit $E[Y^P]$, pagesën e pritur për pagesë.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU5]{U5 · Klasa (a, b, 0)}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $N\sim\text{NB}(r=2,\;\pi=0.5)$, si \texttt{dnbinom(k, size = 2, prob = 0.5)}.
+    \begin{enumerate}
+      \item Gjej $a$, $b$ dhe $p_0$.
+      \item Llogarit $p_1$ dhe $p_2$ me rekursionin.
+      \item Krahaso $E[N]$ me $\mathrm{Var}[N]$. Çfarë tregon kjo për portofolin?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU6]{U6 · Stop-loss}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Me shpërndarjen e $S$ nga U1:
+    \begin{enumerate}
+      \item llogarit $\pi(2\,000)=E[(S-2\,000)_+]$ direkt nga tabela;
+      \item kontrolloje me rekursionin $\pi(d+h)=\pi(d)-h\,(1-F_S(d))$ me $h=1\,000$;
+      \item sa është $\mathrm{VaR}_{0.95}(S)$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU7]{U7 · Interpretimi i GLM}
+  \begin{Ushtrim}[(GLM Poisson me offset)]
+    Një GLM jep $\hat\beta_0=-2.5$ dhe $\hat\beta_{\text{i ri}}=0.18$ (shofer nën 25 vjeç).
+    \begin{enumerate}
+      \item Sa është frekuenca për një shofer bazë për police-vit?
+      \item Sa herë më e madhe është frekuenca e shoferit të ri?
+      \item Me ashpërsi 900 €, sa është prima e pastër vjetore e shoferit të ri? Po për një policë 6-mujore?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w3qU8]{U8 · Në R}
+  \begin{Ushtrim}[(simulim dhe \texttt{actuar})]
+    Për $\lambda=100$ dhe $X\sim$ Lomax$(\alpha=3,\;\theta=2\,000)$:
+    \begin{enumerate}
+      \item simulo 20\,000 vite me metodën e vektorizuar (\texttt{rowsum()});
+      \item llogarit VaR$_{0.995}$ dhe TVaR$_{0.995}$;
+      \item krahasoji me \texttt{aggregateDist("recursive", ...)} pas diskretizimit me $h=100$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w3sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): shpërndarjet dhe mbulimi}
+  \begin{enumerate}
+    \item<1-> \texttt{ppareto()} (Lomax) në vend të \texttt{ppareto1()} (Pareto me minimum).
+    \item<2-> \texttt{var(x)} e mostrës merret si ``varianca e vërtetë'' kur $\alpha<2$.
+    \item<3-> Ngatërrohen $Y^L$ (për humbje) dhe $Y^P$ (për pagesë): $E[Y^P]=E[Y^L]/S(d)$.
+    \item<4-> \texttt{limit} në \texttt{coverage()} lexohet si pagesë maksimale; është humbja maksimale $u$.
+    \item<5-> Harrohet efekti i levës: inflacioni 10\% me franshizë fikse rrit pagesat \textbf{më shumë} se 10\%.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): agregatet dhe GLM}
+  \begin{enumerate}
+    \item<1-> $S=N\cdot X$ në vend të $S=X_1+\dots+X_N$: varianca del shumë e madhe.
+    \item<2-> Panjer: harrohet $g_0$, ose përdoret $e^{-\lambda}$ kur $f_0>0$.
+    \item<3-> \texttt{aggregateDist()}: mungon \texttt{x.scale}, \texttt{maxit} shumë i vogël, \emph{underflow} pa \texttt{convolve}.
+    \item<4-> \texttt{rowsum()} humb vitet me $N=0$.
+    \item<5-> GLM: pa \texttt{offset(log(exposure))}; $e^\beta$ lexohet si raport probabilitetesh; $\hat\beta$ pa SE.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w3qGab7]{Gjej gabimin: raundi i shpejtë}
+  \begin{Gabim}[(tre gabime, dy minuta)]
+    \ttfamily\small
+    \# P(X > 30000) for tail claims, Pareto alpha = 1.8 above 20000\\
+    p <- ppareto(30000, 1.8, 20000, lower.tail = FALSE)\\
+    \# aggregate claims, severity discretised with step h = 100\\
+    F <- aggregateDist("recursive", model.freq = "poisson",\\
+    \hspace*{2em}model.sev = fx, lambda = 60)\\
+    \# contract pays at most 10000 above a 1000 deductible\\
+    f <- coverage(dgamma, pgamma, deductible = 1000, limit = 10000)
+  \end{Gabim}
+  \normalfont
+  \shkoTe{w3sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): \texttt{actuar}}
+  \centering\small
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{ll}
+    \toprule
+    Detyra & Funksioni \\
+    \midrule
+    Lomax / Pareto me minimum & \texttt{ppareto(q, shape, scale)} / \texttt{ppareto1(q, shape, min)} \\
+    Momenti $E[X^k]$ & \texttt{mgamma(k, shape, scale = )}, \texttt{mpareto(k, shape, scale)} \\
+    $E[X\wedge u]$ & \texttt{levexp(u, rate)}, \texttt{levgamma}, \texttt{levlnorm}, \texttt{levpareto1} \\
+    Përzierje & \texttt{rmixture(n, probs, models = expression(...))} \\
+    Pagesa & \texttt{coverage(pdf, cdf, deductible, franchise, limit, ...)} \\
+    Diskretizim & \texttt{discretize(F(x), from, to, step, method = "rounding")} \\
+    Shuma totale & \texttt{aggregateDist(method, ..., x.scale, convolve, maxit)} \\
+    Masat e rrezikut & \texttt{VaR(F, p)}, \texttt{CTE(F, p)}, \texttt{quantile(F, p)} \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \small
+  \begin{itemize}
+    \item $E[S]=E[N]E[X]$; \; $\mathrm{Var}[S]=E[N]\mathrm{Var}[X]+\mathrm{Var}[N]E[X]^2$; \; Poisson: $\lambda E[X^2]$.
+    \item $\Pr(S=s)=\sum_k p_k f^{*k}(s)$.
+    \item Lomax: $S(x)=\big(\theta/(x+\theta)\big)^\alpha$; \; Pareto1: $S(x)=(\theta/x)^\alpha$; \; $E[X^k]<\infty\iff k<\alpha$.
+    \item $E[X\wedge u]=\int_0^u S(x)dx$; \; $E[(X-d)_+]=E[X]-E[X\wedge d]$; \; $E[Y^P]=E[Y^L]/S(d)$.
+    \item (a, b, 0): $p_k=(a+b/k)p_{k-1}$; \; Panjer: $g_s=\frac{1}{1-af_0}\sum_{j=1}^s(a+\frac{bj}{s})f_jg_{s-j}$, \; $g_0=P_N(f_0)$.
+    \item Stop-loss: $\pi(d+h)=\pi(d)-h(1-F_S(d))$.
+    \item $\mathrm{TVaR}_p=\frac{1}{1-p}\int_p^1\mathrm{VaR}_u\,du$; \; NP2: $E+\mathrm{sd}\,\big(z+\frac\gamma6(z^2-1)\big)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w3h7-cheat, eval=FALSE>>=
+fx <- discretize(pgamma(x, 2, scale = 450), from = 0, to = 15000,
+                 step = 100, method = "rounding")
+F  <- aggregateDist("recursive", model.freq = "poisson", model.sev = fx,
+                    lambda = 768 / 32, convolve = 5, x.scale = 100, maxit = 3000)
+c(mean(F), VaR(F, 0.995), CTE(F, 0.995))
+N <- rpois(B, lambda); id <- rep(seq_len(B), N)           # vectorised simulation
+S <- tapply(rsev(sum(N)), factor(id, levels = seq_len(B)), sum, default = 0)
+glm(n_claims ~ x1 + x2 + offset(log(exposure)), family = poisson, data = d)
+glm(avg ~ x1 + x2, family = Gamma(link = "log"), weights = n_claims, data = ds)
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 4)}
+  \begin{Ushtrim}[(skript i vetëm, i riprodhueshëm)]
+    \begin{enumerate}
+      \item Për degën e Durrësit (\texttt{motor\_portfolio\_synthetic.csv}): $\lambda$ nga GLM, ashpërsia Gamma(2, 450).
+            Llogarit VaR$_{0.995}$ me Panjer, NP2 dhe simulim.
+      \item Për TPL (Ora 6): përsërit tabelën e kostos me $M=100\,000$ €. A ndryshon rekomandimi?
+      \item Me \texttt{coverage()}: dendësia e pagesës për Lomax$(3, 2\,000)$, $d=500$, $u=10\,000$.
+            Kontrollo që integrali + masa pikësore $=1$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \small Kriteri: skripti ekzekutohet pa gabim pas \emph{Session $\rightarrow$ Restart R}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 4}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 4: rezervat dhe kredibiliteti}
+  \begin{itemize}
+    \item<1-> Dëmet nuk paguhen menjëherë: trekëndëshi i zhvillimit (\emph{run-off triangle}). \LO{C2}
+    \item<2-> Chain-ladder, Mack dhe bootstrap me \Rkey{ChainLadder}: rezerva IBNR.
+    \item<3-> Kredibiliteti Bühlmann dhe Bühlmann--Straub me \texttt{actuar::cm()}. \LO{C3}
+    \item<4-> Lidhja me sot: Poisson--Gamma (Ora 2) është baza e kredibilitetit.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Shembull}[(pyetja e Javës 4)]
+    Dëmet e ndodhura deri më 31 dhjetor, por të paraportuara: sa rezervë duhet të mbajë kompania?
+  \end{Shembull}}
+\end{frame}
+
+\begin{frame}[fragile]{Përgatitja për Javën 4}
+<<w3h7-prep, eval=FALSE>>=
+install.packages("ChainLadder")   # once, before next week
+library(ChainLadder)
+@
+  \pause
+  \begin{Keshille}Të dhënat e Javës 4: \texttt{runoff\_triangle\_synthetic.csv} dhe \texttt{credibility\_portfolio\_synthetic.csv} (sintetike, me parametra të njohur).\end{Keshille}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse kapitali i TPL-së është shumë më i madh se i Kaskos me të njëjtin numër dëmesh?
+    \item Kur përdor \texttt{convolve} në \texttt{aggregateDist()}?
+    \item Çfarë do të thotë ``vlerësimi brenda 2 SE nga e vërteta''?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) bishti Pareto i ashpërsisë; (2) kur $e^{-\lambda(1-f_0)}$ bën \emph{underflow};
+  (3) diferenca shpjegohet me rastësinë e mostrës, pa treguar gabim të modelit.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 3}
+  \begin{itemize}
+    \item Modeli kolektiv $S=X_1+\dots+X_N$; momentet; konvolucioni. \LO{K3}
+    \item Shpërndarjet e humbjeve në \Rkey{actuar}; franshiza, limiti, $E[X\wedge u]$. \LO{S2}
+    \item Funksionet e përziera: përzierjet dhe shpërndarjet e përbëra. \LO{K2}
+    \item Panjer, diskretizimi, simulimi, përafrimet; VaR dhe TVaR.
+    \item GLM për frekuencën dhe ashpërsinë; prima e pastër; risigurimi XL dhe stop-loss.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item V.~Goulet et al., vinjetat e paketës \Rkey{actuar}.
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur).
+    \item README i të dhënave të kursit (të dhëna sintetike).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}
