@@ -1,0 +1,45 @@
+% ============================================================
+%  Java 5 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w5zgjMC4a]{Zgjidhja: zgjedhja e shumëfishtë (renditja)}
+  \textbf{B)} Sigurimi me afat paguan në \textbf{më pak} raste se gjithë jeta dhe se i përzieri.
+  \begin{itemize}
+    \item A) Jo gjithmonë: për 40-vjeçarin ${}_{20}E_{40}$ (mbijetesa, $\approx0.35$) është shumë më i madh se $A^1_{40:\overline{20}|}$ ($\approx0.045$).
+    \item C) E kundërta. \; D) $A_{x:\overline n|}={}_nE_x+A^1_{x:\overline n|}>{}_nE_x$.
+  \end{itemize}
+  \vfill\kthehu{w5mc4a}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjPar4]{Zgjidhja: Parashiko ($i$ nga 5\% në 8\%)}
+<<w5s4-par>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+epv <- function(x, i, l = mt$lx_male) {
+  v <- 1 / (1 + i); kp <- l[(x + 1):length(l)] / l[x + 1]
+  kq <- kp - c(kp[-1], 0); k <- seq_along(kp) - 1
+  c(A = sum(v^(k + 1) * kq), a_due = sum(v^k * kp))
+}
+r <- rbind(i5 = epv(40, 0.05), i8 = epv(40, 0.08))
+cbind(r, P = r[, "A"] / r[, "a_due"])
+@
+  \small Të dyja bien; $A_{40}$ bie më shumë në përqindje (pagesa e vetme, shumë larg në kohë). Prima bie.
+  \vfill\kthehu{w5par4}
+\end{frame}
+
+\begin{frame}[label=w5zgjUsh4]{Zgjidhja: Radha jote! (i përzieri)}
+  \begin{enumerate}
+    \item $A_{100:\overline2|}=0.925170$, \; $\ddot a_{100:\overline2|}=1.571429$: \; $P=0.588745$, pra \textbf{588\,745 lekë} në vit.
+    \item $1-0.047619\times1.571429=1-0.074830=0.925170$. \textcolor{okgreen}{$\checkmark$}
+    \item I përzieri paguan \textbf{me siguri} (në vdekje ose në 102 vjeç); ai me afat vetëm në vdekje.
+  \end{enumerate}
+  \vfill\kthehu{w5ush4}
+\end{frame}
+
+\begin{frame}[label=w5zgjTps4]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Në vitet e para, prima e nivelit është \textbf{më e madhe} se kosti i rrezikut të vitit ($v\,q_x$), sepse $q_x$ është i vogël.
+    \item Teprica investohet dhe ruhet për vitet e mëvonshme, kur $q_x$ e kalon primën.
+          Kjo shumë quhet \termi{rezervë matematike}{mathematical reserve}: e llogarisim në Javën 7.
+  \end{enumerate}
+  \vfill\kthehu{w5tps4}
+\end{frame}

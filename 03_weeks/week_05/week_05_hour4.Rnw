@@ -1,0 +1,343 @@
+% ============================================================
+%  Java 5 · Ora 4 — Teoria II: sigurimet dhe anuitetet bazë
+% ============================================================
+\section{Teoria II: sigurimet}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w5h4-setup, include=FALSE>>=
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Vlera aktuale aktuariale}
+% ------------------------------------------------------------
+
+\begin{frame}{Vlera aktuale e rastit}
+  \begin{itemize}
+    \item<1-> Një kontratë jete paguan në një kohë \textbf{të rastit}, që varet nga $K_x$ ose $T_x$.
+    \item<2-> $Z$ = vlera aktuale e pagesës (\emph{present value random variable}): variabël e rastit.
+    \item<3-> Vlera aktuale aktuariale (\emph{expected present value}, EPV) $=E[Z]$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Definicion}[(parimi i ekuivalencës)]
+    Prima neto zgjidhet që:
+    \[ E[\text{VA e primave}]=E[\text{VA e përfitimeve}]. \]
+  \end{Definicion}}
+  \onslide<5->{\small Me $i$ = norma teknike e interesit: $v=1/(1+i)$, $d=i/(1+i)=1-v$.}
+\end{frame}
+
+\begin{frame}{Dota e pastër}
+  \begin{Definicion}[(\emph{pure endowment})]
+    Paguan 1 në kohën $n$ \textbf{nëse} $x$-vjeçari është gjallë:
+    \[ Z=v^n\,\mathbf 1\{T_x>n\},\qquad {}_nE_x=E[Z]=v^n\,{}_np_x. \]
+  \end{Definicion}
+  \pause
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (8.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/0, 2/1, 4/2, 6/{\dots}, 8/n}{ \draw (\t,0.1) -- (\t,-0.1) node[below,font=\scriptsize]{\lab}; }
+    \draw[very thick,accent,->] (8,0) -- (8,1.1) node[above,font=\small]{1, nëse gjallë};
+    \node[font=\scriptsize,uptblue] at (0,0.5) {mosha $x$};
+  \end{tikzpicture}\par
+  \pause
+  \small ${}_nE_x<v^n$: kompania paguan vetëm të mbijetuarve; fondi i të vdekurve u shkon të gjallëve.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Sigurimet e jetës}
+% ------------------------------------------------------------
+
+\begin{frame}{Sigurimi për gjithë jetën}
+  \begin{Definicion}[(\emph{whole life insurance})]
+    Paguan 1 në \textbf{fund të vitit të vdekjes}:
+    \[ Z=v^{K_x+1},\qquad A_x=E[Z]=\sum_{k\ge0}v^{k+1}\,{}_{k|}q_x=\sum_{k\ge0}v^{k+1}\,{}_kp_x\,q_{x+k}. \]
+  \end{Definicion}
+  \pause
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (8.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/0, 2/1, 4/2, 6/3, 8/4}{ \draw (\t,0.1) -- (\t,-0.1) node[below,font=\scriptsize]{\lab}; }
+    \node[font=\large,accent] at (4.9,0.35) {$\dagger$};
+    \draw[very thick,accent,->] (6,0) -- (6,1.1) node[above,font=\small]{1};
+    \node[font=\scriptsize,accent] at (4.9,0.75) {vdekja};
+  \end{tikzpicture}\par
+  \small Vdekja në vitin e tretë ($K_x=2$): pagesa në $t=3$, me vlerë aktuale $v^3$.
+\end{frame}
+
+\begin{frame}{Me afat dhe e përzier}
+  \begin{Definicion}[(sigurime me afat $n$)]
+    \begin{align*}
+      \text{Me afat (\emph{term}):}\quad A^1_{x:\overline n|}&=\sum_{k=0}^{n-1}v^{k+1}\,{}_{k|}q_x \\
+      \text{E përzier (\emph{endowment}):}\quad A_{x:\overline n|}&=A^1_{x:\overline n|}+{}_nE_x
+    \end{align*}
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Me afat: paguan vetëm nëse vdes brenda $n$ viteve. Kjo i duhet Arbenit (Ora 1).
+    \item E përzier: paguan \textbf{me siguri}, në vdekje ose në fund të afatit (kursim + mbrojtje).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: $A_{100}$}
+  Tabela e vogël ($l_{100},\dots,l_{104}=1\,000,600,300,100,0$), $i=5\%$:
+  \begin{center}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{cccc}
+      \toprule
+      $k$ & ${}_{k|}q_{100}=d_{100+k}/l_{100}$ & $v^{k+1}$ & produkti \\
+      \midrule
+      0 & 0.4 & 0.952381 & 0.380952 \\
+      1 & 0.3 & 0.907029 & 0.272109 \\
+      2 & 0.2 & 0.863838 & 0.172768 \\
+      3 & 0.1 & 0.822702 & 0.082270 \\
+      \midrule
+      \multicolumn{3}{r}{$A_{100}$} & \textbf{0.908099} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Afër 1: 100-vjeçari do të vdesë shpejt, pagesa vjen pas 1--4 vitesh.
+\end{frame}
+
+\begin{frame}{Me afat 2 vite}
+  \begin{itemize}
+    \item<1-> $A^1_{100:\overline2|}=0.380952+0.272109=0.653061$ (dy rreshtat e parë).
+    \item<2-> ${}_2E_{100}=v^2\,{}_2p_{100}=0.907029\times0.3=0.272109$.
+    \item<3-> $A_{100:\overline2|}=0.653061+0.272109=0.925170$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kontroll logjik: $A^1_{x:\overline n|}<A_x$ (mbulim më i shkurtër) dhe $A_{x:\overline n|}>A^1_{x:\overline n|}$ (pagesë edhe në mbijetesë).\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Varianca e $Z$}
+  \begin{itemize}
+    \item<1-> $E[Z^2]=E[v^{2(K_x+1)}]=\sum_kv^{2(k+1)}\,{}_{k|}q_x={}^2\!A_x$: $A_x$ me $v^2$ në vend të $v$.
+    \item<2-> $\mathrm{Var}(Z)={}^2\!A_x-A_x^2$.
+    \item<3-> Me një portofol prej $N$ policash të pavarura, devijimi relativ bie si $1/\sqrt N$ (si te Java 3).
+  \end{itemize}
+  \onslide<4->{\small ${}^2\!A_x$ llogaritet me $i'=(1+i)^2-1$: me $i=5\%$, $i'=10.25\%$.}
+\end{frame}
+
+\begin{frame}[label=w5mc4a]{Zgjedhje e shumëfishtë}
+  Për një 40-vjeçar dhe $n=20$, cila renditje është gjithmonë e vërtetë?
+  \begin{enumerate}[A)]
+    \item ${}_{20}E_{40}<A^1_{40:\overline{20}|}<A_{40:\overline{20}|}$
+    \item $A^1_{40:\overline{20}|}<A_{40}$ dhe $A^1_{40:\overline{20}|}<A_{40:\overline{20}|}$
+    \item $A_{40}<A^1_{40:\overline{20}|}$
+    \item $A_{40:\overline{20}|}<{}_{20}E_{40}$
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjMC4a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Anuitetet e jetës}
+% ------------------------------------------------------------
+
+\begin{frame}{Anuiteti i jetës}
+  \begin{Definicion}[(\emph{life annuity-due})]
+    Paguan 1 në fillim të çdo viti, sa kohë $x$-vjeçari është gjallë:
+    \[ \ddot a_x=\sum_{k\ge0}v^k\,{}_kp_x=\sum_{k\ge0}{}_kE_x. \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Anuiteti i menjëhershëm (në fund të vitit): $a_x=\ddot a_x-1$.
+    \item Me afat: $\ddot a_{x:\overline n|}=\sum_{k=0}^{n-1}v^k\,{}_kp_x$.
+    \item I shtyrë: ${}_{m|}\ddot a_x={}_mE_x\,\ddot a_{x+m}$: pensioni që fillon pas $m$ vitesh.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Figura: anuiteti}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (9.5,0) node[right,font=\small]{$t$};
+    \foreach \t/\lab in {0/0, 2/1, 4/2, 6/3, 8/4}{ \draw (\t,0.1) -- (\t,-0.1) node[below,font=\scriptsize]{\lab}; }
+    \foreach \t in {0,2,4}{ \draw[very thick,uptblue,->] (\t,0) -- (\t,0.9) node[above,font=\scriptsize]{1}; }
+    \node[font=\large,accent] at (5,0.35) {$\dagger$};
+    \draw[dashed,gray,->] (6,0) -- (6,0.9) node[above,font=\scriptsize]{nuk paguhet};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Vdekja në vitin e tretë: pagesat në $t=0,1,2$ ($K_x+1=3$ pagesa). Vlera aktuale: $\ddot a_{\overline{K_x+1}|}$.
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: $\ddot a_{100}$}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{cccc}
+      \toprule
+      $k$ & ${}_kp_{100}$ & $v^k$ & produkti \\
+      \midrule
+      0 & 1.0 & 1 & 1 \\
+      1 & 0.6 & 0.952381 & 0.571429 \\
+      2 & 0.3 & 0.907029 & 0.272109 \\
+      3 & 0.1 & 0.863838 & 0.086384 \\
+      \midrule
+      \multicolumn{3}{r}{$\ddot a_{100}$} & \textbf{1.929921} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small $a_{100}=0.929922$; \quad $\ddot a_{100:\overline2|}=1+0.571429=1.571429$.
+\end{frame}
+
+\begin{frame}{Lidhja kryesore: $A_x=1-d\,\ddot a_x$}
+  Me $K=K_x$: anuiteti-certain me $K+1$ pagesa:
+  \begin{align*}
+    \ddot a_{\overline{K+1}|} &= \frac{1-v^{K+1}}{d}\qquad\text{(Java 2)} \\
+    \onslide<2->{\Rightarrow\quad \ddot a_x &= E\Big[\frac{1-v^{K+1}}{d}\Big]=\frac{1-A_x}{d}} \\
+    \onslide<3->{\Rightarrow\quad A_x &= 1-d\,\ddot a_x.}
+  \end{align*}
+  \onslide<4->{
+  \begin{block}{Kontroll në shembull}
+    $d=0.05/1.05=0.047619$: \; $1-0.047619\times1.929921=1-0.091901=0.908099=A_{100}$. \textcolor{okgreen}{$\checkmark$}
+  \end{block}}
+  \onslide<5->{\small E njëjta për afat: $A_{x:\overline n|}=1-d\,\ddot a_{x:\overline n|}$ (e përzier, jo vetëm me afat!).}
+\end{frame}
+
+\begin{frame}[label=w5par4]{Parashiko}
+  \begin{Parashiko}
+    Norma teknike rritet nga 5\% në 8\%.
+    \begin{enumerate}
+      \item $A_{40}$ rritet apo bie? Po $\ddot a_{40}$?
+      \item Cila prej tyre ndryshon më shumë në përqindje?
+      \item Si ndryshon prima neto $P_{40}=A_{40}/\ddot a_{40}$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w5zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Prima neto}
+% ------------------------------------------------------------
+
+\begin{frame}{Prima neto e nivelit}
+  Primat $P$ paguhen në fillim të çdo viti, sa kohë i siguruari është gjallë:
+  \[ P\cdot\ddot a_x=A_x\qquad\Rightarrow\qquad P_x=\frac{A_x}{\ddot a_x}. \]
+  \pause
+  \begin{itemize}
+    \item Me afat $n$: \; $P^1_{x:\overline n|}=\dfrac{A^1_{x:\overline n|}}{\ddot a_{x:\overline n|}}$.
+    \item E përzier: \; $P_{x:\overline n|}=\dfrac{A_{x:\overline n|}}{\ddot a_{x:\overline n|}}$.
+    \item<3-> Me shumë të siguruar $S$: prima $=S\cdot P$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC: primat}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{lccc}
+      \toprule
+      Kontrata (100 vjeç) & EPV përfitimi & $\ddot a$ & Prima për 1 \\
+      \midrule
+      Gjithë jetën & 0.908099 & 1.929921 & 0.470537 \\
+      Me afat 2 vite & 0.653061 & 1.571429 & 0.415584 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Për 1\,000\,000 lekë, gjithë jetën: \textbf{470\,537 lekë në vit}.
+    \item Primat janë shumë të larta sepse vdekja është pothuajse e sigurt dhe e afërt.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w5ush4]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Me të njëjtën tabelë dhe $i=5\%$:
+    \begin{enumerate}
+      \item Llogarit primën neto vjetore të sigurimit të përzier 2-vjeçar për 1\,000\,000 lekë.
+      \item Kontrollo $A_{100:\overline2|}=1-d\,\ddot a_{100:\overline2|}$.
+      \item Pse prima e përzier është më e madhe se ajo me afat?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjUsh4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w5h4-toy>>=
+lx <- c(1000, 600, 300, 100, 0); i <- 0.05; v <- 1 / (1 + i); d <- i / (1 + i)
+k  <- 0:3
+kpx <- lx[k + 1] / lx[1]                     # k p_100
+kqx <- (lx[k + 1] - lx[k + 2]) / lx[1]       # k| q_100
+A   <- sum(v^(k + 1) * kqx); a_due <- sum(v^k * kpx)
+A12 <- sum((v^(k + 1) * kqx)[1:2]); a12 <- sum((v^k * kpx)[1:2])
+E2  <- v^2 * kpx[3]
+round(c(A = A, a_due = a_due, check = 1 - d * a_due, P = A / a_due,
+        A1_2 = A12, E2 = E2, P1_2 = A12 / a12, P_endow = (A12 + E2) / a12), 6)
+@
+\end{frame}
+
+\begin{frame}{Gabime të zakonshme}
+  \begin{Gabim}
+    \begin{enumerate}
+      \item Primat në fillim të vitit ($\ddot a$), por përdoret $a_x$ (në fund): prima del shumë e madhe.
+      \item $d$, $v$ dhe $i$ ngatërrohen: $d=iv=1-v$, jo $d=i$.
+      \item ${}_nE_x=v^n$, duke harruar ${}_np_x$.
+      \item $A_{x:\overline n|}=1-d\,\ddot a_{x:\overline n|}$ përdoret për sigurimin \textbf{me afat}: vlen vetëm për të përzierin.
+    \end{enumerate}
+  \end{Gabim}
+\end{frame}
+
+\begin{frame}{Arbeni, përsëri}
+  Për klientin e Orës 1 (40 vjeç, 20 vite, 1\,000\,000 lekë):
+  \[
+    P=1\,000\,000\cdot\frac{A^1_{40:\overline{20}|}}{\ddot a_{40:\overline{20}|}}
+     =1\,000\,000\cdot\frac{\sum_{k=0}^{19}v^{k+1}\,{}_{k|}q_{40}}{\sum_{k=0}^{19}v^k\,{}_kp_{40}}.
+  \]
+  \pause
+  \begin{itemize}
+    \item 20 terma në numërues, 20 në emërues: me tabelë dhe kalkulator është e lodhshme.
+    \item Në Orën 5: një rresht me \Rkey{lifecontingencies}, dhe kontroll me kodin tonë.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Përafrimi i Orës 1 (4\,126 lekë në vit, pa skontim) duhet të dalë \textbf{mbi} primën e saktë. Pse?\end{Keshille}
+\end{frame}
+
+\begin{frame}[label=w5tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Prima e nivelit është e njëjtë çdo vit, por rreziku i vdekjes rritet me moshën.
+    \begin{enumerate}
+      \item Në vitet e para, prima është më e madhe apo më e vogël se kosti i rrezikut të vitit?
+      \item Ku shkon diferenca? Çfarë duhet të mbajë kompania në bilanc?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj $A_x$ dhe $\ddot a_x$ si shuma.
+    \item Si lidhen $A_x$ dhe $\ddot a_x$?
+    \item Me $A_x=0.3$ dhe $i=4\%$, sa është prima neto e nivelit?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\sum v^{k+1}{}_{k|}q_x$, $\sum v^k{}_kp_x$; (2) $A_x=1-d\ddot a_x$;
+  (3) $d=0.04/1.04=0.03846$, $\ddot a=0.7/0.03846=18.2$, $P=0.3/18.2=0.01648$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item ${}_nE_x=v^n{}_np_x$; \; $A_x=\sum v^{k+1}{}_{k|}q_x$; \; $A^1_{x:\overline n|}$, $A_{x:\overline n|}=A^1+{}_nE_x$.
+    \item $\ddot a_x=\sum v^k{}_kp_x$; \; $a_x=\ddot a_x-1$; \; ${}_{m|}\ddot a_x={}_mE_x\ddot a_{x+m}$.
+    \item $A_x=1-d\,\ddot a_x$ (edhe për të përzierin me afat).
+    \item Prima neto: $P=A/\ddot a$, nga parimi i ekuivalencës.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator me \Rkey{lifecontingencies}: \texttt{lifetable}, \texttt{actuarialtable}, \texttt{Axn}, \texttt{axn}, tabelat e Shqipërisë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për sigurimet e jetës).
+    \item G.~A.~Spedicato, vinjeta e paketës \Rkey{lifecontingencies}.
+    \item Programi i lëndës MFM2SII09: tabelat aktuariale, sigurimet dhe anuitetet bazë.
+  \end{itemize}
+\end{frame}
