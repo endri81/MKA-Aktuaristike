@@ -1,0 +1,298 @@
+% ============================================================
+%  Java 9 · Ora 2 — Teoria I: kufijtë e opsioneve
+% ============================================================
+\section{Teoria I: kufijtë}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kufijtë e sipërm}
+% ------------------------------------------------------------
+
+\begin{frame}{Supozimet}
+  \begin{itemize}
+    \item Aksion pa dividendë deri në $T$ (dividendët: Ora 4).
+    \item Norma pa rrezik $r>0$, e njëjtë për huamarrje dhe depozitë.
+    \item Pa kosto transaksioni, pa arbitrazh.
+    \item $C,P$: europiane; \; $C_A,P_A$: amerikane; \; të gjitha me të njëjtët $K$ dhe $T$.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Çdo kufi provohet me të njëjtën recetë: ``nëse kufiri shkelet, ndërto një arbitrazh''.\end{Keshille}
+\end{frame}
+
+\begin{frame}{$C\le C_A\le S_0$}
+  \begin{itemize}
+    \item<1-> $C\le C_A$: amerikani ka të gjitha të drejtat e europianit.
+    \item<2-> $C_A\le S_0$: supozo $C_A>S_0$. Shit call-in, bli aksionin: fitim sot $C_A-S_0>0$.
+    \item<3-> Nëse call-i ushtrohet (në çdo kohë): dorëzo aksionin, merr $K\ge0$. Nëse jo: mbaj aksionin.
+    \item<4-> Asnjë humbje, fitim sot: arbitrazh. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \onslide<5->{\small Intuita: një e drejtë për të blerë aksionin nuk mund të vlejë më shumë se vetë aksioni.}
+\end{frame}
+
+\begin{frame}{$P\le Ke^{-rT}$ dhe $P_A\le K$}
+  \begin{itemize}
+    \item<1-> Put-i europian paguan të shumtën $K$ në $T$ (kur $S_T=0$): vlen të shumtën $Ke^{-rT}$ sot.
+    \item<2-> Put-i amerikan mund të paguajë $K$ menjëherë: vlen të shumtën $K$.
+    \item<3-> Kufiri i amerikanit është \textbf{më i lartë}: ushtrimi i hershëm i put-it mund të ketë vlerë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kufijtë e poshtëm}
+% ------------------------------------------------------------
+
+\begin{frame}{$C\ge S_0-Ke^{-rT}$}
+  Portofoli A: call + $Ke^{-rT}$ në bankë. \; Portofoli B: një aksion.
+  \pause
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      Në $T$ & $S_T<K$ & $S_T\ge K$ \\
+      \midrule
+      A & $K$ & $(S_T-K)+K=S_T$ \\
+      B & $S_T$ & $S_T$ \\
+      \midrule
+      A $-$ B & $K-S_T>0$ & $0$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item A $\ge$ B në çdo skenar $\Rightarrow$ $C+Ke^{-rT}\ge S_0$.
+    \item Bashkë me $C\ge0$: \; \fbox{$C\ge\max(S_0-Ke^{-rT},\,0)$}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{$P\ge Ke^{-rT}-S_0$}
+  Portofoli C: put + një aksion. \; Portofoli D: $Ke^{-rT}$ në bankë.
+  \pause
+  \begin{itemize}
+    \item Në $T$: C $=\max(S_T,K)\ge K=$ D.
+    \item Pra $P+S_0\ge Ke^{-rT}$, dhe \; \fbox{$P\ge\max(Ke^{-rT}-S_0,\,0)$}.
+  \end{itemize}
+  \pause
+  \small E njëjta logjikë si parity, por me ``$\ge$'': nuk kemi nevojë për portofolin tjetër.
+\end{frame}
+
+\begin{frame}{Kufijtë e amerikanëve}
+  \begin{itemize}
+    \item<1-> $C_A\ge(S_0-K)^+$ dhe $P_A\ge(K-S_0)^+$.
+    \item<2-> Prova: nëse $P_A<K-S_0$, bli put-in dhe aksionin, ushtro menjëherë: fitim $K-S_0-P_A>0$.
+    \item<3-> Për call-in: $C_A\ge C\ge S_0-Ke^{-rT}>S_0-K$. Kufiri europian është \textbf{më i fortë}!
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Për call-in, kufiri europian $S_0-Ke^{-rT}$ është mbi vlerën intrinsike $S_0-K$. Kjo do të jetë çelësi i Orës 4.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Përmbledhja e kufijve}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Kufiri i poshtëm & Kufiri i sipërm \\
+      \midrule
+      $C$ & $\max(S_0-Ke^{-rT},0)$ & $S_0$ \\
+      $C_A$ & $\max(S_0-Ke^{-rT},0)$ & $S_0$ \\
+      $P$ & $\max(Ke^{-rT}-S_0,0)$ & $Ke^{-rT}$ \\
+      $P_A$ & $\max(K-S_0,0)$ & $K$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Call-i amerikan dhe europian kanë të njëjtët kufij; put-i amerikan ka kufij më të lartë se europiani.
+\end{frame}
+
+\begin{frame}{Zona e lejuar për $C$}
+  \centering
+  \begin{tikzpicture}[x=0.055cm,y=0.042cm,>=Stealth]
+    \fill[uptlight] (0,0) -- (97,0) -- (150,53) -- (150,100) -- (100,100) -- cycle;
+    \draw[->] (0,0) -- (155,0) node[right,font=\small]{$S_0$};
+    \draw[->] (0,0) -- (0,100) node[above,font=\small]{$C$};
+    \draw[very thick,warnred] (0,0) -- (97,0) -- (150,53);
+    \node[font=\scriptsize,warnred,right] at (118,30) {$S_0-Ke^{-rT}$};
+    \draw[very thick,uptblue] (0,0) -- (98,98);
+    \node[font=\scriptsize,uptblue,above left] at (80,80) {$C=S_0$};
+    \draw[dashed,gray] (100,0) -- (150,50);
+    \node[font=\scriptsize,gray,below] at (100,0) {$K$};
+    \node[font=\scriptsize,below] at (92,0) {$Ke^{-rT}$};
+  \end{tikzpicture}\par
+  \small E kaltra: zona pa arbitrazh. Vija gri e ndërprerë: vlera intrinsike $S_0-K$, poshtë kufirit të kuq.
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC}
+  $S_0=60$, $K=55$, $r=4\%$, $T=0.5$; \; $e^{-0.02}=0.980199$.
+  \pause
+  \begin{itemize}
+    \item $Ke^{-rT}=53.9109$.
+    \item $C,C_A\in[60-53.9109,\;60]=[6.0891,\;60]$.
+    \item $P\in[0,\;53.9109]$; \; $P_A\in[0,\;55]$.
+  \end{itemize}
+  \pause
+  \small Nëse tregu kuoton $C=5.80$: shkel kufirin. Arbitrazhi: bli call-in, shit aksionin, depozito $Ke^{-rT}$.
+\end{frame}
+
+\begin{frame}[label=w9mc2]{Zgjedhje e shumëfishtë}
+  Cili është kufiri më i mirë i poshtëm për $P_A$?
+  \begin{enumerate}[A)]
+    \item $\max(Ke^{-rT}-S_0,\,0)$
+    \item $\max(K-S_0,\,0)$
+    \item $K-S_0e^{-rT}$
+    \item $0$
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjMC2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Monotonia}
+% ------------------------------------------------------------
+
+\begin{frame}{Sipas $K$ dhe $S_0$}
+  \begin{itemize}
+    \item<1-> $C$ \textbf{bie} me $K$, $P$ \textbf{rritet} me $K$.
+    \item<2-> Për $K_1<K_2$: \; $0\le C(K_1)-C(K_2)\le(K_2-K_1)e^{-rT}$.
+    \item<3-> $C$ rritet me $S_0$, $P$ bie me $S_0$.
+    \item<4-> Me $\sigma$: të dy \textbf{rriten} (Java 10, ``vega'').
+  \end{itemize}
+  \onslide<5->{\small Prova e pikës 2: payoff-et ndryshojnë të shumtën me $K_2-K_1$ në $T$.}
+\end{frame}
+
+\begin{frame}{Sipas $T$}
+  \begin{itemize}
+    \item<1-> \textbf{Amerikanët} rriten (jo rreptësisht) me $T$: afat më i gjatë = më shumë të drejta.
+    \item<2-> Call-i europian pa dividendë: rritet me $T$, sepse $C=C_A$ (Ora 4).
+    \item<3-> Put-i europian: \textbf{jo domosdoshmërisht}!
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}
+    $S_0=10$, $K=100$, $\sigma=25\%$, $r=3\%$: \; $P(T=1)=87.04$, \; $P(T=10)=64.12$, \; $P(T=20)=45.53$.
+  \end{Shembull}}
+  \onslide<5->{\small Pse? Pagesa $\approx K-S_T$ vjen në $T$: sa më larg, aq më shumë skontohet $K$.}
+\end{frame}
+
+\begin{frame}[label=w9gab2]{Gjej gabimin}
+  Një student shkruan:
+  \begin{quote}
+    ``Çdo opsion vlen më shumë kur afati është më i gjatë, sepse ka më shumë kohë që çmimi të lëvizë në favorin tonë.''
+  \end{quote}
+  \begin{enumerate}
+    \item Për cilat opsione është e vërtetë pohimi?
+    \item Për cilin opsion është e gabuar? Jep një kundërshembull nga slide-i i mëparshëm.
+    \item Sa vlen put-i amerikan me $S_0=10$, $K=100$ për çdo $T$? Pse?
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjGab2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Konveksiteti sipas $K$ \Zgj}
+  \begin{Teoreme}
+    Për $K_1<K_2<K_3$ me $K_2=\lambda K_1+(1-\lambda)K_3$:
+    \[
+      C(K_2)\le\lambda\,C(K_1)+(1-\lambda)\,C(K_3).
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Prova: portofoli ``\emph{butterfly}'': $\lambda$ call $K_1$ + $(1-\lambda)$ call $K_3$ $-$ 1 call $K_2$ ka payoff $\ge0$.
+    \item Pasoja: çmimi si funksion i $K$ është kurbë \textbf{konvekse}; kontroll i mirë për të dhënat e tregut.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Parity amerikane}
+% ------------------------------------------------------------
+
+\begin{frame}{Teorema}
+  \begin{Teoreme}[(aksion pa dividendë)]
+    \[
+      S_0-K\;\le\;C_A-P_A\;\le\;S_0-Ke^{-rT}.
+    \]
+  \end{Teoreme}
+  \pause
+  \textbf{Kufiri i sipërm.}
+  \begin{itemize}
+    \item $C_A=C$ (Ora 4) dhe $P_A\ge P$.
+    \item Pra $C_A-P_A\le C-P=S_0-Ke^{-rT}$ (parity europiane). \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Kufiri i poshtëm}
+  Portofoli I: call europian + $K$ në bankë. \; Portofoli II: put amerikan + aksion.
+  \pause
+  \begin{itemize}
+    \item Nëse put-i ushtrohet herët në $\tau$: II vlen $K$; I vlen $C_\tau+Ke^{r\tau}\ge K$.
+    \item Nëse jo: në $T$, II $=\max(S_T,K)$; I $=\max(S_T,K)+K(e^{rT}-1)\ge$ II.
+  \end{itemize}
+  \pause
+  \begin{itemize}
+    \item I $\ge$ II gjithmonë $\Rightarrow$ $C+K\ge P_A+S_0$.
+    \item Me $C=C_A$: \; $C_A-P_A\ge S_0-K$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Kontroll numerik}
+  $S_0=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$ (Ora 1):
+  \begin{itemize}
+    \item<1-> Kufijtë: $0\le C_A-P_A\le100-97.0446=2.9554$.
+    \item<2-> Nga \texttt{binomopt()}: $C_A-P_A=11.3523-8.6786=2.6737$. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> Europianët: $C-P=2.9554$, saktësisht në kufirin e sipërm.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w9ush2]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    $S_0=52$, $K=50$, $r=5\%$, $T=1$; tregu kuoton $C_A=6.00$; \; $e^{-0.05}=0.951229$.
+    \begin{enumerate}
+      \item Llogarit kufijtë për $C_A-P_A$.
+      \item Gjej intervalin e lejuar për $P_A$.
+      \item Nëse tregu kuoton $P_A=4.50$: cili kufi shkelet? Çfarë do të bëje?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w9tps2]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    \begin{enumerate}
+      \item Një model jep $C=61$ për $S_0=60$, $K=55$, $T=0.5$. Po $C=58$? Si i kontrollon pa e ditur modelin?
+      \item Pse kufijtë pa arbitrazh janë kontrolli i parë i çdo kodi për çmimin e opsioneve?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjTps2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj kufijtë e poshtëm të $C$ dhe $P_A$.
+    \item Pse put-i europian mund të vlejë më pak me afat më të gjatë?
+    \item Shkruaj parity amerikane.
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\max(S_0-Ke^{-rT},0)$, $\max(K-S_0,0)$; (2) $K$ skontohet më shumë;
+  (3) $S_0-K\le C_A-P_A\le S_0-Ke^{-rT}$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item Receta: ``kufiri shkelet $\Rightarrow$ arbitrazh''.
+    \item Tabela e kufijve: $C=C_A$ në kufij; $P_A$ ka kufij më të lartë.
+    \item Monotonia: $K$, $S_0$, $\sigma$; me $T$ vetëm për amerikanët dhe për call-in europian.
+    \item Parity amerikane: $S_0-K\le C_A-P_A\le S_0-Ke^{-rT}$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator R: kufijtë në rrjeta, vlera kundrejt vlerës intrinsike, kontrolli i kodit.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: kufijtë dhe parity amerikane.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson: vetitë e çmimeve të opsioneve.
+  \end{itemize}
+\end{frame}

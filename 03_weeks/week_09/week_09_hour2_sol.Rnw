@@ -1,0 +1,41 @@
+% ============================================================
+%  Java 9 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w9zgjMC2]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $\max(K-S_0,0)$: put-i amerikan mund të ushtrohet menjëherë.
+  \begin{itemize}
+    \item A) është kufiri i europianit: më i dobët, sepse $Ke^{-rT}<K$.
+    \item C) nuk është kufi i vlefshëm. \; D) i vërtetë, por shumë i dobët.
+  \end{itemize}
+  \vfill\kthehu{w9mc2}
+\end{frame}
+
+\begin{frame}[label=w9zgjGab2]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item E vërtetë për \textbf{amerikanët} dhe për \textbf{call-in europian} pa dividendë.
+    \item E gabuar për \textbf{put-in europian}: me $S_0=10$, $K=100$, $P(1)=87.04>P(10)=64.12$.
+    \item \texttt{binomopt()} jep $P_A=90$ për çdo $T$: ushtrimi i menjëhershëm është optimal, vlera = vlera intrinsike. (Kushti $S_0<K(1-e^{-rT})$ i Orës 1 është vetëm i \textbf{mjaftueshëm}: këtu ushtrimi është optimal edhe kur ai nuk plotësohet.)
+  \end{enumerate}
+  \vfill\kthehu{w9gab2}
+\end{frame}
+
+\begin{frame}[label=w9zgjUsh2]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $52-50=2\;\le\;C_A-P_A\;\le\;52-47.5615=4.4385$.
+    \item $P_A\in[6-4.4385,\;6-2]=[1.5615,\;4.0000]$.
+    \item $P_A=4.50>4$: shkelet kufiri i poshtëm ($C_A-P_A=1.5<2$). Put-i është i shtrenjtë:
+      shit put-in ($+4.50$), shit aksionin ($+52$), bli call-in ($-6$), depozito $K=50$. Fitimi sot: $+0.50$.
+      Nëse put-i ushtrohet kundër nesh, blejmë aksionin me $K$ nga depozita dhe mbyllim pozicionin.
+  \end{enumerate}
+  \vfill\kthehu{w9ush2}
+\end{frame}
+
+\begin{frame}[label=w9zgjTps2]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item $C=61>S_0=60$: shkel kufirin e sipërm, pra modeli (ose kodi) ka gabim. $C=58$ është brenda kufijve $[6.09,\;60]$:
+      kufijtë nuk e zbulojnë; do të duhej një volatilitet shumë i madh. Kontroll i dytë: volatiliteti implicit (Java 10).
+    \item Kufijtë nuk varen nga modeli: një kod që i shkel ka gabim me siguri, për çdo supozim.
+  \end{enumerate}
+  \vfill\kthehu{w9tps2}
+\end{frame}
