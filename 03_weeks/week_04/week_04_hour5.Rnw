@@ -1,0 +1,370 @@
+% ============================================================
+%  Java 4 · Ora 5 — Laborator R II: ChainLadder dhe cm()
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w4h5-setup, include=FALSE>>=
+suppressMessages({library(ChainLadder); library(actuar)})
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mln <- function(x, d = 2) fmt(x / 1e6, d)
+@
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \Rkey{ChainLadder}: \texttt{as.triangle()}, \texttt{ata()}, \texttt{plot()}.
+    \item<2-> \texttt{MackChainLadder()}: rezerva, gabimi standard, mbetjet.
+    \item<3-> \texttt{BootChainLadder()}: gjithë shpërndarja e rezervës, kuantilet 75\% dhe 99.5\%.
+    \item<4-> \texttt{actuar::cm()}: Bühlmann--Straub mbi 12 kontrata, \textbf{vlerësimi kundrejt së vërtetës}.
+  \end{enumerate}
+  \onslide<5->{\small Paketat: \Rkey{ChainLadder} \Sexpr{as.character(packageVersion("ChainLadder"))}, \Rkey{actuar} \Sexpr{as.character(packageVersion("actuar"))}.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Trekëndëshi në \texttt{ChainLadder}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Objekti \texttt{triangle}}
+<<w4h5-tri>>=
+rt  <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year",
+                   value = "cum_paid_eur")
+class(trc)
+round(trc[8:10, 1:4] / 1e6, 3)
+@
+  \small \texttt{as.triangle()} bën në një rresht atë që bëmë me \texttt{cbind()} në Orën 3.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{plot()} i trekëndëshit}
+<<w4h5-plot, echo=FALSE, fig.height=3.3>>=
+par(mar = c(4, 4, 0.5, 0.5))
+plot(trc / 1e6, ylab = "mln EUR", xlab = "viti i zhvillimit")
+@
+  \small Një vijë për çdo vit aksidenti, si figura ggplot e Orës 1, por me një thirrje.
+\end{frame}
+
+\begin{frame}[fragile]{Raportet individuale me \texttt{ata()}}
+<<w4h5-ata>>=
+a <- ata(trc)
+round(a[1:3, 1:5], 3)
+round(rbind(volume_weighted = attr(a, "vwtd"),
+            simple_average  = attr(a, "smpl")), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{ata()} jep matricën e raporteve $F_{ij}=C_{i,j+1}/C_{ij}$.
+    \item<2-> \texttt{vwtd}: mesatarja e peshuar, pra $\hat f_j$ i chain-ladder (Ora 3). \textcolor{okgreen}{$\checkmark$}
+    \item<3-> \texttt{smpl}: mesatarja e thjeshtë (ushtrimi i Orës 1). Ndryshon pak nga \texttt{vwtd}.
+    \item<4-> Kolona \texttt{6-7}: të gjitha raportet 1.000. Anomalia shihet menjëherë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w4gab5]{Gjej gabimin}
+<<w4h5-bug, warning=FALSE>>=
+mk_bad <- MackChainLadder(rt)                 # long data frame, not a triangle
+head(summary(mk_bad)$ByOrigin[, c("Latest", "IBNR")], 3)
+c(rows = nrow(summary(mk_bad)$ByOrigin), IBNR = summary(mk_bad)$Totals[4, 1])
+@
+  \begin{enumerate}
+    \item Pse nuk del asnjë gabim, por IBNR del 0?
+    \item Çfarë ``trekëndëshi'' ka parë funksioni?
+  \end{enumerate}
+  \vfill\shkoTe{w4zgjGab5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{\texttt{MackChainLadder()}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Mack me një thirrje}
+<<w4h5-mack, warning=FALSE>>=
+mk <- MackChainLadder(trc, est.sigma = "Mack")
+by <- summary(mk)$ByOrigin
+round(data.frame(latest = by$Latest, ultimate = by$Ultimate,
+                 IBNR = by$IBNR, se = by$Mack.S.E,
+                 row.names = rownames(by)) / 1e6, 3)[5:10, ]
+@
+\end{frame}
+
+\begin{frame}[fragile]{Totali dhe paralajmërimi}
+<<w4h5-tot>>=
+round(summary(mk)$Totals, 3)
+@
+  \begin{itemize}
+    \item<2-> E njëjta rezervë \Sexpr{mln(summary(mk)$Totals[4, 1])} mln € dhe e njëjta se \Sexpr{mln(summary(mk)$Totals[5, 1])} mln € si kodi ynë i Orës 3.
+    \item<3-> Me parametrat e parazgjedhur, R jep paralajmërimin \emph{``no variation in development 6--7''}: përsëri kolona 7.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Mbetjet sipas vitit kalendarik}
+<<w4h5-res, echo=FALSE, fig.height=3.2>>=
+par(mar = c(4, 4, 0.5, 0.5))
+plot(mk, which = 5)
+@
+  \small Mbetjet e standardizuara $r_{ij}$ (Ora 2) sipas diagonales; vija e kuqe: mesatarja lokale.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mbetjet janë rreth zeros, pa trend të qartë: nuk ka efekt të fortë të vitit kalendarik.
+    \item<2-> Shumica janë brenda $\pm2$: supozimi (M3) duket i pranueshëm.
+    \item<3-> \texttt{plot(mk)} pa \texttt{which} jep 6 grafikë: ultimate, zhvillimi, mbetjet sipas vlerës, vitit të aksidentit, vitit kalendarik dhe zhvillimit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Anomalia e kolonës 7 nuk shihet këtu: $F_{i6}=\hat f_6=1$, pra mbetjet e asaj kolone janë saktësisht 0. Kontrolli i inkrementaleve (Ora 1) mbetet i domosdoshëm.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi kundrejt së vërtetës sipas vitit}
+<<w4h5-truth>>=
+p_true <- c(0.40, 0.65, 0.80, 0.88, 0.93, 0.96, 0.98, 0.99, 0.995, 1)
+R_true <- by$Latest * (1 / p_true[10:1] - 1)
+z <- (by$IBNR - R_true) / by$Mack.S.E
+round(data.frame(IBNR = by$IBNR / 1e6, truth = R_true / 1e6, z = z,
+                 row.names = rownames(by)), 2)[4:10, ]
+@
+  \small $z$ = (vlerësimi $-$ e vërteta) / se. Vitet 2016--2018 kanë se $\approx0$ dhe nuk shfaqen.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Për shumicën e viteve, $|z|<2$: e vërteta është brenda intervalit të Mack-ut.
+    \item<2-> Viti 2019 ka $z$ të madh: se e Mack-ut është e vogël, sepse $\hat\sigma_6^2=0$ dhe $\hat\sigma_7^2,\hat\sigma_8^2$ janë të vogla.
+    \item<3-> Kjo është ``siguria e rreme'' e Orës 3: të dhënat e gabuara nënvlerësojnë pasigurinë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{\texttt{BootChainLadder()}}
+% ------------------------------------------------------------
+
+\begin{frame}{Bootstrap ODP me fjalë}
+  \begin{enumerate}
+    \item<1-> Përshtat chain-ladder dhe llogarit pagesat inkrementale të pritura $\hat\mu_{ij}$.
+    \item<2-> Llogarit mbetjet e Pearson-it: $r_{ij}=(X_{ij}-\hat\mu_{ij})/\sqrt{\hat\mu_{ij}}$.
+    \item<3-> \textbf{Rizgjidh} mbetjet me kthim dhe ndërto një trekëndësh të ri: $X^*_{ij}=\hat\mu_{ij}+r^*_{ij}\sqrt{\hat\mu_{ij}}$.
+    \item<4-> Rillogarit faktorët dhe parashiko të ardhmen, duke shtuar zhurmën ODP (gabimi i procesit).
+    \item<5-> Përsërit $R$ herë: shpërndarja e $R^*$ = shpërndarja e rezervës.
+  \end{enumerate}
+  \onslide<6->{\small Hapi 3 mat gabimin e vlerësimit; hapi 4 gabimin e procesit. I njëjti ndarje si msep i Mack-ut.}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{BootChainLadder()} në R}
+<<w4h5-boot>>=
+set.seed(2026)
+bt <- BootChainLadder(trc, R = 9999, process.distr = "od.pois")
+round(summary(bt)$Totals / 1e6, 3)
+round(quantile(bt, c(0.75, 0.995))$Totals / 1e6, 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Shpërndarja e rezervës totale}
+<<w4h5-hist, echo=FALSE, fig.height=3.1>>=
+ggplot(data.frame(R = bt$IBNR.Totals / 1e6), aes(R)) +
+  geom_histogram(bins = 40, fill = "#5B8BD0", colour = "white") +
+  geom_vline(xintercept = summary(mk)$Totals[4, 1] / 1e6, colour = "#C0392B", linewidth = 1) +
+  geom_vline(xintercept = as.numeric(quantile(bt, 0.995)$Totals) / 1e6, colour = "#E67E22",
+             linewidth = 1, linetype = 2) +
+  labs(x = "rezerva totale (mln EUR)", y = "numri i simulimeve") + th
+@
+  \small E kuqe: rezerva chain-ladder. Portokalli: kuantili 99.5\% i bootstrap-it.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mesatarja e bootstrap-it $\approx$ chain-ladder: \Sexpr{mln(summary(bt)$Totals[3, 1])} mln €.
+    \item<2-> Devijimi \Sexpr{mln(summary(bt)$Totals[4, 1])} mln €, më i madh se se e Mack-ut (\Sexpr{mln(summary(mk)$Totals[5, 1])} mln €).
+    \item<3-> Arsyeja: ODP vlerëson një parametër shpërndarjeje $\phi$ të përbashkët për të gjitha kolonat, pa ``besuar'' te $\hat\sigma_6^2=0$.
+    \item<4-> Kuantili 99.5\%: \Sexpr{mln(quantile(bt, 0.995)$Totals)} mln €, pra \Sexpr{mln(quantile(bt, 0.995)$Totals - summary(bt)$Totals[3, 1])} mln € mbi mesataren.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w4par5]{Parashiko para se ta ekzekutosh}
+  \begin{Parashiko}
+    Përsërisim \texttt{BootChainLadder()} me tre farë të ndryshme (\texttt{set.seed}).
+    \begin{enumerate}
+      \item Me $R=999$, sa ndryshon kuantili 99.5\% nga një farë te tjetra?
+      \item Me $R=9\,999$, ndryshimi rritet apo zvogëlohet? Sa herë përafërsisht?
+      \item Pse kuantili 99.5\% është më i paqëndrueshëm se mesatarja?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w4zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm me bootstrap}
+  \begin{Gabim}
+    \begin{enumerate}
+      \item Pa \texttt{set.seed()}: rezerva e raportuar ndryshon sa herë ekzekutohet skripti.
+      \item $R=100$ për kuantilin 99.5\%: vetëm $\approx0.5$ vlera mbi kuantil, rezultat i pabesueshëm.
+      \item Mbetjet ODP kërkojnë $\hat\mu_{ij}>0$; kolonat me shuma inkrementale negative e prishin metodën.
+    \end{enumerate}
+  \end{Gabim}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kredibiliteti me \texttt{cm()}}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Të dhënat e kredibilitetit}
+<<w4h5-cpdata>>=
+cp <- read.csv(file.path(DATA, "credibility_portfolio_synthetic.csv"))
+head(cp, 3)
+Rm <- xtabs(loss_ratio ~ contract + year, data = cp)   # ratios X_ij
+Wm <- xtabs(volume ~ contract + year, data = cp)       # weights w_ij
+dat <- data.frame(contract = 1:12, unclass(Rm), unclass(Wm))
+names(dat) <- c("contract", paste0("r", 2020:2025), paste0("w", 2020:2025))
+@
+  \small Të dhëna \textbf{sintetike}: 12 kontrata $\times$ 6 vite. \texttt{cm()} do format të \textbf{gjerë}: një rresht për kontratë.
+\end{frame}
+
+\begin{frame}[fragile]{Bühlmann--Straub me \texttt{cm()}}
+<<w4h5-cm>>=
+fit <- cm(~ contract, data = dat,
+          ratios = r2020:r2025, weights = w2020:w2025)
+fit
+@
+\end{frame}
+
+\begin{frame}{Vlerësimi kundrejt së vërtetës}
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    Parametri & \texttt{cm()} & E vërteta \\
+    \midrule
+    $m$ (prima kolektive) & \Sexpr{fmt(fit$means[[1]], 3)} & 0.800 \\
+    $a$ (midis kontratave) & \Sexpr{fmt(fit$unbiased[1], 4)} & 0.0320 \\
+    $s^2$ (brenda kontratave) & \Sexpr{fmt(fit$unbiased[2], 2)} & 6.25 \\
+    $k=s^2/a$ & \Sexpr{fmt(fit$unbiased[2] / fit$unbiased[1], 0)} & 195 \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \begin{itemize}
+    \item<2-> $s^2$ vlerësohet mirë: 72 vrojtime brenda kontratave.
+    \item<3-> $m$ dhe $a$ mbështeten vetëm te \textbf{12} kontrata: gabimi standard i $\hat m$ është $\approx\sqrt{a/12}\approx0.05$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Kredibiliteti dhe prima e çdo kontrate}
+<<w4h5-pred>>=
+tab <- data.frame(volume = rowSums(Wm), Xw = fit$means[[2]],
+                  Z = fit$cred, premium = predict(fit))
+round(tab, 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Figura: tkurrja drejt portofolit}
+<<w4h5-shrink, echo=FALSE, fig.height=3.1>>=
+tb <- data.frame(contract = factor(1:12), Xw = tab$Xw, P = tab$premium)
+ggplot(tb) +
+  geom_segment(aes(x = contract, xend = contract, y = Xw, yend = P),
+               arrow = arrow(length = unit(0.15, "cm")), colour = "grey40") +
+  geom_point(aes(contract, Xw, colour = "raporti i vet"), size = 2.5) +
+  geom_point(aes(contract, P, colour = "prima e kredibilitetit"), size = 2.5) +
+  geom_hline(yintercept = fit$means[[1]], linetype = 2) +
+  scale_colour_manual(values = c("#C0392B", "#2C5AA0")) +
+  labs(x = "kontrata", y = "raporti i demeve", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Çdo shigjetë lëviz nga raporti i vet drejt vijës $\hat m=\Sexpr{fmt(fit$means[[1]], 3)}$.
+    \item<2-> Kontrata 3 (vëllimi më i vogël, \Sexpr{fmt(tab$volume[3])}) ka $Z$ më të vogël, \Sexpr{fmt(tab$Z[3], 3)}; raporti i saj është afër $\hat m$, ndaj shigjeta është e shkurtër.
+    \item<3-> Kontrata 7 (vëllimi më i madh) ka $Z$ më të madh, \Sexpr{fmt(tab$Z[7], 3)}.
+    \item<4-> Lëvizjet më të mëdha: kontrata 8 (\Sexpr{fmt(tab$Xw[8], 3)} $\to$ \Sexpr{fmt(tab$premium[8], 3)}) dhe kontrata 5 (\Sexpr{fmt(tab$Xw[5], 3)} $\to$ \Sexpr{fmt(tab$premium[5], 3)}): sa më larg $\hat m$, aq më e gjatë shigjeta.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Këtë grafik e kuptojnë edhe menaxherët e shitjeve: tregon pse klienti ``i mirë'' nuk merr menjëherë uljen e plotë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: formati i të dhënave}
+  \begin{Gabim}
+    \texttt{cm(\textasciitilde{} contract, data = cp, ratios = loss\_ratio, weights = volume)} me të dhënat në format të \textbf{gjatë}.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item \texttt{cm()} pret \textbf{një rresht për kontratë} dhe një kolonë për çdo vit.
+    \item \texttt{ratios} dhe \texttt{weights} janë \textbf{vargje kolonash} (\texttt{r2020:r2025}), në të njëjtin rend.
+    \item Me format të gjatë, çdo rresht trajtohet si ``kontratë'' me një vit të vetëm: $\hat s^2$ nuk mund të vlerësohet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Bühlmann pa pesha: krahasim}
+<<w4h5-buhl>>=
+fit_b <- cm(~ contract, data = dat, ratios = r2020:r2025)
+round(rbind(straub   = c(m = fit$means[[1]],   a = fit$unbiased[1],
+                         Z3 = fit$cred[3],   Z7 = fit$cred[7]),
+            buhlmann = c(m = fit_b$means[[1]], a = fit_b$unbiased[1],
+                         Z3 = fit_b$cred[3], Z7 = fit_b$cred[7])), 4)
+@
+  \small Pa pesha, të gjitha kontratat marrin të njëjtin $Z$: flota e vogël dhe e madhe trajtohen njësoj.
+\end{frame}
+
+\begin{frame}[label=w4ush5]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Me $\hat s^2=\Sexpr{fmt(fit$unbiased[2], 3)}$ dhe $\hat a=\Sexpr{fmt(fit$unbiased[1], 4)}$:
+    \begin{enumerate}
+      \item llogarit $\hat k$;
+      \item llogarit $Z_3$ për kontratën 3 me vëllim total \Sexpr{fmt(tab$volume[3])};
+      \item llogarit primën me $\bar X_{3w}=\Sexpr{fmt(tab$Xw[3], 4)}$ dhe $\hat m=\Sexpr{fmt(fit$means[[1]], 4)}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjUsh5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w4ndr5]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(5 minuta)]
+    Hiq kontratën 8 (raporti më i lartë) dhe përsërit \texttt{cm()}.
+    \begin{enumerate}
+      \item Si ndryshojnë $\hat m$ dhe $\hat a$?
+      \item Si ndryshon $Z$ i kontratës 3? Pse?
+      \item Çfarë mëson për ndjeshmërinë e kredibilitetit me pak kontrata?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjNdr5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse \texttt{MackChainLadder(rt)} me të dhëna në format të gjatë është i rrezikshëm?
+    \item Pse devijimi i bootstrap-it ndryshon nga se e Mack-ut?
+    \item Cilat argumente kërkon \texttt{cm()} për Bühlmann--Straub?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) nuk jep gabim, por rezultati është i pakuptimtë; (2) ODP përdor një $\phi$ të përbashkët dhe ka supozime të tjera për procesin;
+  (3) formula \texttt{\textasciitilde{} contract}, \texttt{data} në format të gjerë, \texttt{ratios} dhe \texttt{weights}.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{as.triangle()}, \texttt{ata()}, \texttt{plot()}: trekëndëshi dhe faktorët me pak rreshta.
+    \item \texttt{MackChainLadder()} = kodi ynë; rezerva \Sexpr{mln(summary(mk)$Totals[4, 1])} mln €, se \Sexpr{mln(summary(mk)$Totals[5, 1])} mln €.
+    \item \texttt{BootChainLadder()}: kuantili 75\% \Sexpr{mln(quantile(bt, 0.75)$Totals)} mln €, 99.5\% \Sexpr{mln(quantile(bt, 0.995)$Totals)} mln €.
+    \item \texttt{cm()}: $\hat m=\Sexpr{fmt(fit$means[[1]], 3)}$ (e vërteta 0.8), $\hat k\approx\Sexpr{fmt(fit$unbiased[2] / fit$unbiased[1])}$ (e vërteta 195).
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6 \Zgj}
+    Rast studimi: rezerva IFRS 17 dhe Solvency II, ndjeshmëria, \texttt{glmReserve()}, primat e flotave për 2026.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item M.~Gesmann et al., vinjeta e paketës \Rkey{ChainLadder}: \texttt{?MackChainLadder}, \texttt{?BootChainLadder}.
+    \item P.~D.~England, R.~J.~Verrall (2002), ``Stochastic claims reserving in general insurance'', \emph{British Actuarial Journal} 8(3).
+    \item V.~Goulet et al., vinjeta e kredibilitetit në \Rkey{actuar}: \texttt{?cm}.
+    \item README i të dhënave: \texttt{runoff\_triangle\_synthetic.csv}, \texttt{credibility\_portfolio\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

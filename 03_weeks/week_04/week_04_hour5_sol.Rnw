@@ -1,0 +1,69 @@
+% ============================================================
+%  Java 4 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w4s5-setup, include=FALSE>>=
+suppressMessages({library(ChainLadder); library(actuar)})
+rt  <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year", value = "cum_paid_eur")
+cp  <- read.csv(file.path(DATA, "credibility_portfolio_synthetic.csv"))
+Rm  <- xtabs(loss_ratio ~ contract + year, data = cp)
+Wm  <- xtabs(volume ~ contract + year, data = cp)
+dat <- data.frame(contract = 1:12, unclass(Rm), unclass(Wm))
+names(dat) <- c("contract", paste0("r", 2020:2025), paste0("w", 2020:2025))
+fit <- cm(~ contract, data = dat, ratios = r2020:r2025, weights = w2020:w2025)
+@
+
+\begin{frame}[fragile,label=w4zgjGab5]{Zgjidhja: Gjej gabimin (format i gjatë)}
+<<w4s5-gab>>=
+dim(as.matrix(rt))
+@
+  \begin{enumerate}
+    \item \texttt{MackChainLadder()} e kthen \texttt{data.frame}-in në matricë pa kontrolluar formën: nuk ka gabim, por as kuptim.
+    \item Ai sheh një ``trekëndësh'' me 55 rreshta (çdo qelizë = një ``vit aksidenti'') dhe 3 kolona
+          (viti, zhvillimi, shuma). Çdo rresht duket ``i mbaruar'', ndaj IBNR del 0.
+  \end{enumerate}
+  \begin{Keshille}Kontrollo gjithmonë \texttt{class()} dhe \texttt{dim()} para modelit: \texttt{triangle}, $10\times10$.\end{Keshille}
+  \vfill\kthehu{w4gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjPar5]{Zgjidhja: Parashiko (farat e bootstrap-it)}
+<<w4s5-par>>=
+q995 <- function(R, seed) {
+  set.seed(seed)
+  b <- BootChainLadder(trc, R = R, process.distr = "od.pois")
+  as.numeric(quantile(b, 0.995)$Totals) / 1e6
+}
+round(rbind(R_999  = sapply(1:3, q995, R = 999),
+            R_9999 = sapply(1:3, q995, R = 9999)), 3)
+@
+  \small Gabimi rastësor bie si $1/\sqrt R$: $R\times10$ e zvogëlon rreth $\sqrt{10}\approx3$ herë.
+  Kuantili 99.5\% mbështetet vetëm te $\approx0.5\%$ e simulimeve, ndaj është më i paqëndrueshëm se mesatarja.
+  \vfill\kthehu{w4par5}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjUsh5]{Zgjidhja: Radha jote! (kontrata 3)}
+<<w4s5-ush>>=
+k  <- fit$unbiased[2] / fit$unbiased[1]
+w3 <- sum(Wm[3, ]); Z3 <- w3 / (w3 + k)
+c(k = unname(k), Z3 = unname(Z3),
+  premium = unname(Z3 * fit$means[[2]][3] + (1 - Z3) * fit$means[[1]]),
+  cm_premium = unname(predict(fit)[3]))
+@
+  \small Prima e llogaritur pa ndihmën e PC përputhet me \texttt{predict(fit)}.
+  \vfill\kthehu{w4ush5}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjNdr5]{Zgjidhja: Ndrysho parametrin (pa kontratën 8)}
+<<w4s5-ndr>>=
+fit11 <- cm(~ contract, data = dat[-8, ],
+            ratios = r2020:r2025, weights = w2020:w2025)
+round(rbind(all_12 = c(m = fit$means[[1]], a = fit$unbiased[1],
+                       Z3 = fit$cred[3]),
+            no_8   = c(m = fit11$means[[1]], a = fit11$unbiased[1],
+                       Z3 = fit11$cred[3])), 4)
+@
+  \small Pa kontratën më ekstreme, $\hat a$ bie (kontratat duken më të ngjashme), $\hat k$ rritet dhe $Z_3$ bie.
+  Me 12 kontrata, një kontratë e vetme ndryshon dukshëm parametrat strukturorë.
+  \vfill\kthehu{w4ndr5}
+\end{frame}
