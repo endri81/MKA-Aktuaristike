@@ -1,0 +1,337 @@
+% ============================================================
+%  Java 7 · Ora 6 — Rast studimi: rezervat e portofolit me tri tabela
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w7h6-setup, include=FALSE>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+expand <- function(age, lx, top = 110) {          # Week 5, Hour 6
+  f <- splinefun(age, log(lx), method = "monoH.FC"); x1 <- 0:max(age); l1 <- exp(f(x1))
+  q <- 1 - l1[-1] / l1[-length(l1)]; xa <- x1[-length(x1)]; s <- xa >= 60
+  g <- lm(log(-log(1 - q[s])) ~ xa[s])
+  cf <- coef(nls(q ~ gm_q(x, A, B, c), data = data.frame(q = q[s], x = xa[s]),
+          start = list(A = 1e-4, B = exp(coef(g)[[1]]), c = exp(coef(g)[[2]])),
+          algorithm = "port", lower = c(0, 1e-9, 1)))
+  c(l1, l1[length(l1)] * cumprod(1 - pmin(gm_q(max(age):(top - 1), cf[1], cf[2], cf[3]), 1)))
+}
+@
+
+\begin{frame}{Detyra}
+  \begin{Shembull}[(AutoSig Jetë, kompani fiktive)]
+    Data e vlerësimit: sot. Portofoli ka dy blloqe:
+    \begin{enumerate}
+      \item 500 sigurime kredie (DA me mbetjen reale), prima vjetore për 75\% të afatit;
+      \item 300 pensione të shtyra nga 65 vjeç, disa ende në akumulim, disa në pagesë.
+    \end{enumerate}
+    Bordi pyet: sa është rezerva totale, dhe sa ndryshon nëse tabela e vdekshmërisë është e gabuar?
+  \end{Shembull}
+  \vfill\LO{S1}\;\LO{C2}\;\LO{C3}
+\end{frame}
+
+\begin{frame}{Bazat}
+  \begin{itemize}
+    \item<1-> \textbf{Baza e çmimit}: tabela sintetike M, $i=3\%$. Primat janë fiksuar në hyrje.
+    \item<2-> \textbf{Baza e vlerësimit}: tri tabela, gjithmonë me $i=3\%$:
+      \begin{itemize}
+        \item sintetike (e njëjta si çmimi);
+        \item Shqipëria 2011 M (\textbf{reale}, HLD, e rindërtuar);
+        \item \texttt{soa08Act} (ilustruese).
+      \end{itemize}
+    \item<3-> Rezerva e çdo kontrate: me \texttt{reserve()} të Orës 5, me primën e çmimit.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Portofoli}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Blloku 1: kreditë (sintetike)}
+<<w7h6-loans>>=
+set.seed(707)
+nL <- 500
+loans <- data.frame(age0 = sample(25:50, nL, TRUE),                 # age at issue
+                    amt  = round(runif(nL, 3, 15), 1) * 1e6,        # loan amount, lek
+                    term = sample(c(10, 15, 20, 25), nL, TRUE), r = 0.06)
+loans$dur <- sapply(loans$term, function(n) sample(0:(n - 1), 1))  # years in force
+loans$m   <- ceiling(0.75 * loans$term)                             # premium years
+head(loans, 4)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Blloku 2: pensionet (sintetike)}
+<<w7h6-pens>>=
+nP <- 300
+pens <- data.frame(age0 = sample(30:50, nP, TRUE),                  # age at entry
+                   pen  = round(runif(nP, 3, 9)) * 1e5)             # pension from 65
+pens$age_now <- sapply(pens$age0, function(a) sample(a:80, 1))
+pens$dur <- pens$age_now - pens$age0
+head(pens, 4)
+c(in_payment = sum(pens$age_now >= 65), accumulating = sum(pens$age_now < 65))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kreditë: \Sexpr{fmt(sum(loans$amt) / 1e9, 2)} miliardë lekë në hyrje, mosha mesatare në hyrje \Sexpr{fmt(mean(loans$age0), 1)}.
+    \item<2-> Pensionet: \Sexpr{fmt(sum(pens$pen) / 1e6, 1)} milionë lekë pension vjetor gjithsej (kur të gjithë të jenë në pagesë).
+    \item<3-> \Sexpr{sum(pens$age_now >= 65)} pensionistë marrin tashmë pension: për ta nuk ka më prima.
+  \end{itemize}
+  \onslide<4->{\small Të gjitha të dhënat janë \textbf{sintetike}, me \texttt{set.seed(707)}: çdo student merr të njëjtat numra.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Primat dhe rezervat}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Një kontratë kredie}
+<<w7h6-fl>>=
+price_loan <- function(d, pricing, val = pricing) {
+  n <- d$term; k <- 0:(n - 1)
+  Pk <- pmt(amt = d$amt, maturity = n, rate = d$r)
+  Bk <- Pk * (1 - (1 + d$r)^-(n - k)) / d$r              # outstanding balance
+  NN <- 110 - d$age0 + 1; b <- c(Bk, rep(0, NN - n)); z0 <- rep(0, NN)
+  pr <- c(rep(1, d$m), rep(0, NN - d$m))                 # 1 lek premium pattern
+  P  <- reserve(pricing, d$age0, b, z0, z0)[1] / reserve(pricing, d$age0, z0, pr, z0)[1]
+  c(P = P, V = reserve(val, d$age0, b, z0, P * pr)[d$dur + 1])
+}
+@
+  \small Prima = VAP(përfitimet) / VAP(1 lek primë): dy thirrje të \texttt{reserve()} me $t=0$.
+\end{frame}
+
+\begin{frame}[fragile]{Një kontratë pensioni}
+<<w7h6-fp>>=
+price_pen <- function(d, pricing, val = pricing) {
+  NN <- 110 - d$age0 + 1; md <- 65 - d$age0; z0 <- rep(0, NN)
+  cc <- c(rep(0, md), rep(d$pen, NN - md))               # pension from 65
+  pr <- c(rep(1, md), rep(0, NN - md))                   # premiums until 65
+  P  <- reserve(pricing, d$age0, z0, cc, z0)[1] / reserve(pricing, d$age0, z0, pr, z0)[1]
+  c(P = P, V = reserve(val, d$age0, z0, cc, P * pr)[d$dur + 1])
+}
+@
+\end{frame}
+
+\begin{frame}[fragile]{Baza e çmimit: rezultatet}
+<<w7h6-base>>=
+tb <- list(synthetic   = aM3,
+           Albania2011 = new("actuarialtable", x = 0:110, interest = 0.03,
+                             lx = with(subset(hld, Year1 == 2011 & TypeLT == 4 & Sex == 1),
+                                       expand(Age, l.x.))),
+           SOA = new("actuarialtable", x = soa08Act@x, lx = soa08Act@lx, interest = 0.03))
+rl <- t(sapply(1:nL, function(j) price_loan(loans[j, ], tb$synthetic)))
+rp <- t(sapply(1:nP, function(j) price_pen(pens[j, ], tb$synthetic)))
+round(c(loan_prem_mean = mean(rl[, "P"]), loan_reserve = sum(rl[, "V"]),
+        pen_prem_mean = mean(rp[, "P"]), pen_reserve = sum(rp[, "V"])))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Rezerva e kredive: \Sexpr{fmt(sum(rl[, "V"]) / 1e6, 1)} milionë lekë: e vogël, sepse rreziku i vdekjes në 25--60 vjeç është i vogël.
+    \item<2-> Rezerva e pensioneve: \Sexpr{fmt(sum(rp[, "V"]) / 1e9, 2)} miliardë lekë, rreth \Sexpr{fmt(sum(rp[, "V"]) / sum(rl[, "V"]))} herë më e madhe.
+    \item<3-> Pensionet janë kursim afatgjatë; kreditë janë mbrojtje rreziku.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w7par6]{Parashiko}
+  \begin{Parashiko}
+    Primat e kredive paguhen për 75\% të afatit, por shuma zbret çdo vit.
+    \begin{enumerate}
+      \item A mund të ketë kontrata me rezervë \textbf{negative}?
+      \item Nëse po: te të rinjtë apo te të moshuarit? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w7zgjPar6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Rezervat negative}
+<<w7h6-neg>>=
+neg <- rl[, "V"] < -1                                     # below -1 lek
+c(n_negative = sum(neg), total_negative = round(sum(rl[neg, "V"])))
+round(c(mean_age_neg = mean(loans$age0[neg]), mean_age_all = mean(loans$age0),
+        share_term10_neg = mean(loans$term[neg] == 10)), 2)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Dy kontrata, dy kurba}
+<<w7h6-two, echo=FALSE, fig.height=2.9>>=
+curve_loan <- function(age0, n = 10, amt = 5e6) {
+  k <- 0:(n - 1); Pk <- pmt(amt = amt, maturity = n, rate = 0.06); Bk <- Pk * (1 - 1.06^-(n - k)) / 0.06
+  NN <- 110 - age0 + 1; b <- c(Bk, rep(0, NN - n)); z0 <- rep(0, NN); m <- ceiling(0.75 * n)
+  pr <- c(rep(1, m), rep(0, NN - m))
+  P <- reserve(aM3, age0, b, z0, z0)[1] / reserve(aM3, age0, z0, pr, z0)[1]
+  data.frame(t = 0:n, V = reserve(aM3, age0, b, z0, P * pr)[1:(n + 1)], who = paste0(age0, " vjec"))
+}
+dc2 <- rbind(curve_loan(27), curve_loan(50))
+ggplot(dc2, aes(t, V / 1000, colour = who)) + geom_line(linewidth = 1) + geom_point() +
+  geom_hline(yintercept = 0, linetype = 2) + scale_colour_manual(values = c("#E67E22", "#2C5AA0")) +
+  facet_wrap(~ who, scales = "free_y") + guides(colour = "none") +
+  labs(x = "viti i kontrates", y = "rezerva (mije leke)", colour = NULL) + th
+@
+  \small Kredi 5 milionë, 10 vjet, 6\%; prima për 8 vjet; tabela sintetike, $i=3\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Për 27-vjeçarin, $q_x$ rritet ngadalë (Makeham: $A$ është pjesa kryesore), ndërsa shuma bie shpejt.
+    \item<2-> Kostoja natyrore e rrezikut \textbf{bie} me kohën: prima konstante është më e ulët se kostoja në fillim, më e lartë në fund.
+    \item<3-> Për 50-vjeçarin, $q_x$ rritet shpejt dhe kompensohet rënia e shumës: rezerva mbetet pozitive.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Rezervat negative nuk mund të mbahen si aktiv: klienti mund të largohet. Në bilanc ato kufizohen në zero, ose produkti ndryshohet (p.sh.\ primë e vetme e financuar në kredi).\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tri tabela vlerësimi}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w7par6b]{Parashiko}
+  \begin{Parashiko}
+    Primat mbeten ato të tabelës sintetike. Vlerësojmë me Shqipërinë 2011 dhe me SOA.
+    \begin{enumerate}
+      \item Rezerva e kredive rritet apo bie? Po ajo e pensioneve?
+      \item Cili bllok është më i ndjeshëm në \%? Cili në lekë?
+    \end{enumerate}
+    Ndihmë: $\mathring e_{40}$ dhe $\ddot a_{65}$ e tri tabelave janë në slide-in pasues.
+  \end{Parashiko}
+  \vfill\shkoTe{w7zgjPar6b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Tri tabelat me $i=3\%$}
+<<w7h6-tabs>>=
+round(sapply(tb, function(a) c(e40 = exn(a, 40, type = "complete"), a65 = axn(a, 65),
+                               q50 = qxt(a, 50, 1))), 4)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Rezervat totale}
+<<w7h6-tot>>=
+tot <- sapply(tb, function(a) {
+  vl <- sapply(1:nL, function(j) price_loan(loans[j, ], tb$synthetic, val = a)["V"])
+  vp <- sapply(1:nP, function(j) price_pen(pens[j, ], tb$synthetic, val = a)["V"])
+  c(loans = sum(vl), loans_floor0 = sum(pmax(vl, 0)), pensions = sum(vp))
+})
+round(tot / 1e6, 2)                                       # million lek
+round(100 * (tot / tot[, "synthetic"] - 1), 1)            # % change vs pricing basis
+@
+\end{frame}
+
+\begin{frame}[fragile]{Ndryshimi në \%}
+<<w7h6-bar, echo=FALSE, fig.height=2.8>>=
+pc <- 100 * (tot / tot[, "synthetic"] - 1)
+db6 <- data.frame(block = rep(c("kredite", "pensionet"), 2),
+                  table = rep(c("Shqiperia 2011", "SOA"), each = 2),
+                  pct = c(pc["loans", "Albania2011"], pc["pensions", "Albania2011"],
+                          pc["loans", "SOA"], pc["pensions", "SOA"]))
+ggplot(db6, aes(table, pct, fill = block)) + geom_col(position = "dodge", width = 0.7) +
+  geom_hline(yintercept = 0) + scale_fill_manual(values = c("#E67E22", "#2C5AA0")) +
+  labs(x = NULL, y = "ndryshimi i rezerves (%)", fill = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Vdekshmëri më e lartë (SOA, Shqipëria) $\Rightarrow$ kreditë \textbf{më shumë} rezervë, pensionet \textbf{më pak}.
+    \item<2-> Në \%: kreditë janë shumë më të ndjeshme (SOA: \Sexpr{fmt(pc["loans", "SOA"])}\%).
+    \item<3-> Në lekë: pensionet dominojnë: \Sexpr{fmt((tot["pensions", "SOA"] - tot["pensions", "synthetic"]) / 1e6)} milionë kundrejt \Sexpr{fmt((tot["loans", "SOA"] - tot["loans", "synthetic"]) / 1e6)} milionë.
+    \item<4-> Dy blloqet lëvizin në drejtime të kundërta: një \textbf{mbrojtje natyrore} e pjesshme.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w7gab6]{Gjej gabimin}
+<<w7h6-bug>>=
+vp_bad <- sapply(1:nP, function(j) price_pen(pens[j, ], pricing = tb$SOA, val = tb$SOA)["V"])
+round(c(bad_SOA = sum(vp_bad), right_SOA = tot["pensions", "SOA"]) / 1e6, 2)
+@
+  \begin{enumerate}
+    \item Një analist vlerëson pensionet me SOA duke \textbf{rillogaritur edhe primat} me SOA. Pse është gabim për kontrata në fuqi?
+    \item Pse rezultati i tij del më i madh?
+  \end{enumerate}
+  \vfill\shkoTe{w7zgjGab6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w7ush6]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Ndaj rezervën e pensioneve (baza sintetike) në dy pjesë: në pagesë (\texttt{age\_now >= 65}) dhe në akumulim.
+      \item Cila pjesë është më e madhe? Pse?
+      \item Llogarit rezervën mesatare për pensionist në pagesë dhe krahasoje me \texttt{mean(pen) * axn(aM3, 70)}.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjUsh6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lidhja me rregullimin}
+% ------------------------------------------------------------
+
+\begin{frame}{IFRS 17 dhe Solvency II (koncepte)}
+  \begin{itemize}
+    \item<1-> \textbf{IFRS 17}: detyrimi përfshin vlerën aktuale të pritur të flukseve të ardhshme neto (me supozime \textbf{aktuale}), një rregullim për rrezikun dhe marzhin kontraktual të shërbimit.
+    \item<2-> \textbf{Solvency II}: provizionet teknike = vlerësimi më i mirë (\emph{best estimate}) + marzhi i rrezikut.
+    \item<3-> Rezerva jonë me tabelën e vlerësimit është një \textbf{përafrim} i vlerësimit më të mirë: normë fikse 3\%, pa kosto, pa largime (\emph{lapses}).
+  \end{itemize}
+  \onslide<4->{\small Detajet rregullatore janë jashtë këtij kursi; ideja kryesore: supozimet e vlerësimit ndryshojnë, primat jo.}
+\end{frame}
+
+\begin{frame}{Projekti i lëndës: pjesa për jetën}
+  \begin{itemize}
+    \item<1-> Do të jepet në Javët 10--12 (3 orë në klasë).
+    \item<2-> Tipi i detyrës: një portofol i vogël kontratash jete, me të dhëna sintetike.
+    \item<3-> Do të kërkohen: tabela aktuariale, primat, rezervat dhe ndjeshmëria ndaj tabelës, si sot.
+  \end{itemize}
+  \onslide<4->{\small Kodi i Orëve 3, 5 dhe 6 (\texttt{varA()}, \texttt{reserve()}, \texttt{price\_loan()}) është baza për projektin.}
+\end{frame}
+
+\begin{frame}[label=w7tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    AutoSig Jetë shet të dy produktet. Drejtori financiar propozon të çmojë \textbf{të dy} me tabelën SOA ``sepse është më e kujdesshme''.
+    \begin{enumerate}
+      \item A është SOA më e kujdesshme për kreditë? Po për pensionet?
+      \item Çfarë tabele do të rekomandoje për secilin produkt?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjTps6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse primat mbeten ato të bazës së çmimit kur ndryshon tabela e vlerësimit?
+    \item Pse një tabelë me vdekshmëri më të lartë rrit rezervën e kredive dhe ul atë të pensioneve?
+    \item Kur del rezerva negative te sigurimi i kredisë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) janë të fiksuara në kontratë; (2) më shumë vdekje = më shumë pagesa kredie, më pak pagesa pensioni;
+  (3) kur $q_x$ rritet më ngadalë se sa zbret shuma (të rinjtë).}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item 800 kontrata sintetike, dy funksione (\texttt{price\_loan}, \texttt{price\_pen}), një \texttt{reserve()}.
+    \item Rezerva totale: kreditë \Sexpr{fmt(sum(rl[, "V"]) / 1e6, 1)} milionë, pensionet \Sexpr{fmt(sum(rp[, "V"]) / 1e9, 2)} miliardë lekë.
+    \item Rezerva negative te kreditë e të rinjve: kufizim në zero.
+    \item Ndjeshmëria ndaj tabelës: drejtime të kundërta për dy blloqet.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, ushtrime të tipit provim, gabimet e zakonshme, fletë-kujtesë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10).
+    \item Human Life-Table Database: Shqipëria 2011 (reale).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+    \item Dokumentacioni i paketës \Rkey{tvm}: \texttt{pmt()}.
+  \end{itemize}
+\end{frame}

@@ -1,0 +1,47 @@
+% ============================================================
+%  Java 7 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7zgjPar6]{Zgjidhja: Parashiko (rezervat negative)}
+  \begin{enumerate}
+    \item Po: \Sexpr{sum(neg)} nga \Sexpr{nL} kontrata kanë rezervë negative.
+    \item Te të rinjtë: mosha mesatare në hyrje e tyre është \Sexpr{fmt(mean(loans$age0[neg]), 1)}, kundrejt \Sexpr{fmt(mean(loans$age0), 1)} për gjithë portofolin.
+      Për ta, kostoja vjetore e rrezikut bie me shumën, ndërsa prima është konstante.
+  \end{enumerate}
+  \vfill\kthehu{w7par6}
+\end{frame}
+
+\begin{frame}[label=w7zgjPar6b]{Zgjidhja: Parashiko (tri tabela)}
+  \begin{enumerate}
+    \item Shqipëria 2011 dhe SOA kanë vdekshmëri më të lartë (e°$_{40}$ më i vogël): kreditë $\uparrow$, pensionet $\downarrow$.
+    \item Në \%: kreditë (\Sexpr{fmt(pc["loans", "SOA"])}\% me SOA). Në lekë: pensionet (\Sexpr{fmt(pc["pensions", "SOA"], 1)}\% e një shume shumë më të madhe).
+  \end{enumerate}
+  \vfill\kthehu{w7par6b}
+\end{frame}
+
+\begin{frame}[label=w7zgjGab6]{Zgjidhja: Gjej gabimin (rillogaritja e primave)}
+  \begin{enumerate}
+    \item Primat e kontratave në fuqi janë të fiksuara në hyrje. Duke i rillogaritur, analisti vlerëson kontrata që \textbf{nuk ekzistojnë}.
+    \item Me SOA, prima e pensionit del më e ulët (më pak mbijetesë). Primat e ardhshme më të vogla zbriten nga detyrimi, ndaj rezerva del më e madhe:
+      \Sexpr{fmt((sum(vp_bad) - tot["pensions", "SOA"]) / 1e6, 1)} milionë lekë më shumë.
+  \end{enumerate}
+  \vfill\kthehu{w7gab6}
+\end{frame}
+
+\begin{frame}[fragile,label=w7zgjUsh6]{Zgjidhja: Radha jote!}
+<<w7h6-sol-ush>>=
+pay <- pens$age_now >= 65
+c(in_payment = sum(rp[pay, "V"]), accumulating = sum(rp[!pay, "V"])) / 1e6
+c(mean_reserve_paying = mean(rp[pay, "V"]), rough = mean(pens$pen[pay]) * axn(aM3, 70))
+@
+  \small Pensionistët kanë rezervë të plotë ($\approx$ pension $\times\,\ddot a_{65+}$); në akumulim, një pjesë e detyrimit mbulohet nga primat e ardhshme.
+  \vfill\kthehu{w7ush6}
+\end{frame}
+
+\begin{frame}[label=w7zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Për kreditë, po: vdekshmëri më e lartë $\Rightarrow$ prima më e lartë. Për pensionet, \textbf{jo}: vdekshmëri më e lartë e nënvlerëson jetëgjatësinë dhe pensionet dalin të lira.
+    \item Tabela e kujdesshme varet nga produkti: më e rëndë për rrezikun e vdekjes, më e lehtë (me përmirësim në kohë) për pensionet.
+  \end{enumerate}
+  \vfill\kthehu{w7tps6}
+\end{frame}
