@@ -1,0 +1,46 @@
+% ============================================================
+%  Java 4 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w4zgjPar4]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $n\to\infty$: $Z=n/(n+k)\to1$. Me histori të pafundme, përvoja e vet tregon $\mu(\Theta_i)$ saktë.
+    \item Të gjitha kontratat njësoj: $a=0$, $k=\infty$, $Z=0$. Çdo diferencë nga $m$ është fat.
+    \item Pa luhatje brenda kontratës: $s^2=0$, $k=0$, $Z=1$. Edhe një vit i vetëm tregon të vërtetën.
+  \end{enumerate}
+  \vfill\kthehu{w4par4}
+\end{frame}
+
+\begin{frame}[label=w4zgjMC4a]{Zgjidhja: zgjedhja e shumëfishtë ($Z\ge0.8$)}
+  \textbf{C)} $k=0.25/0.01=25$. \; $\dfrac{n}{n+25}\ge0.8\iff n\ge0.8n+20\iff n\ge100$.
+  \begin{itemize}
+    \item A) $n=4$: $Z=4/29\approx0.14$.
+    \item B) $n=25$: $Z=0.5$.
+  \end{itemize}
+  \vfill\kthehu{w4mc4a}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjUsh4]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $n=1$: $Z=1/(1+0.5)=0.6667$.
+    \item $P=0.6667\times1.2+0.3333\times0.8333=0.8000+0.2778=1.0778$.
+    \item $n=6$: $Z=6/6.5=0.9231$; \; $P=0.9231\times1.2+0.0769\times0.8333=1.1077+0.0641=1.1718$.
+  \end{enumerate}
+<<w4s4-ush>>=
+cred <- function(xbar, n, m = 0.8333, k = 0.5) {
+  Z <- n / (n + k); c(Z = Z, P = Z * xbar + (1 - Z) * m)
+}
+round(rbind(n1 = cred(1.2, 1), n6 = cred(1.2, 6)), 4)
+@
+  \vfill\kthehu{w4ush4}
+\end{frame}
+
+\begin{frame}[label=w4zgjMC4b]{Zgjidhja: zgjedhja e shumëfishtë ($Z_i$)}
+  \textbf{C)} $Z_i=w_{i\cdot}/(w_{i\cdot}+s^2/a)$ rritet me $w_{i\cdot}$.
+  \begin{itemize}
+    \item A) $s^2\uparrow\Rightarrow k\uparrow\Rightarrow Z_i\downarrow$.
+    \item B) $a\downarrow\Rightarrow k\uparrow\Rightarrow Z_i\downarrow$.
+    \item D) $m$ nuk hyn te $Z_i$; ndikon vetëm te prima.
+  \end{itemize}
+  \vfill\kthehu{w4mc4b}
+\end{frame}

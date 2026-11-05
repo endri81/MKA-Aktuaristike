@@ -20,7 +20,7 @@ trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year",
 s <- summary(MackChainLadder(trc, est.sigma = "Mack"))
 res <- data.frame(IBNR_mln = s$ByOrigin$IBNR / 1e6,
                   CV = s$ByOrigin[, "CV(IBNR)"], row.names = rownames(s$ByOrigin))
-round(res[6:10, ], 3); c(total_CV = s$Totals["CV(IBNR):", 1])
+round(res[7:10, ], 3); c(total_CV = s$Totals["CV(IBNR):", 1])
 @
   \vfill\kthehu{w4par2}
 \end{frame}

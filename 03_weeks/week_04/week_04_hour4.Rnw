@@ -1,0 +1,445 @@
+% ============================================================
+%  Java 4 · Ora 4 — Teoria II: kredibiliteti
+% ============================================================
+\section{Teoria II: kredibiliteti}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w4h4-setup, include=FALSE>>=
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Ideja}
+% ------------------------------------------------------------
+
+\begin{frame}{Një flotë me histori të mirë}
+  \begin{itemize}
+    \item<1-> Një kompani transporti në Durrës siguron flotën e saj te AutoSig.
+    \item<2-> Raporti i dëmeve (dëme / primë) i flotës në 5 vitet e fundit: \textbf{0.60}.
+    \item<3-> Raporti mesatar i gjithë portofolit të flotave: \textbf{0.80}.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja)]
+    Cilin raport dëmesh duhet të presim për flotën vitin e ardhshëm: 0.60, 0.80, apo diku në mes?
+  \end{Shembull}}
+  \onslide<5->{\small 0.60 mund të jetë aftësi e vërtetë (shoferë të mirë) ose thjesht fat.}
+\end{frame}
+
+\begin{frame}{Dy ekstreme dhe një kompromis}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[very thick,uptmid] (0,0) -- (10,0);
+    \fill[uptblue] (0,0) circle (3pt) node[below=4pt,font=\small,align=center]{Përvoja e vet\\$\bar X_i=0.60$};
+    \fill[uptblue] (10,0) circle (3pt) node[below=4pt,font=\small,align=center]{Portofoli\\$m=0.80$};
+    \fill[accent] (3,0) circle (4pt) node[above=6pt,font=\small,accent]{$P_i=Z\bar X_i+(1-Z)m$};
+    \node[font=\scriptsize,above] at (0,0.2) {$Z=1$};
+    \node[font=\scriptsize,above] at (10,0.2) {$Z=0$};
+  \end{tikzpicture}\par
+  \vspace{14pt}
+  \begin{Definicion}[(prima e kredibilitetit)]
+    \[ P_i=Z\,\bar X_i+(1-Z)\,m,\qquad 0\le Z\le1. \]
+    $Z$ quhet \termi{faktori i kredibilitetit}{credibility factor}.
+  \end{Definicion}
+\end{frame}
+
+\begin{frame}{Nga se duhet të varet $Z$?}
+  \begin{itemize}
+    \item<1-> \textbf{Sasia e të dhënave}: më shumë vite ose më shumë mjete $\Rightarrow$ $Z$ më i madh.
+    \item<2-> \textbf{Zhurma brenda kontratës}: dëme shumë të paqëndrueshme nga viti në vit $\Rightarrow$ $Z$ më i vogël.
+    \item<3-> \textbf{Ndryshimet midis kontratave}: kontratat ndryshojnë shumë nga njëra-tjetra $\Rightarrow$ $Z$ më i madh.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pse?}
+    Nëse të gjitha kontratat janë njësoj, çdo diferencë nga $m$ është fat: $Z=0$.
+    Nëse ndryshojnë shumë dhe kemi shumë të dhëna, përvoja e vet tregon të vërtetën: $Z\to1$.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w4par4]{Parashiko}
+  \begin{Parashiko}
+    Pa formula, vetëm me intuitë:
+    \begin{enumerate}
+      \item Sa bëhet $Z$ kur numri i viteve $n\to\infty$?
+      \item Sa bëhet $Z$ kur të gjitha kontratat kanë të njëjtin rrezik të vërtetë?
+      \item Sa bëhet $Z$ kur dëmet e një kontrate nuk luhaten fare nga viti në vit?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w4zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Modeli i Bühlmann-it}
+% ------------------------------------------------------------
+
+\begin{frame}{Modeli i Bühlmann-it}
+  \begin{Definicion}[(Bühlmann, 1967)]
+    Kontrata $i=1,\dots,I$, vitet $j=1,\dots,n$.
+    \begin{enumerate}
+      \item Çdo kontratë ka një \textbf{parametër rreziku} të panjohur $\Theta_i$; $\Theta_1,\dots,\Theta_I$ i.i.d.
+      \item Duke ditur $\Theta_i$, vrojtimet $X_{i1},\dots,X_{in}$ janë i.i.d.\ me
+        \[ E[X_{ij}\mid\Theta_i]=\mu(\Theta_i),\qquad \mathrm{Var}(X_{ij}\mid\Theta_i)=\sigma^2(\Theta_i). \]
+    \end{enumerate}
+  \end{Definicion}
+  \pause
+  \small Synimi: të parashikojmë $\mu(\Theta_i)$, primën e ``vërtetë'' të kontratës $i$.
+\end{frame}
+
+\begin{frame}{Tre parametrat strukturorë}
+  \centering
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{lll}
+    \toprule
+    Parametri & Përkufizimi & Interpretimi \\
+    \midrule
+    $m$ & $E[\mu(\Theta)]$ & prima mesatare e portofolit \\
+    $s^2$ & $E[\sigma^2(\Theta)]$ & zhurma mesatare \textbf{brenda} kontratës \\
+    $a$ & $\mathrm{Var}[\mu(\Theta)]$ & ndryshimet \textbf{midis} kontratave \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \begin{itemize}
+    \item Të njëjtat dy burime si te $\mathrm{Var}[S]$ (Java 3) dhe te msep i Mack-ut (Ora 2).
+    \item Ligji i variancës totale: $\mathrm{Var}(X_{ij})=s^2+a$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Momentet e mesatares $\bar X_i$}
+  Me $\bar X_i=\frac1n\sum_jX_{ij}$:
+  \begin{align*}
+    E[\bar X_i] &= E\big[E[\bar X_i\mid\Theta_i]\big]=E[\mu(\Theta_i)]=m \\
+    \onslide<2->{\mathrm{Var}(\bar X_i) &= E\Big[\frac{\sigma^2(\Theta_i)}{n}\Big]+\mathrm{Var}\big(\mu(\Theta_i)\big)=\frac{s^2}{n}+a} \\
+    \onslide<3->{\mathrm{Cov}\big(\mu(\Theta_i),\bar X_i\big) &= \mathrm{Cov}\big(\mu(\Theta_i),\,E[\bar X_i\mid\Theta_i]\big)=\mathrm{Var}\big(\mu(\Theta_i)\big)=a}
+  \end{align*}
+  \onslide<4->{\small Hapi i tretë: kovarianca me $\bar X_i$ kalon nëpër pritjen e kushtëzuar, sepse $\mu(\Theta_i)$ është funksion i $\Theta_i$.}
+\end{frame}
+
+\begin{frame}{Parashikuesi linear më i mirë}
+  Kërkojmë $c_0,c_1$ që minimizojnë gabimin katror:
+  \[ Q(c_0,c_1)=E\Big[\big(\mu(\Theta_i)-c_0-c_1\bar X_i\big)^2\Big]. \]
+  \pause
+  \begin{itemize}
+    \item $\partial Q/\partial c_0=0$: \; $c_0=m-c_1m=(1-c_1)\,m$.
+    \item<3-> $\partial Q/\partial c_1=0$: \; $c_1=\dfrac{\mathrm{Cov}(\mu(\Theta_i),\bar X_i)}{\mathrm{Var}(\bar X_i)}=\dfrac{a}{a+s^2/n}$.
+  \end{itemize}
+  \onslide<4->{\small Si koeficienti i regresionit linear: kovarianca pjesëtuar me variancën.}
+\end{frame}
+
+\begin{frame}{Formula e Bühlmann-it}
+  \begin{Teoreme}[(prima e kredibilitetit të Bühlmann-it)]
+    \[
+      P_i=Z\,\bar X_i+(1-Z)\,m,\qquad Z=\frac{a}{a+s^2/n}=\frac{n}{n+k},\qquad k=\frac{s^2}{a}.
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item $k$: numri i viteve që i duhen një kontrate për të marrë $Z=0.5$.
+    \item $k$ i madh: zhurmë e madhe ose kontrata të ngjashme $\Rightarrow$ kredibilitet i ulët.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Figura: $Z$ si funksion i $n$}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=10cm,height=5.2cm,domain=0:30,samples=100,
+        xlabel={$n$ (vite)},ylabel={$Z$},ymin=0,ymax=1.05,
+        tick label style={font=\scriptsize},label style={font=\small},
+        legend style={font=\scriptsize,at={(0.97,0.05)},anchor=south east}]
+      \addplot[very thick,uptblue] {x/(x+0.5)};  \addlegendentry{$k=0.5$}
+      \addplot[very thick,uptmid] {x/(x+5)};     \addlegendentry{$k=5$}
+      \addplot[very thick,accent] {x/(x+50)};    \addlegendentry{$k=50$}
+      \addplot[dashed,gray] coordinates {(0,0.5) (30,0.5)};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small Me $k=5$, kontrata arrin $Z=0.5$ pas 5 vitesh.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $Z$ rritet me $n$, por kurrë nuk arrin 1: gjithmonë një pjesë e $m$.
+    \item<2-> Rritja është e shpejtë në fillim, pastaj ngadalësohet.
+    \item<3-> Për $k=50$, edhe 30 vite japin vetëm $Z=0.375$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}$Z=n/(n+k)$ ka të njëjtën formë si pesha e Bayes-it te Poisson--Gamma (pas pak) dhe si $\hat p_i$ te BF (Ora 2).\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w4mc4a]{Zgjedhje e shumëfishtë}
+  Për një portofol, $s^2=0.25$ dhe $a=0.01$. Sa vite i duhen një kontrate për $Z\ge0.8$?
+  \begin{enumerate}[A)]
+    \item 4
+    \item 25
+    \item 100
+    \item 125
+  \end{enumerate}
+  \vfill\shkoTe{w4zgjMC4a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlerësimi i parametrave}
+% ------------------------------------------------------------
+
+\begin{frame}{Vlerësuesit empirikë (rasti i balancuar)}
+  Me $I$ kontrata, secila me $n$ vite:
+  \begin{align*}
+    \hat m &= \bar X=\frac1I\sum_i\bar X_i \\
+    \onslide<2->{\hat s^2 &= \frac{1}{I(n-1)}\sum_i\sum_j\big(X_{ij}-\bar X_i\big)^2\qquad\text{(brenda)}} \\
+    \onslide<3->{\hat a &= \frac{1}{I-1}\sum_i\big(\bar X_i-\bar X\big)^2-\frac{\hat s^2}{n}\qquad\text{(midis)}}
+  \end{align*}
+  \onslide<4->{\small Pse zbresim $\hat s^2/n$? Sepse $\mathrm{Var}(\bar X_i)=a+s^2/n$: varianca midis mesatareve përmban edhe zhurmën.}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC}
+  Tri kontrata, tri vite, raporti i dëmeve:
+  \begin{center}
+    \begin{tabular}{c|ccc|c}
+      \toprule
+      Kontrata & Viti 1 & Viti 2 & Viti 3 & $\bar X_i$ \\
+      \midrule
+      1 & 0.6 & 0.8 & 0.7 & 0.7 \\
+      2 & 0.9 & 1.1 & 1.0 & 1.0 \\
+      3 & 0.8 & 0.7 & 0.9 & 0.8 \\
+      \midrule
+      \multicolumn{4}{r|}{$\hat m=\bar X$} & 0.8333 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Synimi: $\hat s^2$, $\hat a$, $Z$ dhe prima $P_i$ për secilën kontratë.
+\end{frame}
+
+\begin{frame}{Hapi 1: $\hat s^2$ (brenda)}
+  \begin{itemize}
+    \item<1-> Kontrata 1: devijimet $-0.1,\;0.1,\;0$; \; katrorët mblidhen në $0.02$.
+    \item<2-> Kontrata 2: $-0.1,\;0.1,\;0$ $\Rightarrow$ $0.02$.
+    \item<3-> Kontrata 3: $0,\;-0.1,\;0.1$ $\Rightarrow$ $0.02$.
+    \item<4-> $\hat s^2=\dfrac{0.02+0.02+0.02}{3\times2}=\dfrac{0.06}{6}=0.01$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hapi 2: $\hat a$ (midis) dhe $Z$}
+  \begin{itemize}
+    \item<1-> $(0.7-0.8333)^2+(1.0-0.8333)^2+(0.8-0.8333)^2=0.01778+0.02778+0.00111=0.04667$.
+    \item<2-> $\hat a=\dfrac{0.04667}{2}-\dfrac{0.01}{3}=0.02333-0.00333=0.02$.
+    \item<3-> $\hat k=\hat s^2/\hat a=0.01/0.02=0.5$.
+    \item<4-> $Z=\dfrac{3}{3+0.5}=0.8571$.
+  \end{itemize}
+  \onslide<5->{\small Kontratat ndryshojnë shumë nga njëra-tjetra krahasuar me zhurmën: kredibilitet i lartë.}
+\end{frame}
+
+\begin{frame}{Hapi 3: primat}
+  \[ P_i=0.8571\,\bar X_i+0.1429\times0.8333 \]
+  \pause
+  \begin{center}
+    \begin{tabular}{cccc}
+      \toprule
+      Kontrata & $\bar X_i$ & $P_i$ & Ndryshimi \\
+      \midrule
+      1 & 0.7 & 0.7190 & $+0.019$ \\
+      2 & 1.0 & 0.9762 & $-0.024$ \\
+      3 & 0.8 & 0.8048 & $+0.005$ \\
+      \midrule
+      Mesatarja & 0.8333 & 0.8333 & \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Çdo primë ``tkurret'' drejt $\hat m$. Mesatarja e primave = $\hat m$: portofoli mbetet në ekuilibër.
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w4h4-toy>>=
+X <- rbind(c(0.6, 0.8, 0.7), c(0.9, 1.1, 1.0), c(0.8, 0.7, 0.9))
+I <- nrow(X); n <- ncol(X)
+Xi <- rowMeans(X); m <- mean(Xi)
+s2 <- sum((X - Xi)^2) / (I * (n - 1))        # X - Xi recycles by row
+a  <- sum((Xi - m)^2) / (I - 1) - s2 / n
+Z  <- n / (n + s2 / a)
+round(c(s2 = s2, a = a, k = s2 / a, Z = Z), 4)
+round(Z * Xi + (1 - Z) * m, 4)
+@
+\end{frame}
+
+\begin{frame}[label=w4ush4]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Me të njëjtat $\hat m=0.8333$, $\hat s^2=0.01$, $\hat a=0.02$:
+    \begin{enumerate}
+      \item Sa bëhet $Z$ për një kontratë me $n=1$ vit?
+      \item Një kontratë e re ka vetëm një vit, me $X=1.2$. Sa është prima e saj?
+      \item Po me $n=6$ vite, të gjitha me $X=1.2$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjUsh4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: $\hat a<0$}
+  \begin{Gabim}
+    Me pak kontrata ose shumë zhurmë, $\hat a=\frac{1}{I-1}\sum(\bar X_i-\bar X)^2-\hat s^2/n$ mund të dalë \textbf{negativ}.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Varianca nuk mund të jetë negative: vendosim $\hat a=0$, pra $Z=0$.
+    \item Interpretimi: të dhënat nuk tregojnë ndryshime reale midis kontratave; të gjitha marrin $\hat m$.
+    \item<3-> \texttt{actuar::cm()} e bën këtë automatikisht: kur $\hat a\le0$, të gjitha $Z_i=0$, pa paralajmërim. Kontrolloje vetë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Bühlmann--Straub}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse pesha?}
+  \begin{itemize}
+    \item<1-> Kontratat kanë madhësi të ndryshme: një flotë me 10 mjete dhe një me 300.
+    \item<2-> Raporti i dëmeve i një flote të madhe është më \textbf{i qëndrueshëm}.
+    \item<3-> Edhe brenda një kontrate, vëllimi ndryshon nga viti në vit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Definicion}[(Bühlmann--Straub, 1970)]
+    Si Bühlmann, por me pesha $w_{ij}$ (vëllime):
+    \[ E[X_{ij}\mid\Theta_i]=\mu(\Theta_i),\qquad \mathrm{Var}(X_{ij}\mid\Theta_i)=\frac{\sigma^2(\Theta_i)}{w_{ij}}. \]
+  \end{Definicion}}
+\end{frame}
+
+\begin{frame}{Formula e Bühlmann--Straub}
+  \begin{Teoreme}
+    Me $w_{i\cdot}=\sum_jw_{ij}$ dhe mesataren e peshuar $\bar X_{iw}=\sum_j\frac{w_{ij}}{w_{i\cdot}}X_{ij}$:
+    \[
+      P_i=Z_i\,\bar X_{iw}+(1-Z_i)\,m,\qquad Z_i=\frac{w_{i\cdot}}{w_{i\cdot}+k},\qquad k=\frac{s^2}{a}.
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Çdo kontratë ka $Z_i$ \textbf{të vetin}: sa më e madhe, aq më shumë kredibilitet.
+    \item Bühlmann është rasti i veçantë $w_{ij}=1$, $w_{i\cdot}=n$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vlerësuesit e Bühlmann--Straub}
+  Me $n_i$ vite për kontratën $i$ dhe $w_{\cdot\cdot}=\sum_iw_{i\cdot}$:
+  \begin{align*}
+    \hat s^2 &= \frac{\sum_i\sum_jw_{ij}\big(X_{ij}-\bar X_{iw}\big)^2}{\sum_i(n_i-1)} \\
+    \onslide<2->{\hat a &= \frac{\sum_iw_{i\cdot}\big(\bar X_{iw}-\bar X_{ww}\big)^2-(I-1)\,\hat s^2}{w_{\cdot\cdot}-\sum_iw_{i\cdot}^2/w_{\cdot\cdot}}} \\
+    \onslide<3->{\hat m &= \frac{\sum_iZ_i\,\bar X_{iw}}{\sum_iZ_i}\qquad\text{(mesatare e peshuar me } Z_i\text{)}}
+  \end{align*}
+  \onslide<4->{\small $\bar X_{ww}=\sum_iw_{i\cdot}\bar X_{iw}/w_{\cdot\cdot}$. Me $\hat m$ të peshuar me $Z_i$, ekuilibri i portofolit ruhet.}
+\end{frame}
+
+\begin{frame}{E vërteta e të dhënave sintetike}
+  \texttt{credibility\_portfolio\_synthetic.csv} (sintetike): 12 kontrata $\times$ 6 vite, raporti i dëmeve dhe vëllimi.
+  \pause
+  \begin{itemize}
+    \item $\Theta_i\sim$ Gamma(formë 20, shkallë 0.04): \; $m=20\times0.04=0.8$, \; $a=20\times0.04^2=0.032$.
+    \item<3-> Varianca brenda: $0.25^2\times100/w_{ij}$, pra $s^2=6.25$ (për njësi vëllimi).
+    \item<4-> $k=6.25/0.032\approx195.3$: një kontratë me vëllim total 195 merr $Z=0.5$.
+  \end{itemize}
+  \onslide<5->{\small Në Orën 5 vlerësojmë $\hat m$, $\hat a$, $\hat s^2$ me \texttt{cm()} dhe i krahasojmë me këto vlera.}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: çfarë është pesha?}
+  \begin{Gabim}
+    \begin{enumerate}
+      \item Përdoret numri i viteve si peshë, kur kontratat kanë madhësi shumë të ndryshme.
+      \item Përdoren shumat e dëmeve si $X_{ij}$, në vend të raporteve (dëme / vëllim).
+    \end{enumerate}
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item $X_{ij}$ duhet të jetë një \textbf{raport} (dëme për njësi vëllimi): raporti i dëmeve, frekuenca.
+    \item $w_{ij}$ është vëllimi që e prodhon atë raport: prima, numri i mjeteve, police-vite.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lidhja me Bayes \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Poisson--Gamma: prima e Bayes-it}
+  Shoferi ka $\Lambda\sim$ Gamma$(\alpha,\beta)$ (normë $\beta$); duke ditur $\Lambda$, $N_1,\dots,N_n$ i.i.d.\ Poisson$(\Lambda)$.
+  \pause
+  \begin{align*}
+    \pi(\lambda\mid N_1,\dots,N_n) &\propto \prod_j e^{-\lambda}\lambda^{N_j}\cdot\lambda^{\alpha-1}e^{-\beta\lambda} \\
+    \onslide<3->{&= \lambda^{\alpha+\sum_jN_j-1}\,e^{-(\beta+n)\lambda}}
+  \end{align*}
+  \onslide<4->{Pra $\Lambda\mid\text{të dhënat}\sim$ Gamma$\big(\alpha+\sum_jN_j,\;\beta+n\big)$, me mesatare
+  \[ E[\Lambda\mid\text{të dhënat}]=\frac{\alpha+\sum_jN_j}{\beta+n}. \]}
+\end{frame}
+
+\begin{frame}{Bayes = Bühlmann (kredibilitet i saktë)}
+  \begin{align*}
+    \frac{\alpha+\sum_jN_j}{\beta+n}
+    &= \frac{n}{n+\beta}\cdot\bar N+\frac{\beta}{n+\beta}\cdot\frac{\alpha}{\beta} \\
+    \onslide<2->{&= Z\,\bar N+(1-Z)\,m,\qquad Z=\frac{n}{n+\beta},\quad m=\frac\alpha\beta.}
+  \end{align*}
+  \onslide<3->{
+  \begin{itemize}
+    \item Me Bühlmann: $\mu(\Lambda)=\Lambda$, $\sigma^2(\Lambda)=\Lambda$; \; $s^2=E[\Lambda]=\alpha/\beta$, \; $a=\mathrm{Var}[\Lambda]=\alpha/\beta^2$.
+    \item $k=s^2/a=\beta$: i njëjti $Z$!
+  \end{itemize}}
+  \onslide<4->{\small Për çiftet ``të konjuguara'' (Poisson--Gamma, Normal--Normal, \dots), formula lineare është edhe parashikuesi më i mirë i Bayes-it.}
+\end{frame}
+
+\begin{frame}{Shembull: shoferi i Javës 3}
+  Java 3, Ora 2: $\Lambda\sim$ Gamma$(r=2,\;\beta=10)$, pra $m=0.2$ dëme në vit.
+  \pause
+  \begin{itemize}
+    \item Shoferi ka \textbf{1 dëm në 3 vite}: $\bar N=1/3$.
+    \item<3-> Bayes: $(2+1)/(10+3)=3/13=0.2308$.
+    \item<4-> Kredibilitet: $Z=3/13=0.2308$; \; $P=0.2308\times0.3333+0.7692\times0.2=0.0769+0.1538=0.2308$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Me $k=\beta=10$, një shofer ka nevojë për 10 vite histori për $Z=0.5$. Kjo shpjegon pse sistemet bonus-malus ndryshojnë primën me hapa të vegjël.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w4mc4b]{Zgjedhje e shumëfishtë}
+  Në Bühlmann--Straub, cili ndryshim e \textbf{rrit} $Z_i$ e një kontrate?
+  \begin{enumerate}[A)]
+    \item Rritja e zhurmës brenda kontratave $s^2$.
+    \item Ulja e ndryshimeve midis kontratave $a$.
+    \item Rritja e vëllimit total të kontratës $w_{i\cdot}$.
+    \item Rritja e primës mesatare të portofolit $m$.
+  \end{enumerate}
+  \vfill\shkoTe{w4zgjMC4b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj $Z$ të Bühlmann-it me $n$, $s^2$, $a$.
+    \item Pse zbresim $\hat s^2/n$ te $\hat a$?
+    \item Për Poisson--Gamma$(\alpha,\beta)$, sa është $k$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $Z=n/(n+s^2/a)$; (2) $\mathrm{Var}(\bar X_i)=a+s^2/n$ përmban edhe zhurmën; (3) $k=\beta$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item $P_i=Z\bar X_i+(1-Z)m$: kompromis midis përvojës së vet dhe portofolit.
+    \item Bühlmann: $Z=n/(n+k)$, $k=s^2/a$; nxjerrje si parashikuesi linear më i mirë.
+    \item Vlerësues empirikë për $m$, $s^2$, $a$; kur $\hat a<0$, $Z=0$.
+    \item Bühlmann--Straub: $Z_i=w_{i\cdot}/(w_{i\cdot}+k)$ me vëllime.
+    \item Poisson--Gamma: Bayes = kredibilitet, me $k=\beta$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator: \texttt{MackChainLadder()}, \texttt{BootChainLadder()} dhe \texttt{actuar::cm()}.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item H.~Bühlmann (1967), ``Experience rating and credibility'', \emph{ASTIN Bulletin} 4(3).
+    \item H.~Bühlmann, E.~Straub (1970), ``Glaubwürdigkeit für Schadensätze'', \emph{Mitteilungen der VSVM} 70.
+    \item V.~Goulet et al., vinjeta e kredibilitetit në paketën \Rkey{actuar} (\texttt{cm()}).
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për kredibilitetin).
+    \item E.~W.~Frees et al., \emph{Loss Data Analytics} (libër i hapur), kapitulli për kredibilitetin.
+  \end{itemize}
+\end{frame}
