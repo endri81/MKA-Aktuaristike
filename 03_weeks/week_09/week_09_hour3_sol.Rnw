@@ -1,0 +1,41 @@
+% ============================================================
+%  Java 9 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w9zgjGab3]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item \texttt{exp(r * T)} në vend të \texttt{exp(-r * T)}: kufiri $Ke^{rT}-S_0$ është \textbf{më i lartë} se ai i vërteti.
+    \item Kur $S_0$ është i madh, të dy kufijtë janë 0 (\texttt{pmax(\dots, 0)}). Gabimi shfaqet vetëm kur kufiri është aktiv, pra për $S_0<Ke^{rT}$ të vogël.
+  \end{enumerate}
+  \small Mësim: kur një test raporton shkelje, kontrollo së pari testin.
+  \vfill\kthehu{w9gab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w9zgjUsh3]{Zgjidhja: Radha jote!}
+<<w9h3-sol-ush>>=
+dPA <- ave(g$PA, g$S, g$sig, FUN = function(v) c(0, diff(v)))   # T in increasing order
+dP  <- ave(g$P,  g$S, g$sig, FUN = function(v) c(0, diff(v)))
+c(PA_decreasing_in_T = sum(dPA < -0.02), P_decreasing_in_T = sum(dP < 0))
+g[dP < 0, c("S", "T", "sig", "P")]
+@
+  \small Put-i europian bie me $T$ kur është në para ($S_0=60$--$80$), sidomos me $\sigma$ të vogël: nuk është gabim (Ora 2).
+  \vfill\kthehu{w9ush3}
+\end{frame}
+
+\begin{frame}[label=w9zgjPar3]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $\sigma\uparrow$ $\Rightarrow$ $S^*\downarrow$ (\Sexpr{ss["sigma40"]}): vlera e pritjes (``sigurimi'') rritet, ushtrimi shtyhet.
+    \item $r\uparrow$ $\Rightarrow$ $S^*\uparrow$ (\Sexpr{ss["r8"]}): interesi mbi $K$ vlen më shumë, ushtrimi bëhet më tërheqës.
+    \item $T\uparrow$ $\Rightarrow$ $S^*\downarrow$ (\Sexpr{ss["T5"]}): me më shumë kohë, ka më shumë gjasa që put-i të vlejë më shumë më vonë.
+  \end{enumerate}
+  \vfill\kthehu{w9par3}
+\end{frame}
+
+\begin{frame}[label=w9zgjNdr3]{Zgjidhja: Ndrysho parametrin}
+  \begin{itemize}
+    \item Baza: $S^*=\Sexpr{ss["base"]}$; \; $\sigma=40\%$: \Sexpr{ss["sigma40"]}; \; $r=8\%$: \Sexpr{ss["r8"]}; \; $T=5$: \Sexpr{ss["T5"]}.
+    \item Dy forca: \textbf{interesi} mbi $K$ (në favor të ushtrimit) dhe \textbf{opsionaliteti} i pritjes (kundër).
+    \item $S^*$ është aty ku të dyja barazohen.
+  \end{itemize}
+  \vfill\kthehu{w9ndr3}
+\end{frame}

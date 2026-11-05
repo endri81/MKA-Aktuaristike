@@ -1,0 +1,211 @@
+% ============================================================
+%  Java 9 · Ora 3 — Laborator R I: kufijtë në R
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{amer()}: një mbështjellës i thjeshtë për \texttt{binomopt()}.
+    \item<2-> Rrjeta me 45 kombinime $(S_0,T,\sigma)$: kontrolli automatik i nëntë kufijve.
+    \item<3-> Vlera e opsionit kundrejt vlerës intrinsike: call dhe put.
+    \item<4-> Zona e ushtrimit të menjëhershëm të put-it amerikan.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{K3}\;\LO{S2}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rrjeta e kontrollit}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Mbështjellësi \texttt{amer()}}
+<<w9h3-am>>=
+amer <- function(S, K, sig, r, T, put)                    # American option price
+  unname(binomopt(S, K, sig, r, T, 0, nstep = 300, american = TRUE, putopt = put))
+c(am_put = amer(100, 100, 0.25, 0.03, 1, TRUE), am_call = amer(100, 100, 0.25, 0.03, 1, FALSE))
+@
+  \begin{itemize}
+    \item<2-> \texttt{unname()}: \texttt{binomopt()} kthen një vlerë me emrin \texttt{price} (Ora 1).
+    \item<3-> 300 hapa: gabimi i pemës është rreth 0.01. Prandaj kontrollet me amerikanët kanë një tolerancë të vogël.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{45 kombinime}
+<<w9h3-grid>>=
+K <- 100; r <- 0.03
+g <- expand.grid(S = seq(60, 140, by = 20), T = c(0.25, 1, 3), sig = c(0.15, 0.25, 0.40))
+g$C  <- bscall(g$S, K, g$sig, r, g$T, 0)
+g$P  <- bsput(g$S, K, g$sig, r, g$T, 0)
+g$CA <- mapply(amer, g$S, K, g$sig, r, g$T, FALSE)
+g$PA <- mapply(amer, g$S, K, g$sig, r, g$T, TRUE)
+round(head(g, 4), 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Nëntë kufij, një rresht secili}
+<<w9h3-check>>=
+tol <- 0.02                                             # tree error
+chk <- with(g, cbind(
+  C_low   = C >= pmax(S - K * exp(-r * T), 0) - 1e-9,  C_up = C <= S,
+  P_low   = P >= pmax(K * exp(-r * T) - S, 0) - 1e-9,  P_up = P <= K * exp(-r * T),
+  CA_ge_C = CA >= C - tol,  PA_ge_P = PA >= P - tol,  PA_intr = PA >= pmax(K - S, 0) - 1e-9,
+  par_lo  = CA - PA >= S - K - tol,  par_up = CA - PA <= S - K * exp(-r * T) + tol))
+colSums(!chk)                                           # number of violations
+@
+  \small Zero shkelje në të 45 kombinimet. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{bscall()}, \texttt{bsput()} dhe \texttt{binomopt()} respektojnë të gjithë kufijtë e Orës 2.
+    \item<2-> Diferenca maksimale $|C_A-C|$ në rrjetë: \Sexpr{fmt(max(abs(g$CA - g$C)), 4)}: vetëm gabim i pemës.
+    \item<3-> Kjo matricë kontrolli është një \textbf{test automatik}: çdo kod i ri për opsionet duhet ta kalojë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w9gab3]{Gjej gabimin}
+<<w9h3-bug>>=
+chk_bad <- with(g, P >= pmax(K * exp(r * T) - S, 0))
+c(violations = sum(!chk_bad))
+@
+  \begin{enumerate}
+    \item Kodi raporton shkelje, edhe pse çmimet janë të sakta. Ku është gabimi?
+    \item Pse shkeljet ndodhin vetëm për $S_0$ të vogël?
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjGab3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w9ush3]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Shto në \texttt{chk} kontrollin e monotonisë sipas $T$ për put-in amerikan:
+        për çdo $(S_0,\sigma)$, $P_A$ duhet të rritet me $T$.
+      \item Bëj të njëjtën gjë për put-in europian. Sa shkelje gjen? A janë ``gabime''?
+    \end{enumerate}
+    Ndihmë: \texttt{ave(g\$PA, g\$S, g\$sig, FUN = function(v) c(0, diff(v)))}.
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjUsh3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlera kundrejt vlerës intrinsike}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Call-i: tre kurba}
+<<w9h3-call, echo=FALSE, fig.height=3>>=
+Sg <- seq(40, 160, by = 2)
+dc <- data.frame(S = rep(Sg, 3),
+                 v = c(bscall(Sg, K, 0.25, r, 1, 0), pmax(Sg - K * exp(-r), 0), pmax(Sg - K, 0)),
+                 curve = rep(c("C = C_A", "S - K e^(-rT)", "intrinsike (S - K)+"), each = length(Sg)))
+ggplot(dc, aes(S, v, colour = curve, linetype = curve)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#2C5AA0", "#E67E22", "#7F8C8D")) +
+  scale_linetype_manual(values = c(1, 2, 3)) +
+  labs(x = "S0", y = "vlera", colour = NULL, linetype = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kurba e call-it është gjithmonë \textbf{mbi} vlerën intrinsike: vlera kohore $>0$.
+    \item<2-> Edhe për $S_0$ shumë të madh, $C\approx S_0-Ke^{-rT}>S_0-K$.
+    \item<3-> Ushtrimi i hershëm do të jepte vetëm vlerën intrinsike: gjithmonë më pak se shitja e opsionit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Put-i: europian, amerikan, intrinsik}
+<<w9h3-put, echo=FALSE, fig.height=3>>=
+PAg <- sapply(Sg, amer, K = K, sig = 0.25, r = r, T = 1, put = TRUE)
+dp <- data.frame(S = rep(Sg, 3),
+                 v = c(bsput(Sg, K, 0.25, r, 1, 0), PAg, pmax(K - Sg, 0)),
+                 curve = rep(c("europian P", "amerikan P_A", "intrinsike (K - S)+"), each = length(Sg)))
+ggplot(dp, aes(S, v, colour = curve, linetype = curve)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0", "#7F8C8D")) +
+  scale_linetype_manual(values = c(1, 2, 3)) + coord_cartesian(xlim = c(40, 130)) +
+  labs(x = "S0", y = "vlera", colour = NULL, linetype = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Put-i europian kalon \textbf{poshtë} vlerës intrinsike për $S_0$ të vogël: vlera kohore negative!
+    \item<2-> Put-i amerikan nuk mund të bjerë poshtë intrinsikes: atje \textbf{ngjitet} me të.
+    \item<3-> Pika ku ngjitet: kufiri i ushtrimit $S^*$. Majtas tij, ushtro menjëherë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ku fillon zona e ushtrimit?}
+<<w9h3-star>>=
+Sf <- seq(40, 120, by = 1)
+PAf <- sapply(Sf, amer, K = K, sig = 0.25, r = r, T = 1, put = TRUE)
+S_star <- max(Sf[abs(PAf - (K - Sf)) < 1e-6])          # largest S with P_A = K - S
+c(S_star = S_star, sufficient_condition = K * (1 - exp(-r * 1)))
+@
+  \pause
+  \begin{itemize}
+    \item Me $T=1$, $\sigma=25\%$: ushtrimi i menjëhershëm është optimal për $S_0\le\Sexpr{S_star}$.
+    \item Kushti i mjaftueshëm i Orës 1 ($S_0<2.96$) është shumë më i ngushtë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w9par3]{Parashiko}
+  \begin{Parashiko}
+    Si ndryshon $S^*$ (kufiri i ushtrimit) nëse:
+    \begin{enumerate}
+      \item $\sigma$ rritet nga 25\% në 40\%?
+      \item $r$ rritet nga 3\% në 8\%?
+      \item $T$ rritet nga 1 në 5 vjet?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w9zgjPar3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w9ndr3]{Ndrysho parametrin: $S^*$}
+<<w9h3-star2>>=
+s_star <- function(sig, rr, T) {
+  Pv <- sapply(Sf, amer, K = K, sig = sig, r = rr, T = T, put = TRUE)
+  max(Sf[abs(Pv - (K - Sf)) < 1e-6])
+}
+ss <- c(base = s_star(0.25, 0.03, 1), sigma40 = s_star(0.40, 0.03, 1),
+        r8 = s_star(0.25, 0.08, 1), T5 = s_star(0.25, 0.03, 5)); ss
+@
+  \hfill\shkoTe{w9zgjNdr3}{Interpretimi}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse kontrollet me amerikanët kanë një tolerancë?
+    \item Pse put-i europian mund të vlejë më pak se vlera intrinsike, por amerikani jo?
+    \item Çfarë është $S^*$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) gabimi i pemës binomiale; (2) europiani nuk mund të ushtrohet sot;
+  (3) çmimi nën të cilin ushtrimi i menjëhershëm i put-it amerikan është optimal.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item \texttt{amer()} + \texttt{mapply()}: rrjetë me 45 kombinime, 9 kufij, 0 shkelje.
+    \item Call: gjithmonë mbi vlerën intrinsike $\Rightarrow$ nuk ushtrohet herët.
+    \item Put europian: mund të bjerë nën intrinsiken; amerikani ngjitet me të nën $S^*$.
+    \item $S^*\approx\Sexpr{S_star}$ për $K=100$, $T=1$, $\sigma=25\%$, $r=3\%$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria II: provat e ushtrimit të hershëm; dividendët; kufiri i ushtrimit.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{binomopt()}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+  \end{itemize}
+\end{frame}
