@@ -1,0 +1,355 @@
+% ============================================================
+%  Java 5 · Ora 6 — Rast studimi (Zgjerim): tabela e Shqipërisë 2011
+% ============================================================
+\section{Rast studimi \Zgj}
+
+\begin{frame}{Ora 6 · Rast studimi \Zgj}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w5h6-setup, include=FALSE>>=
+suppressMessages(library(lifecontingencies))
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Detyra}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyra e rastit}
+  \begin{itemize}
+    \item<1-> AutoSig Jetë do të çmojë sigurimin e Arbenit me një tabelë \textbf{reale} të Shqipërisë, jo sintetike.
+    \item<2-> Tabela më e re e plotë në HLD: \textbf{2011}, por vetëm e \textbf{shkurtuar} (0, 1, 5, 10, \dots, 95+).
+    \item<3-> \Rkey{lifecontingencies} kërkon çdo moshë 0--110 (Ora 5).
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pyetjet}
+    \begin{enumerate}
+      \item Si ndërtojmë një tabelë të plotë nga një e shkurtuar, dhe sa e saktë është?
+      \item Si ka ndryshuar vdekshmëria në Shqipëri 1950--2011?
+      \item Sa del prima e Arbenit dhe kostoja e pensionit me tabelën reale?
+    \end{enumerate}
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Harta e rastit}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.4cm,
+                minimum height=0.95cm,align=center,font=\footnotesize}]
+    \node[b] (a) at (0,0) {\textbf{1.} Metoda\\spline + Makeham};
+    \node[b] (b) at (3.2,0) {\textbf{2.} Validimi\\mbi 1960 të plotë};
+    \node[b] (c) at (6.4,0) {\textbf{3.} Shqipëria 2011\\M dhe F};
+    \node[b] (d) at (9.6,0) {\textbf{4.} 1950--2011\\$\mathring e_0$, $l_x$};
+    \node[b,fill=accent!15,draw=accent] (e) at (6.4,-2) {\textbf{5.} Çmimet\\Arbeni, pensioni};
+    \draw[->,thick,uptmid] (a) -- (b); \draw[->,thick,uptmid] (b) -- (c);
+    \draw[->,thick,uptmid] (c) -- (d); \draw[->,thick,uptmid] (c) -- (e);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 1: metoda}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja e interpolimit}
+  \begin{itemize}
+    \item<1-> $\log l_x$ është i \textbf{lëmuar} dhe \textbf{zbritës}: e interpolojmë, jo $l_x$ direkt.
+    \item<2-> Spline \textbf{monoton} (\texttt{splinefun(..., method = "monoH.FC")}): garanton që $l_x$ nuk rritet kurrë, pra $q_x\ge0$.
+    \item<3-> Mbi moshën e fundit (95): Makeham i përshtatur mbi moshat 60--95 dhe zgjatur deri në 110.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Spline i zakonshëm (\texttt{method = "fmm"}) mund të krijojë ``valë'' midis nyjeve: $l_{x+1}>l_x$ dhe $q_x<0$. Kontrollo gjithmonë \texttt{all(diff(lx) <= 0)}.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Funksioni \texttt{expand()} (1/2): spline}
+<<w5h6-fun1>>=
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+spline_part <- function(age, lx) {
+  f  <- splinefun(age, log(lx), method = "monoH.FC")   # monotone in log l
+  x1 <- 0:max(age)
+  data.frame(x = x1, lx = exp(f(x1)))
+}
+h11M <- subset(hld, Year1 == 2011 & TypeLT == 4 & Sex == 1)
+s <- spline_part(h11M$Age, h11M$l.x.)
+c(ages = nrow(s), monotone = all(diff(s$lx) <= 0), l95 = tail(s$lx, 1))
+@
+\end{frame}
+
+\begin{frame}[fragile]{Funksioni \texttt{expand()} (2/2): bishti me Makeham}
+<<w5h6-fun2>>=
+expand <- function(age, lx, top = 110) {
+  s <- spline_part(age, lx); n <- nrow(s)
+  q <- 1 - s$lx[-1] / s$lx[-n]; xa <- s$x[-n]; sel <- xa >= 60
+  g <- lm(log(-log(1 - q[sel])) ~ xa[sel])               # starting values
+  fit <- nls(q ~ gm_q(x, A, B, c), data = data.frame(q = q[sel], x = xa[sel]),
+             start = list(A = 1e-4, B = exp(coef(g)[[1]]), c = exp(coef(g)[[2]])),
+             algorithm = "port", lower = c(0, 1e-9, 1))
+  cf <- coef(fit); qe <- pmin(gm_q(max(age):(top - 1), cf[1], cf[2], cf[3]), 1)
+  data.frame(x = 0:top, lx = c(s$lx, s$lx[n] * cumprod(1 - qe)))
+}
+@
+  \small Vlerat fillestare të \texttt{nls()} vijnë nga Gompertz me \texttt{lm()} (Ora 3, Gjej gabimin).
+\end{frame}
+
+\begin{frame}[fragile]{Figura: nyjet dhe tabela e plotë}
+<<w5h6-plotknots, echo=FALSE, fig.height=3.1>>=
+t11M <- expand(h11M$Age, h11M$l.x.)
+ggplot() +
+  geom_line(data = t11M, aes(x, lx / 1000, colour = "e plote (spline + Makeham)"), linewidth = 0.9) +
+  geom_point(data = h11M, aes(Age, l.x. / 1000, colour = "nyjet HLD (e shkurtuar)"), size = 2) +
+  scale_colour_manual(values = c("#2C5AA0", "#C0392B")) +
+  labs(x = "mosha", y = "l(x)  (mije)", colour = NULL) + th + theme(legend.position = "top")
+@
+  \small \textbf{Reale}: HLD, Shqipëria 2011, meshkuj. Pikat: 21 nyje; vija: 111 mosha.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 2: validimi}
+% ------------------------------------------------------------
+
+\begin{frame}{Si e dimë që metoda punon?}
+  \begin{itemize}
+    \item<1-> Për 2011 nuk kemi tabelën e plotë: nuk mund ta krahasojmë.
+    \item<2-> Për \textbf{1960} kemi të dyja: e plotë (\texttt{TypeLT = 1}) dhe e shkurtuar.
+    \item<3-> Test: \textbf{shkurtojmë vetë} tabelën e plotë 1960 (0, 1, 5, \dots, 80), e rindërtojmë me \texttt{expand()}, dhe krahasojmë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kjo është ``vlerësimi kundrejt së vërtetës'' për të dhëna reale: e vërteta është tabela e plotë, që metoda nuk e sheh.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Validimi mbi 1960}
+<<w5h6-valid>>=
+full <- subset(hld, Year1 == 1960 & TypeLT == 1 & Sex == 1)
+abr  <- subset(full, Age %in% c(0, 1, seq(5, 80, 5)))       # our own abridging
+reb  <- expand(abr$Age, abr$l.x.)
+qf <- 1 - full$l.x.[-1] / full$l.x.[-nrow(full)]
+qr <- 1 - reb$lx[-1] / reb$lx[-nrow(reb)]
+a  <- c(1, 2, 5, 10, 40, 70, 80, 90)
+round(rbind(age = a, full = qf[a + 1], rebuilt = qr[a + 1]), 5)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Validimi: jetëgjatësia}
+<<w5h6-valid2>>=
+ltf <- new("lifetable", x = full$Age, lx = full$l.x.)
+ltr <- new("lifetable", x = reb$x, lx = reb$lx)
+round(rbind(full    = c(e0 = exn(ltf, 0, type = "complete"), e65 = exn(ltf, 65, type = "complete")),
+            rebuilt = c(e0 = exn(ltr, 0, type = "complete"), e65 = exn(ltr, 65, type = "complete"))), 2)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $q_x$ në moshat 10--80: diferenca të vogla. Spline në $\log l_x$ punon mirë.
+    \item<2-> Moshat 1--5: gabime deri në $\approx\Sexpr{fmt(100 * max(abs(qr[2:6] / qf[2:6] - 1)))}\%$: vdekshmëria ndryshon shpejt, nyjet janë larg.
+    \item<3-> Mbi 80: Makeham nuk e kap mirë ngadalësimin e vdekshmërisë në moshat shumë të larta.
+    \item<4-> $\mathring e_0$ gabon me $\approx\Sexpr{fmt(exn(ltr, 0, type = "complete") - exn(ltf, 0, type = "complete"), 2)}$ vite: i pranueshëm për çmim.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w5par6]{Parashiko}
+  \begin{Parashiko}
+    Për 2011 nyja e fundit është 95 (jo 80 si në validim).
+    \begin{enumerate}
+      \item A pret që gabimi në $\mathring e_{65}$ të jetë më i madh apo më i vogël se në validim?
+      \item Po gabimi i një anuiteti pensioni $\ddot a_{65}$?
+      \item Cila pjesë e metodës ka më shumë rëndësi për pensionet: spline apo Makeham?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w5zgjPar6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 3: Shqipëria 2011}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tabelat e plota 2011}
+<<w5h6-2011>>=
+h11F <- subset(hld, Year1 == 2011 & TypeLT == 4 & Sex == 2)
+t11F <- expand(h11F$Age, h11F$l.x.)
+lt11M <- new("lifetable", x = t11M$x, lx = t11M$lx, name = "AL 2011 M")
+lt11F <- new("lifetable", x = t11F$x, lx = t11F$lx, name = "AL 2011 F")
+e <- function(lt, x) exn(lt, x, type = "complete")
+round(rbind(rebuilt_M = c(e(lt11M, 0), e(lt11M, 65)), HLD_M = c(h11M$e.x.[1], h11M$e.x.[h11M$Age == 65]),
+            rebuilt_F = c(e(lt11F, 0), e(lt11F, 65)), HLD_F = c(h11F$e.x.[1], h11F$e.x.[h11F$Age == 65])), 2)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\mathring e_0$ dhe $\mathring e_{65}$ e rindërtuara përputhen me HLD deri në 0.05 vite. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Tabela e plotë tani mund të përdoret me \Rkey{lifecontingencies}.
+    \item<3-> Kujdes: kjo vërteton vetëm mesataret; $q_x$ individuale kanë gabimet e validimit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Shqipëria 2011 kundrejt tabelës sintetike}
+<<w5h6-cmpplot, echo=FALSE, fig.height=3.1>>=
+qq <- function(l) 1 - l[-1] / l[-length(l)]
+dd <- rbind(data.frame(x = 0:109, q = qq(t11M$lx), src = "Shqiperia 2011 M (rindertuar)"),
+            data.frame(x = 0:109, q = qq(mt$lx_male), src = "sintetike M"))
+ggplot(subset(dd, x <= 100), aes(x, q, colour = src)) + geom_line(linewidth = 0.9) +
+  scale_y_log10() + scale_colour_manual(values = c("#2C5AA0", "#E67E22")) +
+  labs(x = "mosha", y = "q(x), shkalla log", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Moshat 50--70: kurbat pothuajse përputhen; tabela sintetike u ndërtua të ngjante me Shqipërinë.
+    \item<2-> Moshat 20--40: tabela reale del 10--40\% më e lartë; mbi 80 vjeç rreth 30\% më e lartë.
+    \item<3-> Fëmijëria: $q_1$ real është shumë më i lartë, dhe tabela reale ka ``gropën'' rreth 10 vjeç; sintetika jo.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 4: 1950--2011}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Jetëgjatësia në lindje 1950--2011}
+<<w5h6-e0plot, echo=FALSE, fig.height=3.1>>=
+e0 <- subset(hld, TypeLT == 4 & Age == 0)
+ggplot(e0, aes(Year1, e.x., colour = factor(Sex, labels = c("Meshkuj", "Femra")))) +
+  geom_line(linewidth = 1) + geom_point(size = 2) +
+  scale_colour_manual(values = c("#2C5AA0", "#C0392B")) +
+  labs(x = "viti", y = "jetegjatesia ne lindje (vite)", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+  \small \textbf{Reale}: HLD, tabelat e shkurtuara (\texttt{TypeLT = 4}), Shqipëria.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> 1950: $\mathring e_0\approx\Sexpr{fmt(e0$e.x.[e0$Year1 == 1950 & e0$Sex == 1], 1)}$ vite (M). 2011: \Sexpr{fmt(e0$e.x.[e0$Year1 == 2011 & e0$Sex == 1], 1)}: +\Sexpr{fmt(e0$e.x.[e0$Year1 == 2011 & e0$Sex == 1] - e0$e.x.[e0$Year1 == 1950 & e0$Sex == 1], 0)} vite në 60 vite.
+    \item<2-> Rritja më e shpejtë: 1950--1960, kryesisht nga ulja e vdekshmërisë foshnjore.
+    \item<3-> Diferenca F--M rritet nga $\approx0$ në $\approx\Sexpr{fmt(e0$e.x.[e0$Year1 == 2011 & e0$Sex == 2] - e0$e.x.[e0$Year1 == 2011 & e0$Sex == 1], 1)}$ vite.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}HLD ka dy tabela të ndryshme për 1960: e plota jep $\mathring e_0=63.7$, e shkurtuara 61.0 (M). Burime dhe metoda të ndryshme. Për krahasim në kohë, përdor të njëjtin lloj tabele.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{``Drejtkëndëshimi'' i kurbës $l_x$}
+<<w5h6-rect, echo=FALSE, fig.height=3.1>>=
+lx_ab <- subset(hld, TypeLT == 4 & Sex == 1 & Year1 %in% c(1950, 1979, 2011))
+ggplot(lx_ab, aes(Age, l.x. / 1000, colour = factor(Year1))) +
+  geom_line(linewidth = 1) + geom_point(size = 1.2) +
+  scale_colour_manual(values = c("#95A5A6", "#E67E22", "#2C5AA0")) +
+  labs(x = "mosha", y = "l(x)  (mije), meshkuj", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> 1950: rënie e fortë në vitet e para; pak njerëz arrijnë pleqërinë.
+    \item<2-> 2011: kurba qëndron e lartë deri rreth 60 vjeç, pastaj bie shpejt: forma bëhet ``drejtkëndore''.
+    \item<3-> Vdekjet përqendrohen në moshat e larta.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Për aktuarin}
+    Kur vdekjet përqendrohen pas 65 vjeç, anuitetet e pensionit bëhen më të shtrenjta, ndërsa sigurimet me afat bëhen më të lira.
+  \end{block}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Hapi 5: çmimet}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Arbeni dhe pensioni me tabelën reale}
+<<w5h6-price>>=
+act <- function(lx, i = 0.05) new("actuarialtable", x = 0:110, lx = lx, interest = i)
+aM <- act(t11M$lx); aF <- act(t11F$lx); sM <- act(mt$lx_male)
+prem <- function(a) 1e6 * Axn(a, 40, 20) / axn(a, 40, 20)
+round(rbind(AL2011_M = c(premium = prem(aM), a65 = axn(aM, 65), a65_monthly = axn(aM, 65, k = 12)),
+            AL2011_F = c(prem(aF), axn(aF, 65), axn(aF, 65, k = 12)),
+            synth_M  = c(prem(sM), axn(sM, 65), axn(sM, 65, k = 12))), 2)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Prima e Arbenit me tabelën reale: \textbf{\Sexpr{fmt(prem(aM))} lekë/vit}, afër tabelës sintetike (\Sexpr{fmt(prem(sM))}).
+    \item<2-> Gruaja 40-vjeçare: \Sexpr{fmt(prem(aF))} lekë/vit, rreth gjysma.
+    \item<3-> Kostoja e pensionit në 65 vjeç: \Sexpr{fmt(axn(aM, 65), 2)} (M) kundrejt \Sexpr{fmt(axn(aF, 65), 2)} (F) për 1 lek në vit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Tabela 2011 është 15 vite e vjetër. Për çmim në 2026 duhen përmirësimet e vdekshmërisë: me tabelën e 2011, pensionet \textbf{nënvlerësohen}.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w5ush6]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Me \texttt{expand()} dhe tabelën HLD 1989 (meshkuj, nyja e fundit 80):
+    \begin{enumerate}
+      \item Ndërto tabelën e plotë dhe llogarit $\mathring e_0$; krahasoje me HLD.
+      \item Llogarit primën e Arbenit me tabelën 1989. Sa më e shtrenjtë del se me 2011?
+      \item Pse për 1989 extrapolimi me Makeham ka më shumë rëndësi?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjUsh6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w5tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    AutoSig Jetë duhet të zgjedhë një tabelë për çmimet e 2026.
+    \begin{enumerate}
+      \item HLD 2011 (e plotë pas rindërtimit, por e vjetër) apo Eurostat 2024 (e re, por vetëm $e_x$)?
+      \item Si mund t'i kombinosh të dyja?
+      \item Cilën zgjedhje do të pranonte AMF-ja më lehtë? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjTps6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Raporti për bordin}
+  \begin{block}{Përmbledhje (rast studimi)}
+    \begin{enumerate}
+      \item Tabela e plotë e Shqipërisë 2011 u rindërtua nga HLD (spline monoton + Makeham); $\mathring e_0$ përputhet me HLD deri në 0.05 vite.
+      \item Validimi mbi 1960: gabimi në $\mathring e_0$ $\approx$ \Sexpr{fmt(exn(ltr, 0, type = "complete") - exn(ltf, 0, type = "complete"), 2)} vite; më i madh në moshat 1--5 dhe 80+.
+      \item Prima neto e Arbenit: \Sexpr{fmt(prem(aM))} lekë/vit (M), \Sexpr{fmt(prem(aF))} lekë/vit (F), $i=5\%$.
+      \item Rekomandim: përditësim i tabelës me të dhënat e Eurostat 2013--2024 para çmimeve të pensioneve.
+    \end{enumerate}
+  \end{block}
+  \pause
+  \small Kufizimet: tabelë periudhe; pa përmirësime të ardhshme; Makeham mbi 95 vjeç.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse interpolojmë $\log l_x$ dhe jo $l_x$?
+    \item Si e validuam metodën pa ditur tabelën e plotë 2011?
+    \item Pse ``drejtkëndëshimi'' e rrit koston e pensioneve?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\log l_x$ është më i lëmuar dhe spline monoton garanton $q_x\ge0$;
+  (2) shkurtuam vetë tabelën e plotë 1960 dhe e rindërtuam; (3) më shumë njerëz arrijnë 65 vjeç dhe jetojnë më gjatë pas saj.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item E shkurtuar $\to$ e plotë: spline monoton në $\log l_x$ + Makeham për bishtin.
+    \item Validimi mbi një tabelë të njohur para përdorimit.
+    \item Shqipëria 1950--2011: $\mathring e_0$ nga $\approx51$ në $\approx75$ (M); kurba $l_x$ bëhet drejtkëndore.
+    \item Çmimet me tabelën reale: prima e Arbenit \Sexpr{fmt(prem(aM))} lekë/vit.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, klinika e gabimeve, fletë-kujtesa, paraqitja e Javës 6.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item Human Life-Table Database (lifetable.de): Shqipëria 1950--2011, tabela të plota dhe të shkurtuara.
+    \item F.~N.~Fritsch, R.~E.~Carlson (1980), ``Monotone piecewise cubic interpolation'', \emph{SIAM J.\ Numer.\ Anal.} 17(2) (\texttt{method = "monoH.FC"}).
+    \item G.~A.~Spedicato, vinjeta e paketës \Rkey{lifecontingencies}.
+    \item Eurostat, \texttt{demo\_mlexpec}.
+  \end{itemize}
+\end{frame}

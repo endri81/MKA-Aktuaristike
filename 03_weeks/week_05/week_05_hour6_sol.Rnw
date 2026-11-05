@@ -1,0 +1,37 @@
+% ============================================================
+%  Java 5 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w5zgjPar6]{Zgjidhja: Parashiko (nyja e fundit)}
+  \begin{enumerate}
+    \item Më i vogël: me nyje deri në 95, Makeham duhet vetëm për moshat 95--110, ku jetojnë pak njerëz.
+    \item Edhe gabimi i $\ddot a_{65}$ bie, por mbetet i ndjeshëm: pensionet paguhen pikërisht në moshat 80+.
+    \item Për pensionet ka më shumë rëndësi \textbf{bishti} (Makeham); për sigurimet me afat të të rinjve, spline.
+  \end{enumerate}
+  \vfill\kthehu{w5par6}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjUsh6]{Zgjidhja: Radha jote! (1989)}
+<<w5s6-ush>>=
+h89 <- subset(hld, Year1 == 1989 & TypeLT == 4 & Sex == 1)
+t89 <- expand(h89$Age, h89$l.x.)
+lt89 <- new("lifetable", x = t89$x, lx = t89$lx)
+a89  <- new("actuarialtable", x = t89$x, lx = t89$lx, interest = 0.05)
+c(e0_rebuilt = exn(lt89, 0, type = "complete"), e0_HLD = h89$e.x.[1],
+  premium_1989 = prem(a89), premium_2011 = prem(aM),
+  increase_pct = 100 * (prem(a89) / prem(aM) - 1))
+@
+  \small Për 1989 nyja e fundit është 80: Makeham ndërton \textbf{të gjitha} moshat 80--110, ku vdekjet janë shumë.
+  \vfill\kthehu{w5ush6}
+\end{frame}
+
+\begin{frame}[label=w5zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  Përgjigje të mundshme:
+  \begin{enumerate}
+    \item Asnjëra vetëm: 2011 ka formën e plotë të $q_x$, Eurostat 2024 nivelin aktual të jetëgjatësisë.
+    \item Kalibro tabelën 2011: shumëzo $q_x$ me një faktor (ose zhvendos moshën) që $\mathring e_x$ e saj të përputhet me Eurostat 2024 për disa mosha (0, 40, 65).
+          Ky është ushtrimi i README: rindërto $q_x$ nga $e_x$.
+    \item Një metodë e dokumentuar dhe e riprodhueshme, me burime zyrtare (HLD, Eurostat) dhe validim, pranohet më lehtë se një tabelë e huaj pa justifikim.
+  \end{enumerate}
+  \vfill\kthehu{w5tps6}
+\end{frame}
