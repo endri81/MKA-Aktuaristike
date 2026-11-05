@@ -1,0 +1,49 @@
+% ============================================================
+%  Java 5 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w5s1-setup, include=FALSE>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+@
+
+\begin{frame}[label=w5zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Viti i parë i jetës ka rreziqe të veçanta (lindja, sëmundjet e foshnjërisë): $q_0$ është shumë më i lartë se $q_1$.
+    \item Në tabelat reale, minimumi është rreth moshës 10--14 (Shqipëria 1960: 14 vjeç).
+    \item Jo: tabela sintetike ndjek Gompertz--Makeham pas moshës 0, që rritet vazhdimisht.
+          Minimumi i saj del në moshën \Sexpr{which.min(mt$qx_male[1:60]) - 1}.
+  \end{enumerate}
+  \vfill\kthehu{w5par1}
+\end{frame}
+
+\begin{frame}[label=w5zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item ${}_3p_{100}=l_{103}/l_{100}=100/1\,000=0.1$; \; ${}_{2|}q_{100}=d_{102}/l_{100}=200/1\,000=0.2$.
+    \item $e_{101}=(l_{102}+l_{103})/l_{101}=(300+100)/600=0.667$.
+    \item $e_{101}=0.667>e_{100}-1=0$. Kush arrin 101 ka ``kaluar'' vitin e rrezikshëm: llogaritja është e kushtëzuar te mbijetesa.
+  \end{enumerate}
+  \small Rekursioni: $e_x=p_x\,(1+e_{x+1})$: \; $0.6\times(1+0.667)=1.0=e_{100}$. \textcolor{okgreen}{$\checkmark$}
+  \vfill\kthehu{w5ush1}
+\end{frame}
+
+\begin{frame}[label=w5zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{C)} $\Pr(K_{100}=1)={}_1p_{100}\,q_{101}=0.6\times0.5=0.3=d_{101}/l_{100}$.
+  \begin{itemize}
+    \item A) është $\Pr(K_{100}\ge1)$. \; B) harron që duhet të jetojë deri në 101.
+    \item D) ${}_2p_{100}=\Pr(K_{100}\ge2)$: numerikisht 0.3 rastësisht, por ngjarje tjetër.
+  \end{itemize}
+  \vfill\kthehu{w5mc1}
+\end{frame}
+
+\begin{frame}[fragile,label=w5zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+<<w5s1-tps>>=
+l <- mt$lx_male
+e <- function(x) sum(l[(x + 2):length(l)]) / l[x + 1]    # curtate e_x
+c(e0 = e(0), e0_minus_40 = e(0) - 40, e40 = e(40))
+@
+  \begin{itemize}
+    \item $e_{40}>e_0-40$: ata që vdiqën para 40 vjeç ulnin mesataren $e_0$.
+    \item Arbeni ka mbijetuar deri në 40: ai i përket një grupi të ``përzgjedhur'' nga mbijetesa.
+  \end{itemize}
+  \vfill\kthehu{w5tps1}
+\end{frame}

@@ -1,0 +1,403 @@
+% ============================================================
+%  Java 5 · Ora 1 — Motivimi: sa vlen një jetë në kontratë?
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w5h1-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e klientit}
+% ------------------------------------------------------------
+
+\begin{frame}{Një klient në zyrën e AutoSig Jetë}
+  \begin{itemize}
+    \item<1-> Arben, 40 vjeç, nga Tirana, ka marrë një kredi shtëpie për 20 vjet.
+    \item<2-> Do që familja të mos mbetet me borxhin nëse ai vdes para kohe.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Shembull}[(pyetja e klientit)]
+    ``Sa duhet të paguaj çdo vit për një sigurim jete që i jep familjes \textbf{1\,000\,000 lekë}
+    nëse vdes brenda 20 viteve të ardhshme?''
+  \end{Shembull}}
+  \onslide<4->{\small Kompania dhe klienti janë fiktivë. Pyetja është reale: kështu shitet çdo sigurim jete me afat.}
+\end{frame}
+
+\begin{frame}{Pse jeta është ndryshe nga jo-jeta?}
+  \begin{itemize}
+    \item<1-> \textbf{Kohëzgjatja}: Kasko zgjat 1 vit; një sigurim jete 20--40 vite.
+    \item<2-> \textbf{Rreziku ndryshon me moshën}: probabiliteti i vdekjes rritet çdo vit.
+    \item<3-> \textbf{Paraja ka vlerë në kohë}: 1\,000\,000 lekë pas 15 vitesh vlen më pak se sot (Java 2).
+    \item<4-> \textbf{Prima e nivelit}: klienti paguan të njëjtën shumë çdo vit, edhe pse rreziku rritet.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Çfarë na duhet}
+    (1) probabilitetet e vdekjes sipas moshës, (2) skontimi, (3) një mënyrë për t'i bashkuar.
+    Java 5: (1) dhe fillimi i (3). Javët 6--7: e plota.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 5}
+  \begin{enumerate}
+    \item<1-> Të lexojmë dhe të ndërtojmë një \termi{tabelë vdekshmërie}{life table}. \LO{C1}
+    \item<2-> Të llogarisim $l_x$, $d_x$, $q_x$, $p_x$, ${}_tp_x$ dhe $e_x$. \LO{C1}
+    \item<3-> Të përshtatim ligjin Gompertz--Makeham dhe të krahasojmë me të vërtetën. \LO{K3}
+    \item<4-> Të llogarisim sigurimet dhe anuitetet bazë: $E_x$, $A_x$, $\ddot a_x$. \LO{C3}
+    \item<5-> Të përdorim \Rkey{lifecontingencies} mbi tabela sintetike dhe reale të Shqipërisë. \LO{S2}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t) at (0,0) {\textbf{Kohorta}\\$l_x$, Ora 1};
+    \node[b] (f) at (3.5,0) {\textbf{Funksionet}\\$q_x$, $e_x$, Ora 2};
+    \node[b] (r) at (7,0) {\textbf{Nga zero}\\Gompertz, Ora 3};
+    \node[b] (a) at (3.5,-2) {\textbf{Sigurimet}\\$A_x$, $\ddot a_x$, Ora 4};
+    \node[b] (p) at (7,-2) {\textbf{Paketa}\\\texttt{lifecontingencies}, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (c) at (10.5,-1) {\textbf{Shqipëria}\\1950--2011, Ora 6};
+    \draw[->,thick,uptmid] (t) -- (f); \draw[->,thick,uptmid] (f) -- (r);
+    \draw[->,thick,uptmid] (f) -- (a); \draw[->,thick,uptmid] (a) -- (p);
+    \draw[->,thick,uptmid] (r) -- (c); \draw[->,thick,uptmid] (p) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kohorta}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja: ndiq 100\,000 të lindur}
+  \begin{itemize}
+    \item<1-> Imagjinojmë \textbf{100\,000} foshnja të lindura në të njëjtin vit: \termi{kohorta}{cohort}.
+    \item<2-> I ndjekim derisa të vdesë i fundit.
+    \item<3-> $l_x$ = sa prej tyre janë ende gjallë në ditëlindjen e $x$-të.
+    \item<4-> $d_x=l_x-l_{x+1}$ = sa vdesin midis moshës $x$ dhe $x+1$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Në praktikë $l_x$ nuk vjen nga ndjekja e një kohorte të vërtetë: ndërtohet nga vdekjet e një viti (tabelë \emph{periudhe}). Ideja e kohortës është vetëm mënyra më e lehtë për ta lexuar.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Tabela sintetike}
+<<w5h1-read>>=
+mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+mt[mt$age %in% c(0, 1, 20, 40, 65, 80, 100, 110), ]
+@
+  \small Të dhëna \textbf{sintetike} (\texttt{mortality\_table\_synthetic.csv}), Gompertz--Makeham me parametra të njohur.
+\end{frame}
+
+\begin{frame}[fragile]{Kurba $l_x$}
+<<w5h1-lx, echo=FALSE, fig.height=3.2>>=
+d <- rbind(data.frame(age = mt$age, lx = mt$lx_male, sex = "Meshkuj"),
+           data.frame(age = mt$age, lx = mt$lx_female, sex = "Femra"))
+ggplot(d, aes(age, lx / 1000, colour = sex)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#C0392B", "#2C5AA0")) +
+  labs(x = "mosha x", y = "l(x)  (mije)", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Deri rreth moshës 50, kurba është pothuajse e sheshtë: pak vdekje.
+    \item<2-> Pas 60 vjeç bie shpejt: vdekshmëria rritet eksponencialisht.
+    \item<3-> Femrat jetojnë më gjatë: kurba e tyre bie më vonë.
+    \item<4-> Në 65 vjeç janë ende gjallë \Sexpr{fmt(mt$lx_male[66])} meshkuj dhe \Sexpr{fmt(mt$lx_female[66])} femra nga 100\,000.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Pse ka rëndësi}
+    Pensionet paguhen pas 65 vjeç: diferenca midis kurbave = diferenca në koston e pensionit.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w5par1]{Parashiko}
+  \begin{Parashiko}
+    \begin{enumerate}
+      \item Pse $q_0$ (vdekshmëria në vitin e parë) është shumë më e madhe se $q_1$?
+      \item Në cilën moshë pret vdekshmërinë më të ulët në një tabelë \textbf{reale}?
+      \item A pret të njëjtën gjë në tabelën sintetike? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w5zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{$\log q_x$: sintetike kundrejt reale}
+<<w5h1-logq, echo=FALSE, fig.height=3.1>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+h60 <- subset(hld, Year1 == 1960 & TypeLT == 1 & Sex == 1 & Age <= 100)
+dq <- rbind(data.frame(age = mt$age[1:101], q = mt$qx_male[1:101], src = "sintetike (M)"),
+            data.frame(age = h60$Age, q = h60$q.x., src = "Shqiperia 1960 (M, HLD)"))
+ggplot(dq, aes(age, q, colour = src)) + geom_line(linewidth = 0.9) +
+  scale_y_log10() + scale_colour_manual(values = c("#E67E22", "#2C5AA0")) +
+  labs(x = "mosha x", y = "q(x), shkalla log", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+  \small Reale: Human Life-Table Database, Shqipëria 1960, meshkuj, tabelë e plotë.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në shkallë log, pas 30 vjeç të dyja kurbat janë pothuajse \textbf{vija të drejta}: ligji i Gompertz-it.
+    \item<2-> Tabela reale ka një ``gropë'' në fëmijëri: minimumi i vdekshmërisë është në moshën \Sexpr{h60$Age[which.min(h60$q.x.[1:40])]}.
+    \item<3-> Tabela sintetike nuk e ka: modeli Gompertz--Makeham nuk e përshkruan fëmijërinë.
+    \item<4-> Shqipëria 1960: vdekshmëri foshnjore shumë e lartë ($q_0\approx\Sexpr{fmt(h60$q.x.[1], 3)}$).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Një tabelë e vogël}
+  Moshat 100--104, me $l_{100}=1\,000$:
+  \begin{center}
+    \begin{tabular}{c|ccccc}
+      \toprule
+      $x$ & 100 & 101 & 102 & 103 & 104 \\
+      \midrule
+      $l_x$ & 1\,000 & 600 & 300 & 100 & 0 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Askush nuk arrin 104: mosha maksimale $\omega=104$.
+    \item Synimi: $d_x$, $q_x$, $p_x$, ${}_tp_x$ dhe $e_{100}$, \textbf{pa ndihmën e PC}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hapi 1: $d_x$, $q_x$, $p_x$}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 100 & 101 & 102 & 103 \\
+      \midrule
+      $d_x=l_x-l_{x+1}$ & 400 & 300 & 200 & 100 \\
+      \pause $q_x=d_x/l_x$ & 0.400 & 0.500 & 0.667 & 1.000 \\
+      \pause $p_x=1-q_x$ & 0.600 & 0.500 & 0.333 & 0 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  {
+  \begin{Keshille}Kontroll: $\sum_xd_x=1\,000=l_{100}$. Çdo person vdes një herë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Hapi 2: mbijetesa për disa vite}
+  \begin{itemize}
+    \item<1-> ${}_tp_x=l_{x+t}/l_x$: probabiliteti që $x$-vjeçari të jetojë edhe $t$ vite.
+    \item<2-> ${}_2p_{100}=300/1\,000=0.3$.
+    \item<3-> Kontroll me zinxhirin: ${}_2p_{100}=p_{100}\cdot p_{101}=0.6\times0.5=0.3$. \textcolor{okgreen}{$\checkmark$}
+    \item<4-> ${}_{t|}q_x=d_{x+t}/l_x$: vdes \textbf{pikërisht} në vitin $t+1$. \; ${}_{1|}q_{100}=300/1\,000=0.3$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}${}_tp_x\ne(p_x)^t$: probabilitetet e mbijetesës ndryshojnë nga viti në vit. ${}_2p_{100}=0.3$, por $p_{100}^2=0.36$.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Hapi 3: jetëgjatësia e pritur}
+  Numri i viteve të \textbf{plota} që do të jetojë 100-vjeçari:
+  \[
+    e_{100}=\sum_{k\ge1}{}_kp_{100}=\frac{l_{101}+l_{102}+l_{103}}{l_{100}}
+    \pause
+    =\frac{600+300+100}{1\,000}=1.0
+  \]
+  \pause
+  \begin{itemize}
+    \item $e_x$ quhet \termi{jetëgjatësia e pritur e reduktuar}{curtate expectation of life}.
+    \item Jetëgjatësia e plotë: $\mathring e_x\approx e_x+\tfrac12=1.5$ vite (vdekjet ndodhin mesatarisht në mes të vitit).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w5ush1]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Me tabelën e vogël:
+    \begin{enumerate}
+      \item Llogarit ${}_3p_{100}$ dhe ${}_{2|}q_{100}$.
+      \item Llogarit $e_{101}$.
+      \item A është $e_{101}$ më e madhe apo më e vogël se $e_{100}-1$? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjUsh1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w5h1-toy>>=
+x  <- 100:104
+lx <- c(1000, 600, 300, 100, 0)
+dx <- -diff(lx)                         # l_x - l_{x+1}
+qx <- dx / lx[-5]
+px <- 1 - qx
+e100 <- sum(lx[-1]) / lx[1]             # sum of k p_100
+rbind(dx = dx, qx = round(qx, 3), px = round(px, 3))
+c(p2_100 = lx[3] / lx[1], e100 = e100)
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Variablat e rastit}
+% ------------------------------------------------------------
+
+\begin{frame}{Jetëgjatësia e mbetur si variabël e rastit}
+  \begin{Definicion}[(jetëgjatësia e mbetur)]
+    $T_x$ = koha e mbetur e jetës së një personi $x$-vjeçar (e vazhdueshme).\\
+    $K_x=\lfloor T_x\rfloor$ = numri i viteve të plota që do të jetojë.
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item ${}_tp_x=\Pr(T_x>t)$, \quad ${}_tq_x=\Pr(T_x\le t)$.
+    \item $\Pr(K_x=k)={}_kp_x\,q_{x+k}={}_{k|}q_x$.
+    \item<3-> $e_x=E[K_x]$, \quad $\mathring e_x=E[T_x]$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pse $e_x=\sum_{k\ge1}{}_kp_x$?}
+  Për një variabël me vlera $0,1,2,\dots$:
+  \begin{align*}
+    E[K]&=\sum_{k\ge0}k\,\Pr(K=k)=\sum_{k\ge0}\sum_{j=1}^{k}\Pr(K=k) \\
+    \onslide<2->{&=\sum_{j\ge1}\sum_{k\ge j}\Pr(K=k)=\sum_{j\ge1}\Pr(K\ge j)} \\
+    \onslide<3->{&=\sum_{j\ge1}{}_jp_x.}
+  \end{align*}
+  \onslide<4->{\small Hapi i fundit: $K_x\ge j\iff$ personi jeton të paktën $j$ vite $\iff T_x>j$ (me probabilitet ${}_jp_x$).}
+\end{frame}
+
+\begin{frame}[label=w5mc1]{Zgjedhje e shumëfishtë}
+  Në tabelën e vogël, sa është $\Pr(K_{100}=1)$?
+  \begin{enumerate}[A)]
+    \item $p_{100}=0.6$
+    \item $q_{101}=0.5$
+    \item $p_{100}\,q_{101}=0.3$
+    \item ${}_2p_{100}=0.3$
+  \end{enumerate}
+  \vfill\shkoTe{w5zgjMC1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lidhja me Javën 2}
+% ------------------------------------------------------------
+
+\begin{frame}{Skontimi: rifreskim}
+  \begin{itemize}
+    \item<1-> Me normë interesi $i$: \; $v=1/(1+i)$, faktori i skontimit.
+    \item<2-> 1\,000\,000 lekë të paguara pas $n$ vitesh vlejnë sot $1\,000\,000\cdot v^n$.
+    \item<3-> Me $i=5\%$ dhe $n=20$: \; $v^{20}=1.05^{-20}=0.3769$, pra 376\,890 lekë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{E re në jetë}
+    Pagesa ndodh \textbf{vetëm nëse} ndodh një ngjarje (vdekja ose mbijetesa). Vlera aktuale shumëzohet me probabilitetin.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Shembull: dota e pastër}
+  Kompania i paguan 1\,000 lekë 100-vjeçarit nëse është gjallë në 102 vjeç. $i=5\%$.
+  \pause
+  \begin{align*}
+    \text{Vlera aktuale e pritur}&=1\,000\cdot v^2\cdot{}_2p_{100} \\
+    \onslide<3->{&=1\,000\times\frac{1}{1.1025}\times0.3=272.11\text{ lekë.}}
+  \end{align*}
+  \onslide<4->{
+  \begin{itemize}
+    \item Ky është \termi{dota e pastër}{pure endowment}: ${}_nE_x=v^n\,{}_np_x$.
+    \item Ora 4: me të njëjtën ide ndërtojmë $A_x$ dhe $\ddot a_x$.
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}[fragile]{Klienti i Orës 1: një përafrim i parë}
+<<w5h1-client>>=
+l <- mt$lx_male; age <- mt$age
+q20_40 <- 1 - l[age == 60] / l[age == 40]        # die between 40 and 60
+c(P_die_20y = q20_40, expected_payout = 1e6 * q20_40,
+  per_year = 1e6 * q20_40 / 20)
+@
+  \small Tabela sintetike, meshkuj. Pa skontim dhe pa marrë parasysh se klienti ndalon së paguari kur vdes.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Arbeni ka $\approx\Sexpr{fmt(100 * q20_40, 1)}\%$ probabilitet të vdesë para 60 vjeç.
+    \item<2-> Pagesa e pritur: $\approx\Sexpr{fmt(1e6 * q20_40)}$ lekë gjithsej, pra $\approx\Sexpr{fmt(1e6 * q20_40 / 20)}$ lekë në vit.
+    \item<3-> Kjo është vetëm një \textbf{përafrim}: harron skontimin dhe faktin që pagesat e primës ndalojnë me vdekjen.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pyetja e javës}
+    Prima e saktë neto = $A^1_{40:\overline{20}|}/\ddot a_{40:\overline{20}|}$. E llogarisim në Orën 5 dhe me tabelën e Shqipërisë në Orën 6.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w5tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Në tabelën sintetike, $e_0\approx\Sexpr{fmt(sum(l[-1]) / l[1], 1)}$ vite (meshkuj).
+    \begin{enumerate}
+      \item Sa vite \textbf{të mbetura} pret të jetojë Arbeni, 40 vjeç: më shumë apo më pak se $e_0-40$?
+      \item Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w5zgjTps1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item<1-> \textbf{Sigurimet e jetës}: tarifat dhe rezervat matematike bazohen në një tabelë vdekshmërie (Java 7).
+    \item<2-> \textbf{Pensionet}: fondet e pensioneve vullnetare dhe skema publike varen nga $e_{65}$.
+    \item<3-> \textbf{Solvency II}: rreziku i vdekshmërisë (vdekje më shumë) dhe i jetëgjatësisë (vdekje më pak).
+    \item<4-> \textbf{Burimet}: INSTAT, Human Life-Table Database, Eurostat; AMF miraton tabelat që përdorin siguruesit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Të dhënat reale të javës}
+<<w5h1-real>>=
+h11 <- subset(hld, Year1 == 2011 & Sex == 1)
+h11[1:5, c("Age", "AgeInt", "q.x.", "l.x.", "e.x.")]
+@
+  \begin{itemize}
+    \item<2-> \textbf{Reale} (Human Life-Table Database): Shqipëria 2011, meshkuj. \texttt{Sex}: 1 = M, 2 = F.
+    \item<3-> Tabelë e \textbf{shkurtuar}: grupe 5-vjeçare (\texttt{AgeInt} = 5). Si e kthejmë në moshë pas moshe? Ora 6.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si llogaritet $q_x$ nga $l_x$?
+    \item Pse ${}_2p_x\ne p_x^2$?
+    \item Si llogaritet $e_x$ nga kolona $l_x$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $q_x=(l_x-l_{x+1})/l_x$; (2) ${}_2p_x=p_x\,p_{x+1}$ dhe $p_{x+1}\ne p_x$;
+  (3) $e_x=\sum_{k\ge1}l_{x+k}/l_x$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Jeta: kontrata të gjata, rrezik që rritet me moshën, skontim, primë e nivelit.
+    \item Tabela: $l_x$, $d_x=l_x-l_{x+1}$, $q_x=d_x/l_x$, $p_x=1-q_x$.
+    \item ${}_tp_x=l_{x+t}/l_x=p_xp_{x+1}\cdots p_{x+t-1}$; \; $e_x=\sum_{k\ge1}{}_kp_x$.
+    \item Dota e pastër: ${}_nE_x=v^n\,{}_np_x$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria: forca e vdekshmërisë, $\mathring e_x$, $L_x$, $T_x$, Gompertz--Makeham, moshat jo të plota.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për sigurimet e jetës).
+    \item G.~A.~Spedicato, vinjeta e paketës \Rkey{lifecontingencies}.
+    \item Human Life-Table Database (lifetable.de): Shqipëria 1950--2011.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
