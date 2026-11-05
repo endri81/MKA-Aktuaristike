@@ -1,0 +1,55 @@
+% ============================================================
+%  Java 4 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w4zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Më 31.12.2025, për dëmet e vitit 2025 ka kaluar vetëm viti i parë i zhvillimit.
+    \item Gjithsej $n^2$ qeliza, të njohura $n(n+1)/2$: të panjohura $n(n-1)/2$. Për $n=10$: 45.
+    \item $C_{2025,10}$ (këndi poshtë djathtas): parashikohet me \textbf{të gjithë} faktorët $\hat f_1\cdots\hat f_9$,
+          nga vetëm një vrojtim i vitit 2025.
+  \end{enumerate}
+  \vfill\kthehu{w4par1}
+\end{frame}
+
+\begin{frame}[label=w4zgjGab1]{Zgjidhja: Gjej anomalinë}
+  \begin{enumerate}
+    \item Kolona 7: pagesat inkrementale janë 0 për të katër vitet që e kanë.
+    \item Shkaqe të mundshme në një kompani reale: ndërprerje e sistemit të pagesave, gabim në nxjerrjen e të dhënave,
+          riklasifikim i dëmeve. Duhet pyetur departamenti i dëmeve.
+    \item $\hat f_6=1.000$, ndërsa e vërteta është $0.98/0.96=1.0208$: rezerva e të gjitha viteve para kolonës 7 nënvlerësohet.
+  \end{enumerate}
+  \begin{Keshille}Aktuari nuk ``rregullon'' të dhënat vetë: dokumenton anomalinë, pyet, dhe mat ndjeshmërinë (Ora 6).\end{Keshille}
+  \vfill\kthehu{w4gab1}
+\end{frame}
+
+\begin{frame}[label=w4zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $\tilde f_1=\frac12(1.5+1.45455)=1.47727$. \;
+          Viti 3: $120\times1.47727\times1.1=195.00$, rezerva $75.00$; viti 2 nuk ndryshon (16.00). Gjithsej $91.00$.
+    \item Mesatarja e thjeshtë u jep të njëjtën peshë raporteve $1.5$ dhe $1.4545$; e peshuara e jep sipas madhësisë $C_{i1}$.
+    \item Mesatarja e peshuar: $\hat f_1=\sum_i C_{i2}/\sum_i C_{i1}=\sum_i w_i\,(C_{i2}/C_{i1})$ me $w_i=C_{i1}/\sum C_{i1}$.
+  \end{enumerate}
+  \vfill\kthehu{w4ush1}
+\end{frame}
+
+\begin{frame}[label=w4zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Ultimate $=4/0.65\approx6.154$ mln €; rezerva $=6.154-4\approx2.15$ mln €.
+  \begin{itemize}
+    \item A) $35\%$ i \textbf{ultimate} mbetet, jo 35\% i pagesave: $0.35\times6.154=2.15$.
+    \item C), D) Ngatërrojnë drejtimin e pjesëtimit.
+  \end{itemize}
+  \vfill\kthehu{w4mc1}
+\end{frame}
+
+\begin{frame}[label=w4zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  Shembuj:
+  \begin{itemize}
+    \item \textbf{Trajtim më i shpejtë i dëmeve} (sistem i ri, reformë në gjykata): vitet e reja paguajnë më shpejt;
+          faktorët e vjetër janë shumë të mëdhenj $\Rightarrow$ rezerva \textbf{mbivlerësohet}.
+    \item \textbf{Inflacion i dëmeve trupore} (rritje e kompensimeve): pagesat e ardhshme rriten më shumë se në të kaluarën
+          $\Rightarrow$ rezerva \textbf{nënvlerësohet}.
+    \item \textbf{Ndryshim i përbërjes} së portofolit (më shumë dëme trupore): forma zgjatet $\Rightarrow$ nënvlerësim.
+  \end{itemize}
+  \vfill\kthehu{w4tps1}
+\end{frame}

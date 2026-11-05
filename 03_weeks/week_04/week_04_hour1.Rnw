@@ -1,0 +1,472 @@
+% ============================================================
+%  Java 4 · Ora 1 — Motivimi: sa rezervë duhet?
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w4h1-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mln <- function(x, d = 2) fmt(x / 1e6, d)
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e mbikëqyrësit}
+% ------------------------------------------------------------
+
+\begin{frame}{31 dhjetor 2025, ora 17:00}
+  \begin{itemize}
+    \item<1-> Kompania fiktive \textbf{AutoSig} mbyll bilancin e vitit 2025.
+    \item<2-> Linja TPL: dëmet e viteve 2016--2025 nuk janë paguar ende plotësisht.
+  \end{itemize}
+  \onslide<3->{
+  \begin{Shembull}[(pyetja e AMF-së)]
+    ``Sa para duhet të mbajë kompania sot për të gjitha dëmet që \textbf{kanë ndodhur} deri më 31.12.2025,
+    por që do të paguhen \textbf{në të ardhmen}?''
+  \end{Shembull}}
+  \begin{itemize}
+    \item<4-> Kjo shumë quhet \termi{rezervë e dëmeve}{claims reserve, outstanding claims}.
+    \item<5-> Është zakonisht detyrimi më i madh në bilancin e një siguruesi jo-jete.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pse dëmet nuk paguhen menjëherë?}
+  \begin{itemize}
+    \item<1-> Dëmi \textbf{raportohet} me vonesë: ditë, javë, ndonjëherë vite.
+    \item<2-> Dëmet trupore kërkojnë ekspertizë mjekësore dhe shpesh vendim gjykate.
+    \item<3-> Pagesat bëhen me këste: trajtimi, humbja e të ardhurave, dëmi moral.
+    \item<4-> Disa dëme rihapen pas mbylljes.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Pasoja}
+    Në TPL, një dëm i vitit 2016 mund të paguhet ende në 2025. Linjat me pagesa të gjata quhen \termi{long-tail}{}.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Jeta e një dëmi}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (11,0) node[right,font=\small]{$t$};
+    \foreach \x/\lab in {0.8/ndodhja, 3.2/raportimi, 5/pagesa 1, 6.8/pagesa 2, 9.4/mbyllja}{
+      \draw[thick] (\x,0.12) -- (\x,-0.12) node[below,font=\scriptsize]{\lab};
+    }
+    \draw[very thick,accent] (5.9,0.2) -- (5.9,-1.0);
+    \node[accent,font=\scriptsize,below] at (5.9,-1.0) {bilanci: 31.12.2025};
+    \draw[decorate,decoration={brace,amplitude=5pt},thick,uptmid] (0.8,0.35) -- (3.2,0.35)
+      node[midway,above=5pt,font=\scriptsize,align=center]{ndodhur, por\\jo i raportuar};
+    \draw[decorate,decoration={brace,amplitude=5pt},thick,uptmid] (3.2,0.35) -- (9.4,0.35)
+      node[midway,above=5pt,font=\scriptsize,align=center]{i raportuar, jo i\\paguar plotësisht};
+  \end{tikzpicture}\par
+  \vspace{10pt}
+  \begin{itemize}
+    \item<2-> Nëse data e bilancit bie para raportimit: dëmi është \textbf{IBNR} (\emph{incurred but not reported}).
+    \item<3-> Nëse bie pas raportimit: dëmi është \textbf{RBNS} (\emph{reported but not settled}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Rezerva e dëmeve: dy pjesë}
+  \begin{Definicion}[(rezerva e dëmeve)]
+    \[
+      \text{Rezerva}=\underbrace{\text{RBNS}}_{\text{dëme të njohura}}+\underbrace{\text{IBNR}}_{\text{dëme të panjohura ende}}
+      =\text{Ultimate}-\text{Paguar deri sot}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item \termi{Ultimate}{ultimate claims}: shuma përfundimtare që do të paguhet për një vit aksidenti.
+    \item Nga trekëndëshi i pagesave vlerësojmë \textbf{ultimate}; rezerva = ultimate $-$ paguar.
+  \end{itemize}
+  \pause
+  \begin{Gabim}Në praktikë rezerva nga trekëndëshi i pagesave quhet shpesh ``IBNR''. Në fakt ajo përfshin edhe RBNS.\end{Gabim}
+\end{frame}
+
+\begin{frame}{Ku shfaqet rezerva?}
+  \begin{itemize}
+    \item<1-> \textbf{Bilanci statutor:} rezerva teknike e dëmeve, sipas rregullave të AMF-së.
+    \item<2-> \textbf{Solvency II:} \emph{best estimate} (vlera e pritur, e skontuar) + marzhi i rrezikut.
+    \item<3-> \textbf{IFRS 17:} detyrimi për dëmet e ndodhura (LIC) = vlera aktuale e flukseve + \emph{risk adjustment}.
+    \item<4-> \textbf{Fitimi i vitit:} një rritje e rezervës ul fitimin. Rezerva e gabuar = fitim i gabuar.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Rezerva është një \textbf{vlerësim}, jo një numër kontabël. Prandaj na duhen modele dhe gabime standarde.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 4}
+  \begin{enumerate}
+    \item<1-> Të lexojmë dhe të vizatojmë një trekëndësh zhvillimi. \LO{C2}
+    \item<2-> Të llogarisim rezervën me chain-ladder, nga zero dhe me \Rkey{ChainLadder}. \LO{C2}
+    \item<3-> Të masim pasigurinë e rezervës: Mack dhe bootstrap. \LO{C3}
+    \item<4-> Të llogarisim primat me kredibilitet Bühlmann dhe Bühlmann--Straub. \LO{C3}
+    \item<5-> Të përdorim \Rkey{ChainLadder} dhe \texttt{actuar::cm()} në një rast të plotë. \LO{S2}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t) at (0,0) {\textbf{Trekëndëshi}\\Ora 1};
+    \node[b] (c) at (3.5,0) {\textbf{Chain-ladder}\\Orët 2--3};
+    \node[b] (m) at (7,0) {\textbf{Mack, bootstrap}\\Orët 2, 5};
+    \node[b,fill=accent!15,draw=accent] (r) at (10.5,0) {\textbf{Rezerva}\\IFRS 17, Ora 6};
+    \node[b] (k) at (3.5,-2) {\textbf{Kredibiliteti}\\Ora 4};
+    \node[b] (p) at (7,-2) {\textbf{\texttt{cm()}}\\Ora 5};
+    \node[b,fill=accent!15,draw=accent] (q) at (10.5,-2) {\textbf{Primat}\\Ora 6};
+    \draw[->,thick,uptmid] (t) -- (c); \draw[->,thick,uptmid] (c) -- (m); \draw[->,thick,uptmid] (m) -- (r);
+    \draw[->,thick,uptmid] (k) -- (p); \draw[->,thick,uptmid] (p) -- (q);
+  \end{tikzpicture}\par
+  \vspace{8pt}
+  \small Dy tema, një ide e përbashkët: \textbf{të mësosh nga e kaluara me sasinë e duhur të besimit}.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Trekëndëshi i zhvillimit}
+% ------------------------------------------------------------
+
+\begin{frame}{Trekëndëshi i zhvillimit}
+  \centering
+  \begin{tikzpicture}[scale=0.62]
+    \foreach \i in {0,...,4}{
+      \pgfmathtruncatemacro{\m}{4-\i}
+      \foreach \j in {0,...,\m}{
+        \fill[uptlight,draw=uptblue] (\j,-\i) rectangle ++(1,-1);
+      }
+    }
+    \foreach \i in {1,...,4}{
+      \pgfmathtruncatemacro{\s}{5-\i}
+      \foreach \j in {\s,...,4}{
+        \fill[accent!15,draw=accent!60] (\j,-\i) rectangle ++(1,-1);
+        \node[font=\tiny,accent] at (\j+0.5,-\i-0.5) {?};
+      }
+    }
+    \foreach \i/\y in {0/2021,1/2022,2/2023,3/2024,4/2025}{
+      \node[left,font=\scriptsize] at (0,-\i-0.5) {\y};
+    }
+    \foreach \j in {1,...,5}{ \node[above,font=\scriptsize] at (\j-0.5,0) {\j}; }
+    \node[above,font=\small] at (2.5,0.7) {viti i zhvillimit $j$};
+    \node[rotate=90,font=\small] at (-2.6,-2.5) {viti i aksidentit $i$};
+    \foreach \i in {0,...,4}{
+      \pgfmathtruncatemacro{\d}{4-\i}
+      \fill[uptmid!60,draw=uptblue] (\d,-\i) rectangle ++(1,-1);
+    }
+    \node[uptblue,font=\scriptsize,right] at (5.2,-0.5) {diagonalja e fundit = viti 2025};
+  \end{tikzpicture}\par
+  \small Blu: të njohura (blu e errët: diagonalja e fundit). Portokalli: të ardhmja që duam të parashikojmë.
+\end{frame}
+
+\begin{frame}{Tre mënyra për ta lexuar}
+  \begin{itemize}
+    \item<1-> \textbf{Rreshti} $i$: historia e dëmeve të një viti aksidenti.
+    \item<2-> \textbf{Kolona} $j$: të gjitha vitet, në të njëjtën moshë zhvillimi.
+    \item<3-> \textbf{Diagonalja}: të gjitha pagesat e një viti \textbf{kalendarik} ($i+j-1=$ konstante).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Definicion}[(kumulative dhe inkrementale)]
+    $X_{ij}$ = pagesat e vitit të aksidentit $i$ në vitin e zhvillimit $j$ (\emph{incremental}).
+    \[ C_{ij}=X_{i1}+X_{i2}+\dots+X_{ij}\qquad\text{(\emph{cumulative})}. \]
+  \end{Definicion}}
+  \onslide<5->{\small Diagonalja ka rëndësi: inflacioni dhe ndryshimet në trajtimin e dëmeve godasin një vit kalendarik.}
+\end{frame}
+
+\begin{frame}[fragile]{Të dhënat në R}
+<<w4h1-load>>=
+rt <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+head(rt, 4)
+c(rows = nrow(rt), accident_years = length(unique(rt$accident_year)))
+@
+  \small Të dhëna \textbf{sintetike} (\texttt{runoff\_triangle\_synthetic.csv}): format i gjatë, një rresht për qelizë.
+\end{frame}
+
+\begin{frame}[fragile]{Nga formati i gjatë te trekëndëshi}
+<<w4h1-tri>>=
+tri <- xtabs(cum_paid_eur ~ accident_year + dev_year, data = rt)
+tri[tri == 0] <- NA                  # xtabs fills missing cells with 0
+round(tri / 1e6, 2)                  # million EUR
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> 10 vite aksidenti (2016--2025), 10 vite zhvillimi: $10\times11/2=55$ qeliza të njohura.
+    \item<2-> Viti 2016 ka mbaruar zhvillimin: \Sexpr{mln(tri[1, 10])} mln € të paguara gjithsej.
+    \item<3-> Viti 2025 ka vetëm vitin e parë: \Sexpr{mln(tri[10, 1])} mln €. Sa do të arrijë?
+    \item<4-> Kujdes me \texttt{xtabs()}: qelizat që mungojnë dalin 0, jo \texttt{NA}.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Pyetja e javës}
+    Si i plotësojmë 45 qelizat bosh, dhe sa jemi të sigurt për rezultatin?
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w4par1]{Parashiko}
+  \begin{Parashiko}
+    \begin{enumerate}
+      \item Pse viti i aksidentit 2025 ka vetëm një qelizë të njohur?
+      \item Sa qeliza të panjohura ka një trekëndësh me $n$ vite?
+      \item Cila qelizë e panjohur është më e pasigurt? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w4zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kurbat e zhvillimit}
+<<w4h1-curves, echo=FALSE, fig.height=3.2>>=
+ggplot(rt, aes(dev_year, cum_paid_eur / 1e6, group = accident_year,
+               colour = factor(accident_year))) +
+  geom_line() + geom_point(size = 1) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(x = "viti i zhvillimit", y = "pagesa kumulative (mln EUR)", colour = "AY") +
+  th + theme(legend.position = "right", legend.key.height = unit(0.4, "cm"))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Të gjitha vitet kanë të njëjtën \textbf{formë}: rritje e shpejtë në fillim, pastaj stabilizim.
+    \item<2-> Nivelet ndryshojnë pak: vitet më të reja fillojnë pak më lart (rritja e portofolit).
+    \item<3-> Ideja e chain-ladder: forma është e \textbf{përbashkët}, niveli është i secilit vit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Vizato gjithmonë trekëndëshin para çdo modeli. Format e çuditshme shihen menjëherë.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Pagesat inkrementale}
+<<w4h1-inc>>=
+inc <- tri
+inc[, -1] <- tri[, -1] - tri[, -ncol(tri)]   # X_ij = C_ij - C_i,j-1
+round(inc / 1e3)                             # thousand EUR
+@
+\end{frame}
+
+\begin{frame}[label=w4gab1]{Gjej anomalinë}
+  \begin{Ushtrim}[(3 minuta)]
+    Shiko tabelën e pagesave inkrementale.
+    \begin{enumerate}
+      \item Cila kolonë sillet ndryshe nga të tjerat?
+      \item Çfarë mund ta shkaktojë në një kompani reale?
+      \item Si ndikon kjo te faktori i zhvillimit nga viti 6 te viti 7?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjGab1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Kontrolli i të dhënave para modelit}
+  \begin{itemize}
+    \item<1-> Në kolonën e zhvillimit 7, \textbf{të gjitha} pagesat inkrementale janë 0.
+    \item<2-> Modeli i vërtetë (README) pret $0.98-0.96=2\%$ të ultimate në atë vit.
+    \item<3-> Pra kjo është një \textbf{anomali e të dhënave}, jo sjellje e modelit.
+    \item<4-> Kolona e 5-të ka gjithashtu një zero (viti 2020).
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}Të aplikosh chain-ladder pa i parë inkrementalet. Faktori $\hat f_6$ do të dalë 1.000, dhe rezerva nënvlerësohet. Efektin e masim në Orën 6.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Një trekëndësh $3\times3$}
+  \centering
+  \begin{tabular}{c|ccc}
+    \toprule
+    $i$ \textbackslash{} $j$ & 1 & 2 & 3 \\
+    \midrule
+    1 & 100 & 150 & 165 \\
+    2 & 110 & 160 & ? \\
+    3 & 120 & ? & ? \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{10pt}
+  \begin{itemize}
+    \item<2-> Shumat kumulative, në mijë €.
+    \item<3-> Viti 1 ka mbaruar: ultimate $=165$.
+    \item<4-> Synimi: ultimate dhe rezerva për vitet 2 dhe 3, \textbf{pa ndihmën e PC}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Hapi 1: faktorët e zhvillimit}
+  Faktori nga kolona $j$ te $j+1$: shuma e kolonës $j+1$ pjesëtuar me shumën e \textbf{të njëjtave rreshta} në kolonën $j$.
+  \pause
+  \begin{align*}
+    \hat f_1 &= \frac{150+160}{100+110}=\frac{310}{210}=1.47619 \\
+    \onslide<3->{\hat f_2 &= \frac{165}{150}=1.1}
+  \end{align*}
+  \onslide<4->{
+  \begin{Gabim}Te $\hat f_1$ nuk përfshihet rreshti 3: ai nuk ka ende vlerë në kolonën 2.\end{Gabim}}
+\end{frame}
+
+\begin{frame}{Hapi 2: plotësimi i trekëndëshit}
+  \begin{itemize}
+    \item<1-> Viti 2: \; $\hat C_{2,3}=160\times1.1=176$.
+    \item<2-> Viti 3: \; $\hat C_{3,2}=120\times1.47619=177.14$, \; $\hat C_{3,3}=177.14\times1.1=194.86$.
+  \end{itemize}
+  \onslide<3->{
+  \begin{center}
+    \begin{tabular}{c|ccc|cc}
+      \toprule
+      $i$ & 1 & 2 & 3 & Paguar & Rezerva \\
+      \midrule
+      1 & 100 & 150 & 165 & 165 & 0 \\
+      2 & 110 & 160 & \textcolor{accent}{176.00} & 160 & 16.00 \\
+      3 & 120 & \textcolor{accent}{177.14} & \textcolor{accent}{194.86} & 120 & 74.86 \\
+      \midrule
+      \multicolumn{5}{r}{\textbf{Gjithsej}} & \textbf{90.86} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}}
+\end{frame}
+
+\begin{frame}{Faktori kumulativ dhe ``\% e zhvilluar''}
+  \begin{itemize}
+    \item<1-> Faktori kumulativ nga kolona $j$ deri në fund: $\hat F_j=\hat f_j\,\hat f_{j+1}\cdots\hat f_{n-1}$.
+    \item<2-> $\hat F_1=1.47619\times1.1=1.62381$; \; $\hat F_2=1.1$; \; $\hat F_3=1$.
+    \item<3-> Ultimate = paguar $\times\hat F_j$: \; $120\times1.62381=194.86$. \textcolor{okgreen}{$\checkmark$}
+    \item<4-> Përqindja e zhvilluar: $1/\hat F_j$. Për vitin 3: $1/1.62381=61.6\%$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}``Viti 3 është 61.6\% i zhvilluar'' është mënyra si flasin aktuarët me menaxherët.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w4ush1]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Një koleg përdor \textbf{mesataren e thjeshtë} të raporteve individuale për $f_1$:
+    \[ \tilde f_1=\frac12\Big(\frac{150}{100}+\frac{160}{110}\Big). \]
+    \begin{enumerate}
+      \item Llogarit $\tilde f_1$ dhe rezervën e re totale.
+      \item Pse ndryshon nga 90.86?
+      \item Cila mesatare i jep më shumë peshë viteve të mëdha?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjUsh1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w4h1-toy>>=
+C <- matrix(c(100, 110, 120, 150, 160, NA, 165, NA, NA), 3, 3)
+n <- ncol(C)
+f <- sapply(1:(n - 1), function(j) {
+  rows <- 1:(n - j)                          # rows known in column j + 1
+  sum(C[rows, j + 1]) / sum(C[rows, j])
+})
+for (j in 1:(n - 1)) {                       # fill the lower triangle
+  miss <- is.na(C[, j + 1])
+  C[miss, j + 1] <- C[miss, j] * f[j]
+}
+latest <- c(165, 160, 120)
+round(rbind(f = c(f, NA), ultimate = C[, n], reserve = C[, n] - latest), 2)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> R jep të njëjtat faktorë dhe të njëjtën rezervë 90.86. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> \texttt{rows <- 1:(n - j)}: vetëm rreshtat që kanë vlerë në kolonën $j+1$.
+    \item<3-> Cikli i dytë plotëson trekëndëshin kolonë pas kolone, si në tabelë.
+  \end{itemize}
+  \onslide<4->{\small Në Orën 3 e zbatojmë këtë kod mbi trekëndëshin $10\times10$.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim dhe e vërteta}
+% ------------------------------------------------------------
+
+\begin{frame}{Rifreskim: pritja e kushtëzuar}
+  Ideja e chain-ladder në gjuhën e probabilitetit:
+  \[ E\big[C_{i,j+1}\mid C_{i1},\dots,C_{ij}\big]=f_j\,C_{ij}. \]
+  \pause
+  \begin{itemize}
+    \item Me vetinë e kullës (Java 3, Ora 1):
+      \[ E[C_{in}\mid C_{ij}]=f_jf_{j+1}\cdots f_{n-1}\,C_{ij}=F_j\,C_{ij}. \]
+    \item<3-> Ky është supozimi i parë i modelit të Mack-ut (Ora 2).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{E vërteta e të dhënave sintetike}
+<<w4h1-truth>>=
+p_true <- c(0.40, 0.65, 0.80, 0.88, 0.93, 0.96, 0.98, 0.99, 0.995, 1)
+f_true <- p_true[-1] / p_true[-10]            # f_j = p_{j+1} / p_j
+round(rbind(pct_developed = p_true[-10], f_true = f_true), 4)
+@
+  \begin{itemize}
+    \item<2-> README: modeli i zhvillimit 40/65/80/\dots/100\%, rritje e ultimate 4\% në vit.
+    \item<3-> Në Orën 3 krahasojmë $\hat f_j$ me këto $f_j$: \textbf{vlerësimi kundrejt së vërtetës}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w4mc1]{Zgjedhje e shumëfishtë}
+  Një vit aksidenti është 65\% i zhvilluar dhe ka paguar 4 mln €. Sa është rezerva?
+  \begin{enumerate}[A)]
+    \item $0.35\times4=1.40$ mln €
+    \item $4/0.65-4\approx2.15$ mln €
+    \item $4\times0.65=2.60$ mln €
+    \item $4/0.35\approx11.43$ mln €
+  \end{enumerate}
+  \vfill\shkoTe{w4zgjMC1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me Javën 3}
+  \begin{itemize}
+    \item<1-> Java 3: $S$, shuma e dëmeve të \textbf{vitit të ardhshëm}, është e rastit $\Rightarrow$ shpërndarje, VaR.
+    \item<2-> Java 4: pagesat e ardhshme për dëmet e \textbf{kaluara} janë po ashtu të rastit.
+    \item<3-> Chain-ladder jep \textbf{pritjen}. Mack dhe bootstrap japin \textbf{pasigurinë}.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Dy rreziqe të Solvency II}
+    Rreziku i primës (Java 3) dhe rreziku i rezervës (Java 4) bashkë formojnë rrezikun e nënshkrimit në jo-jetë.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w4tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Chain-ladder supozon që \textbf{forma} e zhvillimit është e njëjtë për të gjitha vitet.
+    \begin{enumerate}
+      \item Jep dy arsye pse forma mund të ndryshojë në një kompani shqiptare.
+      \item Në cilën drejtim do të gabonte rezerva në secilin rast?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjTps1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë është diagonalja e trekëndëshit?
+    \item Si llogaritet $\hat f_j$ me mesatare të peshuar?
+    \item Rezerva = ? (me ultimate dhe paguar)
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) pagesat e një viti kalendarik;
+  (2) $\sum_i C_{i,j+1}/\sum_i C_{ij}$ mbi rreshtat e njohur në të dyja kolonat; (3) ultimate $-$ paguar deri sot.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Rezerva = RBNS + IBNR = ultimate $-$ paguar; detyrimi më i madh i siguruesit jo-jetë.
+    \item Trekëndëshi: rreshta = vite aksidenti, kolona = zhvillimi, diagonale = vite kalendarike.
+    \item Chain-ladder: $\hat f_j=\sum C_{i,j+1}/\sum C_{ij}$, ultimate = paguar $\times\hat F_j$.
+    \item Kontrollo inkrementalet para modelit: kolona 7 ka vetëm zero.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria: chain-ladder si estimues, modeli i Mack-ut dhe gabimi standard i rezervës.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09, FIMIF--UPT.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për rezervat e dëmeve).
+    \item M.~Gesmann et al., vinjeta e paketës \Rkey{ChainLadder}.
+    \item M.~V.~Wüthrich, M.~Merz, \emph{Stochastic Claims Reserving Methods in Insurance}, Wiley, 2008 (kapitulli hyrës).
+    \item README i të dhënave: \texttt{runoff\_triangle\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
