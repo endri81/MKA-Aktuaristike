@@ -1,0 +1,101 @@
+% ============================================================
+%  Java 9 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=w9sT1]{Zgjidhja T1}
+  \textbf{B)} $C_A=C$ (Ora 4) dhe $P_A\ge P$ (zakonisht rreptësisht, kur $r>0$).
+  \begin{itemize}
+    \item A), D) e kundërta e asaj që provuam. \; C) e gabuar për put-in me $r>0$.
+  \end{itemize}
+  \vfill\kthehu{w9qT1}
+\end{frame}
+
+\begin{frame}[label=w9sT2]{Zgjidhja T2}
+  \textbf{B)} Interesi mbi $K$: zbërthimi $P=(K-S_0)-K(1-e^{-rT})+C$.
+  \begin{itemize}
+    \item A) volatiliteti e shtyn ushtrimin (Ora 3--4). \; C) dividendët e pengojnë.
+    \item D) $\mu$ nuk ka rol në çmim.
+  \end{itemize}
+  \vfill\kthehu{w9qT2}
+\end{frame}
+
+\begin{frame}[label=w9sU1]{Zgjidhja U1}
+  \begin{enumerate}
+    \item $Ke^{-rT}=45\cdot0.970446=43.6701$.
+    \item $C\in[0,\;40]$; \; $P\in[3.6701,\;43.6701]$; \; $P_A\in[5,\;45]$.
+    \item $P=3.50<3.6701$: shkel kufirin. Bli put-in dhe aksionin ($-43.50$), merr hua $43.6701$: fitim sot $0.1701$; në $T$ pozicioni vlen $\max(S_T,45)\ge45$ dhe shlyen huanë.
+  \end{enumerate}
+  \vfill\kthehu{w9qU1}
+\end{frame}
+
+\begin{frame}[label=w9sU2]{Zgjidhja U2}
+  \begin{enumerate}
+    \item $40-45=-5\;\le\;C_A-P_A\;\le\;40-43.6701=-3.6701$.
+    \item $C_A\in[6.50-5,\;6.50-3.6701]=[1.50,\;2.8299]$.
+  \end{enumerate}
+  \vfill\kthehu{w9qU2}
+\end{frame}
+
+\begin{frame}[label=w9sU3]{Zgjidhja U3}
+  \begin{enumerate}
+    \item Interesi $=100(1-0.951229)=4.8771$; \; $C=20+4.8771+1.20=26.0771$.
+    \item Ushtrimi jep 20: humbja $=6.0771$ (interesi + sigurimi). Më mirë shite call-in.
+  \end{enumerate}
+  \vfill\kthehu{w9qU3}
+\end{frame}
+
+\begin{frame}[label=w9sU4]{Zgjidhja U4}
+  \begin{enumerate}
+    \item $P=30-4.8771+0.50=25.6229$.
+    \item Po: $25.6229<30$. Mbajtësi i put-it amerikan e ushtron (ose të paktën vlerëson ushtrimin): merr 30 menjëherë.
+  \end{enumerate}
+  \vfill\kthehu{w9qU4}
+\end{frame}
+
+\begin{frame}[label=w9sU5]{Zgjidhja U5}
+  \begin{enumerate}
+    \item $100(1-0.987578)=1.2422$.
+    \item $D=0.80<1.2422$: kurrë ushtrim i hershëm, $C_A=C$.
+    \item $D=2>1.2422$: ushtrimi para dividendit \textbf{mund} të jetë optimal, nëse call-i është mjaft në para.
+  \end{enumerate}
+  \vfill\kthehu{w9qU5}
+\end{frame}
+
+\begin{frame}[label=w9sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item $S_0<K(1-e^{-rT})=100\cdot0.048771=4.877$.
+    \item Kushti krahason $K-S_0$ me \textbf{maksimumin} e put-it europian ($Ke^{-rT}$). Në fakt europiani vlen shumë më pak se maksimumi, ndaj ushtrimi bëhet optimal shumë më herët (Ora 3: $S^*\approx71$ për $r=3\%$).
+  \end{enumerate}
+  \vfill\kthehu{w9qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=w9sU7]{Zgjidhja U7}
+<<w9s7-u7>>=
+g7 <- g; r7 <- 0.06
+g7$C <- bscall(g7$S, 100, g7$sig, r7, g7$T, 0); g7$P <- bsput(g7$S, 100, g7$sig, r7, g7$T, 0)
+g7$CA <- mapply(amer, g7$S, 100, g7$sig, r7, g7$T, FALSE); g7$PA <- mapply(amer, g7$S, 100, g7$sig, r7, g7$T, TRUE)
+ch7 <- with(g7, c(sum(CA < C - 0.02), sum(PA < pmax(100 - S, 0) - 1e-9),
+                  sum(CA - PA > S - 100 * exp(-r7 * T) + 0.02), sum(CA - PA < S - 100 - 0.02)))
+c(violations = sum(ch7), S_star = s_star(0.30, 0.06, 1))
+@
+  \vfill\kthehu{w9qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w9sU8]{Zgjidhja U8}
+<<w9s7-u8>>=
+u8 <- c(european_r4 = pe6(97, 0.04), american_r4 = pa6(97, 0.04),
+        option_r4 = pa6(97, 0.04) - pe6(97, 0.04), option_r3 = pa6(97, 0.03) - pe6(97, 0.03))
+round(u8)
+@
+  \small Me $r=4\%$, garancia totale bie, por pjesa e anulimit rritet (Ora 6).
+  \vfill\kthehu{w9qU8}
+\end{frame}
+
+\begin{frame}[label=w9sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{itemize}
+    \item (a) gabim: \texttt{put = FALSE} llogarit call-in; duhet \texttt{TRUE}.
+    \item (b) \textbf{e saktë}: kufiri i poshtëm i put-it europian.
+    \item (c) gabim: kufiri më i mirë është $\max(S_0-Ke^{-rT},0)$, më i lartë se $(S_0-K)^+$.
+  \end{itemize}
+  \vfill\kthehu{w9qGab7}
+\end{frame}

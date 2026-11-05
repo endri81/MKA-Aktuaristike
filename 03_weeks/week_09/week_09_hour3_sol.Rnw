@@ -16,7 +16,7 @@
 dPA <- ave(g$PA, g$S, g$sig, FUN = function(v) c(0, diff(v)))   # T in increasing order
 dP  <- ave(g$P,  g$S, g$sig, FUN = function(v) c(0, diff(v)))
 c(PA_decreasing_in_T = sum(dPA < -0.02), P_decreasing_in_T = sum(dP < 0))
-g[dP < 0, c("S", "T", "sig", "P")]
+head(g[dP < 0, c("S", "T", "sig", "P")], 4)
 @
   \small Put-i europian bie me $T$ kur është në para ($S_0=60$--$80$), sidomos me $\sigma$ të vogël: nuk është gabim (Ora 2).
   \vfill\kthehu{w9ush3}

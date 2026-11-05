@@ -1,0 +1,286 @@
+% ============================================================
+%  Java 9 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Vlerat e nevojshme: $e^{-0.03}=0.970446$, \; $e^{-0.05}=0.951229$, \; $e^{-0.0125}=0.987578$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w9qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Për një aksion \textbf{pa dividendë}, cila është e vërtetë?
+    \begin{enumerate}
+      \item[A)] $C_A>C$ dhe $P_A=P$.
+      \item[B)] $C_A=C$ dhe $P_A\ge P$.
+      \item[C)] $C_A=C$ dhe $P_A=P$.
+      \item[D)] $C_A\ge C$ dhe $P_A<P$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w9sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Arsyeja kryesore e ushtrimit të hershëm të put-it amerikan është:
+    \begin{enumerate}
+      \item[A)] volatiliteti i lartë i aksionit;
+      \item[B)] interesi që fitohet duke marrë $K$ më herët;
+      \item[C)] dividendët e aksionit;
+      \item[D)] kthimi i pritur $\mu$ i aksionit.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w9sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU1]{U1 · Kufijtë}
+  \begin{Ushtrim}[($S_0=40$, $K=45$, $r=6\%$, $T=0.5$)]
+    \begin{enumerate}
+      \item Llogarit $Ke^{-rT}$.
+      \item Jep kufijtë e $C$, $P$ dhe $P_A$.
+      \item Tregu kuoton $P=3.50$. A ka arbitrazh? Si?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU2]{U2 · Parity amerikane}
+  \begin{Ushtrim}[(të dhënat e U1, $P_A=6.50$)]
+    \begin{enumerate}
+      \item Llogarit kufijtë e $C_A-P_A$.
+      \item Gjej intervalin e lejuar për $C_A$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU3]{U3 · Zbërthimi i call-it}
+  \begin{Ushtrim}[($S_0=120$, $K=100$, $r=5\%$, $T=1$, $P=1.20$)]
+    \begin{enumerate}
+      \item Zbërthe $C$: intrinsike, interesi, sigurimi.
+      \item Sa humbet mbajtësi i call-it amerikan nëse e ushtron sot?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU4]{U4 · Zbërthimi i put-it}
+  \begin{Ushtrim}[($S_0=70$, $K=100$, $r=5\%$, $T=1$, $C=0.50$)]
+    \begin{enumerate}
+      \item Zbërthe $P$ europian.
+      \item A vlen europiani më pak se vlera intrinsike? Çfarë do të bënte mbajtësi i një put-i amerikan?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU5]{U5 · Dividendi}
+  \begin{Ushtrim}[($K=100$, $r=5\%$, dividendi 3 muaj para maturimit)]
+    \begin{enumerate}
+      \item Llogarit pragun $K(1-e^{-r(T-t_D)})$.
+      \item Me $D=0.80$: a ushtrohet ndonjëherë herët call-i amerikan?
+      \item Me $D=2$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU6]{U6 · Ushtrimi i menjëhershëm}
+  \begin{Ushtrim}[($K=100$, $r=5\%$, $T=1$)]
+    \begin{enumerate}
+      \item Për cilat $S_0$ kushti i mjaftueshëm i Orës 1 thotë ``ushtro put-in amerikan menjëherë''?
+      \item Pse $S^*$ i vërtetë është zakonisht shumë më i madh se ky prag?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU7]{U7 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Përsërit rrjetën e kontrollit të Orës 3 me $r=6\%$. Sa shkelje gjen?
+      \item Llogarit $S^*$ për $K=100$, $T=1$, $\sigma=30\%$, $r=6\%$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w9qU8]{U8 · Në R}
+  \begin{Ushtrim}
+    Për ``Kursimi Plus'' (Ora 6), me $c=3\%$ dhe $r=4\%$:
+    \begin{enumerate}
+      \item Llogarit garancinë europiane dhe amerikane.
+      \item Llogarit vlerën e së drejtës së anulimit dhe krahasoje me $r=3\%$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w9sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): teoria}
+  \begin{enumerate}
+    \item ``Amerikani vlen gjithmonë më shumë'': jo, $C_A=C$ pa dividendë.
+    \item ``Thellë në para, ushtroje'': për call-in, shite.
+    \item ``Çdo opsion rritet me $T$'': jo put-i europian thellë në para.
+    \item ``Ushtrimi i hershëm vjen nga volatiliteti'': vjen nga interesi (dhe dividendët).
+    \item Kushti $S<K(1-e^{-rT})$ si \textbf{i domosdoshëm}: është vetëm i mjaftueshëm.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): R}
+  \begin{enumerate}
+    \item \texttt{binomopt()} kthen \texttt{price} me emër: përdor \texttt{unname()}.
+    \item \texttt{putopt = FALSE} kur duhet put-i: rezultati ``i njohur'' $C-P$.
+    \item Kontrolle pa tolerancë për pemën: shkelje të rreme.
+    \item \texttt{exp(r * T)} në vend të \texttt{exp(-r * T)} në kufij.
+    \item Kufiri i anulimit me \texttt{>=} në vend të \texttt{<=}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w9qGab7]{Gjej gabimin: raundi i shpejtë}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{eep <- amer(S, K, s, r, T, FALSE) - bsput(S, K, s, r, T, 0)}
+    \item[(b)] \texttt{P\_low <- pmax(K * exp(-r * T) - S, 0)}
+    \item[(c)] \texttt{CA\_low <- pmax(S - K, 0)} \;(si kufiri më i mirë i poshtëm i $C_A$)
+  \end{enumerate}
+  \vfill\shkoTe{w9sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): R}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Funksioni & Çfarë jep \\
+      \midrule
+      \texttt{bscall(s, k, v, r, tt, d)}, \texttt{bsput(...)} & europianët \\
+      \texttt{binomopt(s, k, v, r, tt, d, nstep, american, putopt)} & amerikanët (pema) \\
+      \texttt{binomopt(..., returntrees = TRUE)} & \texttt{stree}, \texttt{exertree} \\
+      \texttt{mapply(f, x, y, ...)} & një funksion mbi një rrjetë \\
+      \texttt{colSums(!chk)} & numri i shkeljeve \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      $\max(S_0-Ke^{-rT},0)\le C=C_A\le S_0$ & $\max(K-S_0,0)\le P_A\le K$ \\
+      $\max(Ke^{-rT}-S_0,0)\le P\le Ke^{-rT}$ & $S_0-K\le C_A-P_A\le S_0-Ke^{-rT}$ \\
+      $C=(S_0-K)+K(1-e^{-rT})+P$ & $P=(K-S_0)-K(1-e^{-rT})+C$ \\
+      Call me dividend: ushtro vetëm nëse $D>K(1-e^{-r(T-t_D)})$ & $P_A$: ushtro kur $S<S^*(t)$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w9h7-cheat, eval=FALSE>>=
+amer <- function(S, K, sig, r, T, put)
+  unname(binomopt(S, K, sig, r, T, 0, nstep = 300, american = TRUE, putopt = put))
+eep  <- amer(100, 100, 0.25, 0.03, 1, TRUE) - bsput(100, 100, 0.25, 0.03, 1, 0)
+bt   <- binomopt(100, 100, 0.25, 0.03, 1, 0, 200, TRUE, TRUE, returntrees = TRUE)
+bnd  <- sapply(1:201, function(j) max(c(0, bt$stree[1:j, j][bt$exertree[1:j, j]])))
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 10)}
+  \begin{enumerate}
+    \item Vizato $P_A-P$ si funksion i $r$ dhe $T$ (një rrjetë $5\times5$) dhe komento formën.
+    \item Për ``Kursimi Plus'', ndërto një ndëshkim që zbret me kohën ($c_t=5\%-t\%$) duke ndryshuar pemën (ndihmë: \texttt{stree} dhe një cikël prapa).
+    \item Përshkruaj me 10 rreshta si do ta kombinoje anulimin racional me anulimet ``bazë'' të \texttt{lapse\_policies\_synthetic}.
+  \end{enumerate}
+  \small Dorëzim: një skript R i riprodhueshëm dhe një faqe me interpretim.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 10}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 10: modeli Black--Scholes}
+  \begin{itemize}
+    \item<1-> Supozimet, formula dhe ideja e nxjerrjes së saj.
+    \item<2-> Grekët: delta, gama, vega, theta, rho.
+    \item<3-> Volatiliteti implicit; $\sigma$ i kalibruar nga \texttt{stock\_prices}.
+    \item<4-> Opsionet e përfshira në kontratat e sigurimit.
+    \item<5-> \textbf{Kolegjiumi} (provimi i mesëm) dhe dhënia e \textbf{projektit të lëndës}.
+  \end{itemize}
+  \onslide<6->{\vfill\LO{K3}\;\LO{C3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse call-i amerikan pa dividendë nuk ushtrohet herët?
+    \item Nga cili parametër varet më shumë prima e ushtrimit të hershëm të put-it?
+    \item Pse e drejta e anulimit është detyrim për kompaninë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $C\ge S-Ke^{-rT}>S-K$; (2) nga $r$; (3) është një opsion amerikan i shitur klientit.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 9}
+  \begin{itemize}
+    \item Europian kundrejt amerikan; vlera intrinsike dhe vlera kohore. \LO{K3}
+    \item Kufijtë pa arbitrazh dhe parity amerikane; rrjeta e kontrollit në R. \LO{K3}
+    \item $C_A=C$ pa dividendë; put-i dhe kufiri $S^*(t)$; dividendët. \LO{K3}
+    \item Prima e ushtrimit të hershëm: varet nga $r$ dhe $T$. \LO{K3}
+    \item ``Kursimi Plus'': opsioni i anulimit si put amerikan. \LO{C3}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+    \item README i të dhënave (sintetike): \texttt{stock\_prices\_gbm\_synthetic.csv}, \texttt{lapse\_policies\_synthetic.csv}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}
