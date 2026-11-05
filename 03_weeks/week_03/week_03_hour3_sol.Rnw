@@ -1,0 +1,134 @@
+% ============================================================
+%  Java 3 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+<<w3s3-setup, include=FALSE>>=
+suppressMessages(library(actuar))
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+lambda <- 768; shape <- 2; scale <- 450
+EX <- shape * scale; EX2 <- shape * (shape + 1) * scale^2; VX <- EX2 - EX^2
+panjer_pois <- function(lambda, f, smax) {
+  g <- numeric(smax + 1); g[1] <- exp(-lambda * (1 - f[1]))
+  for (s in 1:smax) { j <- 1:min(s, length(f) - 1)
+    g[s + 1] <- lambda / s * sum(j * f[j + 1] * g[s - j + 1]) }
+  g
+}
+risk_pmf <- function(s, g, p) {
+  Fs <- cumsum(g); VaR <- s[which(Fs >= p)[1]]; up <- s > VaR
+  c(VaR = VaR, TVaR = (sum(s[up] * g[up]) + VaR * (Fs[s == VaR] - p)) / (1 - p))
+}
+risk_sim <- function(S, p) {
+  VaR <- quantile(S, p, type = 1, names = FALSE); c(VaR = VaR, TVaR = mean(S[S > VaR]))
+}
+@
+
+\begin{frame}[label=w3zgjPar3]{Zgjidhja: Parashiko ($B$)}
+  \begin{enumerate}
+    \item Gabimi standard $\sqrt{p(1-p)/B}$: $B\times100$ e zvogëlon \textbf{10 herë} (nga 0.005 në 0.0005).
+    \item Cikli zgjat rreth \textbf{100 herë} më shumë: koha rritet linearisht me $B$.
+    \item Jo: për portofolin lodër e dimë përgjigjen e saktë (Ora 1). Simulimi vlen kur nuk kemi formulë.
+  \end{enumerate}
+  \vfill\kthehu{w3par3}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjGab3a]{Zgjidhja: Gjej gabimin ($N\cdot X$)}
+  \begin{itemize}
+    \item Modeli: të gjithë $N$ dëmet e vitit kanë të njëjtën shumë $X$.
+    \item Mesatarja e saktë: $E[N]E[X]$. Varianca:
+      $\mathrm{Var}[NX]=\lambda E[X^2]+\lambda^2\mathrm{Var}[X]$, shumë më e madhe.
+  \end{itemize}
+<<w3s3-bug>>=
+set.seed(1)
+S_bad <- vapply(1:20000, function(b)
+  rpois(1, lambda) * rgamma(1, shape, scale = scale), numeric(1))
+c(mean_bad = mean(S_bad), sd_bad = sd(S_bad),
+  sd_formula_bad = sqrt(lambda * EX2 + lambda^2 * VX),
+  sd_correct = sqrt(lambda * EX2))
+@
+  \vfill\kthehu{w3gab3a}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjUsh3a]{Zgjidhja: Radha jote! (binomiale negative)}
+  $\mathrm{Var}[N]=768+768^2/50=12\,564.48$, shumë më e madhe se 768.
+<<w3s3-nb>>=
+set.seed(2)
+S_nb <- vapply(1:20000, function(b)
+  sum(rgamma(rnbinom(1, size = 50, mu = lambda), shape, scale = scale)),
+  numeric(1))
+VN <- lambda + lambda^2 / 50
+c(sd_sim = sd(S_nb), sd_formula = sqrt(lambda * VX + VN * EX^2),
+  sd_poisson = sqrt(lambda * EX2))
+@
+  \small Heterogjeniteti i shoferëve e rrit pasigurinë e $S$ më shumë se 3 herë: termi $\mathrm{Var}[N]E[X]^2$ dominon.
+  \vfill\kthehu{w3ush3a}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjGab3b]{Zgjidhja: Gjej gabimin (Panjer)}
+  \begin{itemize}
+    \item \texttt{g[1]} ($=g_0$) nuk vendoset kurrë: mbetet 0.
+    \item Çdo $g_s$ është shumë termash me $g_{s-j}$: nga zero lind vetëm zero.
+  \end{itemize}
+  Rregullimi, para ciklit:
+<<w3s3-fix, eval=FALSE>>=
+g[1] <- exp(-lambda * (1 - f[1]))
+@
+  \small Rekursioni Panjer \textbf{fillon} nga $\Pr(S=0)$: pa të, nuk ka asgjë për të përhapur.
+  \vfill\kthehu{w3gab3b}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjNdr3]{Zgjidhja: Ndrysho parametrin}
+<<w3s3-ndr>>=
+f <- c(0, 0.6, 0.4)
+res <- do.call(rbind, lapply(c(0.5, 2, 10), function(l) {
+  g <- panjer_pois(l, f, 60)
+  data.frame(s = 0:60, g = g, lambda = factor(l), mean = sum((0:60) * g))
+}))
+unique(res[, c("lambda", "mean")])
+@
+  \vfill\kthehu{w3ndr3}
+\end{frame}
+
+\begin{frame}[fragile]{Zgjidhja: Ndrysho parametrin (figura)}
+<<w3s3-ndr-plot, fig.height=3.2>>=
+ggplot(res, aes(s, g, colour = lambda)) + geom_line() +
+  geom_point(size = 0.8) + labs(x = "s (x 100 EUR)", y = "P(S = s)") + th
+@
+  \vfill\kthehu{w3ndr3}
+\end{frame}
+
+\begin{frame}{Zgjidhja: Ndrysho parametrin (interpretimi)}
+  \begin{itemize}
+    \item $\lambda=0.5$: masa në zero $e^{-0.5}\approx0.61$ dominon.
+    \item $\lambda=2$: masa në zero bie në $e^{-2}\approx0.14$; shpërndarja ``zgjerohet''.
+    \item $\lambda=10$: $g_0\approx0.00005$; forma afrohet te normalja rreth $10\times1.4=14$.
+    \item Mesataret dalin $0.7,\;2.8,\;14$ (në njësi 100 €). \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \vfill\kthehu{w3ndr3}
+\end{frame}
+
+\begin{frame}[label=w3zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë (VaR, TVaR)}
+  \textbf{B)} $\mathrm{TVaR}_p$ është mesatarja e kuantileve $\mathrm{VaR}_u$ për $u>p$, dhe secili prej tyre është $\ge\mathrm{VaR}_p$.
+  \begin{itemize}
+    \item A) Jo gjithmonë: $\mathrm{TVaR}_{0.99}$ mesatarizon edhe kuantile midis 0.99 dhe 0.995.
+    \item C) E kundërta: $\mathrm{TVaR}_p\ge E[S]=\mathrm{TVaR}_0$.
+    \item D) E kundërta e B.
+  \end{itemize}
+  \vfill\kthehu{w3mc4}
+\end{frame}
+
+\begin{frame}[fragile,label=w3zgjUsh3b]{Zgjidhja: Radha jote! (Fieri)}
+<<w3s3-fier>>=
+h <- 100; smax <- 1500; s <- (0:smax) * h
+fx <- discretize(pgamma(x, shape = 2, scale = 450),
+                 from = 0, to = 15000, step = h, method = "rounding")
+g  <- panjer_pois(60, fx, smax)
+set.seed(7)
+S_f <- vapply(1:20000, function(b)
+  sum(rgamma(rpois(1, 60), 2, scale = 450)), numeric(1))
+rbind(panjer_95 = risk_pmf(s, g, 0.95), sim_95 = risk_sim(S_f, 0.95),
+      capital_995 = risk_pmf(s, g, 0.995) - 60 * 900)
+@
+  \small Rreshti i fundit: kapitali mbi $E[S]=54\,000$ €, sipas VaR (kolona 1) dhe sipas TVaR (kolona 2).
+  \vfill\kthehu{w3ush3b}
+\end{frame}

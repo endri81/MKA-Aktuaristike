@@ -1,0 +1,580 @@
+% ============================================================
+%  Java 3 · Ora 3 — Laborator R I: S nga zero
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w3h3-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+@
+
+\begin{frame}{Plani i laboratorit}
+  Ndërtojmë shpërndarjen e $S$ \textbf{pa paketa}, me tri mjete:
+  \begin{enumerate}
+    \item<2-> \textbf{Simulimi} Monte Carlo: i thjeshtë, punon gjithmonë, por ka gabim rastësor.
+    \item<3-> \textbf{Algoritmi Panjer}: i saktë dhe i shpejtë, por kërkon ashpërsi diskrete.
+    \item<4-> \textbf{Diskretizimi}: ura nga Gamma e vazhdueshme te Panjer.
+  \end{enumerate}
+  \onslide<5->{Në fund: \textbf{VaR} dhe \textbf{TVaR} nga të dyja metodat.}
+  \onslide<6->{
+  \begin{Keshille}Në Orën 5 do të përdorim \texttt{actuar::aggregateDist()}. Sot shohim çfarë bën ajo nga brenda.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Simulimi Monte Carlo}
+% ------------------------------------------------------------
+
+\begin{frame}{Algoritmi i simulimit me fjalë}
+  Për çdo vit $b=1,\dots,B$:
+  \begin{enumerate}
+    \item<2-> gjenero numrin e dëmeve $N_b$;
+    \item<3-> gjenero $N_b$ shuma \textbf{të ndryshme} $X_{b,1},\dots,X_{b,N_b}$;
+    \item<4-> llogarit $S_b=X_{b,1}+\dots+X_{b,N_b}$ (me $S_b=0$ kur $N_b=0$).
+  \end{enumerate}
+  \onslide<5->{
+  Pastaj $S_1,\dots,S_B$ janë një mostër nga shpërndarja e $S$:
+  \[ \Pr(S=s)\approx\frac{\#\{b:\,S_b=s\}}{B},\qquad E[S]\approx\bar S. \]}
+\end{frame}
+
+\begin{frame}[fragile]{Portofoli lodër i Orës 1, me cikël}
+<<w3h3-toy-loop>>=
+set.seed(2026)
+B <- 10000
+S <- numeric(B)
+for (b in 1:B) {
+  N    <- sample(0:2, 1, prob = c(0.5, 0.3, 0.2))          # claim count
+  X    <- sample(c(100, 200), N, replace = TRUE, prob = c(0.6, 0.4))
+  S[b] <- sum(X)                                          # sum(numeric(0)) = 0
+}
+exact <- c(0.5, 0.18, 0.192, 0.096, 0.032)
+rbind(simulated = as.vector(table(factor(S, levels = seq(0, 400, 100)))) / B,
+      exact     = exact)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Frekuencat e simuluara janë afër probabiliteteve të sakta të Orës 1.
+    \item<2-> \texttt{sum(numeric(0))} jep 0: rasti $N=0$ trajtohet vetë, pa \texttt{if}.
+    \item<3-> \texttt{factor(..., levels = ...)} siguron që të shfaqen edhe vlerat që nuk dolën asnjë herë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Sa afër?}
+    Gabimi standard i një frekuence është $\sqrt{p(1-p)/B}$. Për $p=0.5$ dhe $B=10\,000$: $0.005$.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[label=w3par3]{Parashiko para se ta ekzekutosh}
+  \begin{Parashiko}
+    Rrisim $B$ nga 10\,000 në 1\,000\,000.
+    \begin{enumerate}
+      \item Sa herë zvogëlohet gabimi standard i $\Pr(S=0)$?
+      \item Sa herë zgjat më shumë cikli \texttt{for}?
+      \item A ia vlen për portofolin lodër?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w3zgjPar3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Portofoli auto: Poisson i përbërë}
+  E vërteta e të dhënave sintetike: $\lambda=768$ dëme në vit, $X\sim$ Gamma(2, shkallë 450), mesatare 900 €.
+<<w3h3-motor-sim>>=
+set.seed(2026)
+lambda <- 768; shape <- 2; scale <- 450
+one_year <- function() sum(rgamma(rpois(1, lambda), shape, scale = scale))
+S_sim <- vapply(1:20000, function(b) one_year(), numeric(1))
+EX  <- shape * scale; EX2 <- shape * (shape + 1) * scale^2
+rbind(simulation = c(mean = mean(S_sim), sd = sd(S_sim)),
+      formula    = c(mean = lambda * EX, sd = sqrt(lambda * EX2)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{vapply(1:B, f, numeric(1))} = cikël \texttt{for} më i shkurtër dhe me tip të garantuar.
+    \item<2-> Mesatarja e simuluar është afër $\lambda E[X]=\Sexpr{fmt(lambda * EX)}$ €.
+    \item<3-> Devijimi standard afër $\sqrt{\lambda E[X^2]}=\Sexpr{fmt(sqrt(lambda * EX2))}$ €.
+    \item<4-> $E[X^2]=\alpha(\alpha+1)\theta^2$ për Gamma: $2\times3\times450^2=1\,215\,000$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{block}{Vlerësimi kundrejt së vërtetës}
+    Këtu ``e vërteta'' është formula. Simulimi e konfirmon formulën, dhe formula konfirmon kodin.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Si duket shpërndarja e $S$?}
+<<w3h3-hist, echo=FALSE, fig.height=3.3>>=
+ggplot(data.frame(S = S_sim / 1000), aes(S)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 60,
+                 fill = "#5B8BD0", colour = "white") +
+  stat_function(fun = dnorm, args = list(mean = lambda * EX / 1000,
+                sd = sqrt(lambda * EX2) / 1000), colour = "#C0392B", linewidth = 1) +
+  labs(x = "S (mije EUR)", y = "dendesia") + th
+@
+  \small Histogrami: 20\,000 vite të simuluara. Vija e kuqe: normalja me të njëjtën mesatare dhe devijim.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me 768 dëme në vit, $S$ është pothuajse \textbf{normale}: teorema qendrore limite.
+    \item<2-> Por histogrami është pak i anuar djathtas: bishti i djathtë është më i gjatë.
+    \item<3-> Me ashpërsi Gamma (bisht i lehtë) diferenca është e vogël.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pse?}
+    Me ashpërsi Pareto (Java 2) bishti i djathtë i $S$ do të ishte shumë më i gjatë. E shohim në Orën 6.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile,label=w3gab3a]{Gjej gabimin}
+  Një koleg e shkurton funksionin:
+<<w3h3-bug, eval=FALSE>>=
+one_year_bad <- function() rpois(1, lambda) * rgamma(1, shape, scale = scale)
+@
+  \begin{enumerate}
+    \item Çfarë modeli simulon në të vërtetë?
+    \item Mesatarja do të dalë e saktë apo e gabuar? Po devijimi standard?
+    \item Llogarit devijimin standard që pret, pa ndihmën e PC.
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjGab3a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w3ush3a]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Shoferët janë heterogjenë (Ora 2): zëvendëso \texttt{rpois(1, lambda)} me
+    \texttt{rnbinom(1, size = 50, mu = lambda)}.
+    \begin{enumerate}
+      \item Sa është $\mathrm{Var}[N]$? (Udhëzim: $\mathrm{Var}[N]=\mu+\mu^2/r$.)
+      \item Si ndryshon devijimi standard i $S$? Kontrollo me simulim dhe me formulën e Orës 1.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh3a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Algoritmi Panjer nga zero}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja e Panjer-it}
+  \begin{itemize}
+    \item<1-> Konvolucioni (Ora 1) llogarit çdo $f^{*k}$ veç e veç: shumë i ngadaltë.
+    \item<2-> Panjer llogarit $g_s=\Pr(S=s)$ \textbf{drejtpërdrejt}, nga vlerat e mëparshme $g_0,\dots,g_{s-1}$.
+    \item<3-> Kusht: ashpërsia merr vlera $0,h,2h,\dots$ (rrjetë me hap $h$).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}[(Panjer, rasti Poisson)]
+    Me $f_j=\Pr(X=jh)$ dhe $N\sim\text{Poisson}(\lambda)$:
+    \[
+      g_0=e^{-\lambda(1-f_0)},\qquad
+      g_s=\frac{\lambda}{s}\sum_{j=1}^{s} j\,f_j\,g_{s-j},\quad s=1,2,\dots
+    \]
+  \end{Teoreme}}
+  \onslide<5->{\small Vërtetimin dhe rastin e përgjithshëm (a, b, 0) i shohim në Orën 4.}
+\end{frame}
+
+\begin{frame}{Panjer pa ndihmën e PC}
+  $\lambda=1$; \; $X\in\{1,2\}$ (në njësi 100 €) me $f_1=0.6$, $f_2=0.4$, $f_0=0$.
+  \begin{itemize}
+    \item<2-> $g_0=e^{-1}=0.36788$
+    \item<3-> $g_1=\frac{1}{1}\,(1\cdot f_1\,g_0)=0.6\times0.36788=0.22073$
+    \item<4-> $g_2=\frac{1}{2}\,(1\cdot f_1\,g_1+2\cdot f_2\,g_0)=\frac12(0.13244+0.29430)=0.21337$
+    \item<5-> $g_3=\frac{1}{3}\,(1\cdot f_1\,g_2+2\cdot f_2\,g_1)=\frac13(0.12802+0.17658)=0.10153$
+  \end{itemize}
+  \onslide<6->{
+  \begin{Keshille}Termi $j\,f_j\,g_{s-j}$ ekziston vetëm për $j\le2$: kur ashpërsia ka pak vlera, shuma është e shkurtër.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Panjer në R: dhjetë rreshta}
+<<w3h3-panjer>>=
+panjer_pois <- function(lambda, f, smax) {
+  # f[j + 1] = P(X = j), j = 0, 1, ...;  returns g[s + 1] = P(S = s)
+  g <- numeric(smax + 1)
+  g[1] <- exp(-lambda * (1 - f[1]))                 # P(S = 0)
+  for (s in 1:smax) {
+    j <- 1:min(s, length(f) - 1)
+    g[s + 1] <- lambda / s * sum(j * f[j + 1] * g[s - j + 1])
+  }
+  g
+}
+round(panjer_pois(1, c(0, 0.6, 0.4), 6), 5)
+@
+  \small Indekset në R fillojnë nga 1: \texttt{g[s + 1]} ruan $g_s$.
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll: Panjer kundrejt konvolucionit}
+<<w3h3-check>>=
+conv <- function(a, b) {                       # from Hour 1
+  out <- numeric(length(a) + length(b) - 1)
+  for (i in seq_along(a)) for (j in seq_along(b))
+    out[i + j - 1] <- out[i + j - 1] + a[i] * b[j]
+  out
+}
+f <- c(0, 0.6, 0.4); fk <- 1; g_conv <- numeric(7)
+for (k in 0:30) {                              # truncate the sum at k = 30
+  g_conv <- g_conv + dpois(k, 1) * c(fk, numeric(7))[1:7]
+  fk <- conv(fk, f)
+}
+max(abs(g_conv - panjer_pois(1, f, 6)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Dy metoda krejt të ndryshme japin të njëjtat probabilitete, deri në gabimin e rrumbullakimit.
+    \item<2-> Konvolucioni: 31 konvolucione dhe një shumë e cunguar.
+    \item<3-> Panjer: një cikël i vetëm, pa cungim në $k$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Pse Panjer fiton}
+    Për $s_{\max}$ pika, Panjer kërkon rreth $s_{\max}^2/2$ shumëzime.
+    Konvolucioni kërkon këtë për \textbf{çdo} $k$.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile,label=w3gab3b]{Gjej gabimin}
+<<w3h3-bug2>>=
+panjer_bad <- function(lambda, f, smax) {
+  g <- numeric(smax + 1)
+  for (s in 1:smax) {
+    j <- 1:min(s, length(f) - 1)
+    g[s + 1] <- lambda / s * sum(j * f[j + 1] * g[s - j + 1])
+  }
+  g
+}
+panjer_bad(1, c(0, 0.6, 0.4), 4)
+@
+  Pse dalin vetëm zero? Rregulloje me një rresht.
+  \vfill\shkoTe{w3zgjGab3b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: $g_0$ kur $f_0>0$}
+  \begin{Gabim}
+    Shkruhet $g_0=e^{-\lambda}$. Kjo vlen vetëm kur $f_0=\Pr(X=0)=0$.
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item $S=0$ ndodh kur $N=0$, \textbf{ose} kur të gjitha dëmet janë 0:
+      \[ g_0=\sum_{k\ge0}\frac{e^{-\lambda}\lambda^k}{k!}f_0^k=e^{-\lambda}e^{\lambda f_0}=e^{-\lambda(1-f_0)}. \]
+    \item<3-> Pas diskretizimit, $f_0>0$ pothuajse gjithmonë: masa e intervalit pranë zeros.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w3ndr3]{Ndrysho parametrin dhe shiko}
+  \begin{Ushtrim}[(5 minuta)]
+    Me \texttt{panjer\_pois()} dhe $f=(0,\,0.6,\,0.4)$:
+    \begin{enumerate}
+      \item vizato $g_s$ për $\lambda=0.5$, $\lambda=2$ dhe $\lambda=10$ ($s_{\max}=60$);
+      \item shiko si lëviz masa në zero dhe forma e shpërndarjes;
+      \item kontrollo që $\sum_s s\,g_s\approx\lambda\times1.4$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjNdr3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Diskretizimi}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse diskretizim?}
+  \begin{itemize}
+    \item<1-> Panjer kërkon $\Pr(X=0),\Pr(X=h),\Pr(X=2h),\dots$
+    \item<2-> Gamma është e vazhdueshme: $\Pr(X=x)=0$ për çdo $x$.
+    \item<3-> Zgjidhja: e zëvendësojmë $X$ me një variabël diskrete $\tilde X$ në rrjetën $0,h,2h,\dots$
+  \end{itemize}
+  \onslide<4->{
+  \begin{Definicion}[(diskretizimi)]
+    Masa e çdo intervali $[a,b)$ i jepet një pike të rrjetës. Metoda tregon \textbf{cilës} pikë.
+  \end{Definicion}}
+\end{frame}
+
+\begin{frame}{Tri metoda}
+  \centering
+  \renewcommand{\arraystretch}{1.4}
+  \begin{tabular}{lll}
+    \toprule
+    Metoda & $\Pr(\tilde X=x)$ & Efekti \\
+    \midrule
+    \texttt{upper} & $F(x+h)-F(x)$ & masa zhvendoset \textbf{majtas}: $\tilde F\ge F$ \\
+    \texttt{lower} & $F(x)-F(x-h)$ & masa zhvendoset \textbf{djathtas}: $\tilde F\le F$ \\
+    \texttt{rounding} & $F(x+\tfrac h2)-F(x-\tfrac h2)$ & masa te pika më e afërt \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{8pt}
+  \pause
+  \begin{itemize}
+    \item \texttt{upper} jep kufi të sipërm për $F_S$; \texttt{lower} kufi të poshtëm.
+    \item \texttt{rounding} jep zakonisht përafrimin më të mirë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Figura: metoda \texttt{rounding}}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=10cm,height=5cm,domain=0:3000,samples=120,
+        xlabel={$x$ (€)},ylabel={},ymin=0,ytick=\empty,
+        tick label style={font=\scriptsize},label style={font=\small},
+        xtick={0,500,1000,1500,2000,2500,3000},
+        xticklabel style={/pgf/number format/1000 sep={\,}}]
+      \addplot[very thick,uptblue] {x*exp(-x/450)/450^2};
+      \draw[dashed,gray] (axis cs:250,0) -- (axis cs:250,0.00085);
+      \draw[dashed,gray] (axis cs:750,0) -- (axis cs:750,0.00085);
+      \draw[dashed,gray] (axis cs:1250,0) -- (axis cs:1250,0.00085);
+      \draw[dashed,gray] (axis cs:1750,0) -- (axis cs:1750,0.00085);
+      \draw[dashed,gray] (axis cs:2250,0) -- (axis cs:2250,0.00085);
+      \draw[dashed,gray] (axis cs:2750,0) -- (axis cs:2750,0.00085);
+      \addplot[ybar,bar width=6pt,fill=accent!70,draw=accent] coordinates
+        {(0,0.000215) (500,0.000778) (1000,0.000538) (1500,0.00027) (2000,0.000119) (2500,0.0000493) (3000,0.0000195)};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small Me $h=500$: masa midis vijave të ndërprera shkon te pika e rrjetës në mes (shufrat: masa/$h$, që të krahasohet me dendësinë).
+\end{frame}
+
+\begin{frame}[fragile]{Diskretizimi nga zero}
+<<w3h3-disc>>=
+h <- 100; x <- seq(0, 10000, by = h)                 # grid 0, h, ..., 10000
+Fg <- function(q) pgamma(q, shape = 2, scale = 450)
+f_up  <- Fg(x + h) - Fg(x)
+f_low <- c(Fg(0), Fg(x[-1]) - Fg(x[-1] - h))
+f_rnd <- c(Fg(h / 2), Fg(x[-1] + h / 2) - Fg(x[-1] - h / 2))
+rbind(upper = c(sum = sum(f_up),  mean = sum(x * f_up)),
+      lower = c(sum = sum(f_low), mean = sum(x * f_low)),
+      round = c(sum = sum(f_rnd), mean = sum(x * f_rnd)))
+@
+  \small Mesatarja e vërtetë: $2\times450=900$ €.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Të gjitha mblidhen pothuajse në 1: pjesa mbi 10\,000 € është e papërfillshme.
+    \item<2-> \texttt{upper}: mesatare $\approx900-h/2$. \; \texttt{lower}: $\approx900+h/2$.
+    \item<3-> \texttt{rounding}: mesatare shumë afër 900 €.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Vlerësimi kundrejt së vërtetës}
+    \texttt{upper} dhe \texttt{lower} e ``rrethojnë'' mesataren e vërtetë. Me $h$ më të vogël, të tri afrohen te 900 €.
+  \end{block}}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll me \texttt{actuar::discretize()}}
+<<w3h3-disc-act>>=
+suppressMessages(library(actuar))
+f_rnd_act <- discretize(pgamma(x, shape = 2, scale = 450),
+                        from = 0, to = 10000, step = h, method = "rounding")
+c(length_ours = length(f_rnd), length_actuar = length(f_rnd_act),
+  max_diff = max(abs(f_rnd[-length(f_rnd)] - f_rnd_act)))
+@
+  \begin{itemize}
+    \item<2-> \texttt{discretize()} merr shprehjen e $F$ me variabël \texttt{x}, si \texttt{curve()}.
+    \item<3-> Jep një pikë më pak: nuk përfshin pikën e fundit \texttt{to}.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Panjer mbi një degë reale}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Dega e Fierit}
+<<w3h3-fier>>=
+d <- read.csv(file.path(DATA, "motor_portfolio_synthetic.csv"))
+fier <- subset(d, region == "Fier")
+c(policies = nrow(fier), exposure = sum(fier$exposure),
+  claims = sum(fier$n_claims))
+@
+  \begin{itemize}
+    \item<2-> Supozim: vitin e ardhshëm dega pret $\lambda=60$ dëme, me ashpërsinë e vërtetë Gamma(2, 450).
+    \item<3-> $E[S]=60\times900=54\,000$ €; \; $\mathrm{sd}[S]=\sqrt{60\times1\,215\,000}\approx8\,538$ €.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Panjer + diskretizim për Fierin}
+<<w3h3-fier-panjer>>=
+lam_f <- 60; h <- 100; smax <- 1500                 # S up to 150 000 EUR
+fx <- discretize(pgamma(x, shape = 2, scale = 450),
+                 from = 0, to = 15000, step = h, method = "rounding")
+g  <- panjer_pois(lam_f, fx, smax)
+s  <- (0:smax) * h
+c(total_prob = sum(g), mean_S = sum(s * g),
+  sd_S = sqrt(sum(s^2 * g) - sum(s * g)^2))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Probabilitetet mblidhen në 1: rrjeta deri në 150\,000 € mjafton.
+    \item<2-> Mesatarja $\approx54\,000$ € dhe devijimi $\approx8\,538$ €, si formulat. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> Tani kemi \textbf{gjithë} shpërndarjen e $S$, jo vetëm dy momente.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Me të gjithë portofolin ($\lambda=768$): $g_0=e^{-768(1-f_0)}$ del 0 në kompjuter (\emph{underflow}), dhe çdo $g_s$ del 0. Zgjidhjen e shohim në Orën 5.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Panjer kundrejt simulimit për Fierin}
+<<w3h3-fier-plot, echo=FALSE, fig.height=3.1>>=
+set.seed(7)
+S_f <- vapply(1:20000, function(b)
+  sum(rgamma(rpois(1, lam_f), 2, scale = 450)), numeric(1))
+ggplot() +
+  stat_ecdf(aes(S_f / 1000, colour = "simulim (20 000 vite)"), linewidth = 1) +
+  geom_step(aes(s / 1000, cumsum(g), colour = "Panjer (h = 100)"),
+            linewidth = 0.7, linetype = 2) +
+  coord_cartesian(xlim = c(25, 90)) +
+  scale_colour_manual(values = c("#C0392B", "#5B8BD0")) +
+  labs(x = "S (mije EUR)", y = "F(s)", colour = NULL) +
+  th + theme(legend.position = "top")
+@
+  \small Dy kurbat e shpërndarjes $F_S$ pothuajse mbivendosen.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{VaR dhe TVaR}
+% ------------------------------------------------------------
+
+\begin{frame}{VaR dhe TVaR}
+  \begin{Definicion}[(masat e rrezikut)]
+    Për nivel $p\in(0,1)$:
+    \[
+      \mathrm{VaR}_p(S)=\inf\{s:\,F_S(s)\ge p\},\qquad
+      \mathrm{TVaR}_p(S)=\frac{1}{1-p}\int_p^1\mathrm{VaR}_u(S)\,du.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item VaR (\emph{Value at Risk}) = kuantili: humbja që tejkalohet me probabilitet $\le1-p$.
+    \item TVaR (\emph{Tail VaR}) = mesatarja e të gjitha kuantileve mbi $p$: ``sa keq, në mesatare, në vitet e këqija''.
+    \item<3-> Për $S$ të vazhdueshme: $\mathrm{TVaR}_p=E[S\mid S>\mathrm{VaR}_p]$. \Rkey{actuar} e quan \texttt{CTE}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{VaR dhe TVaR pa ndihmën e PC}
+  Portofoli lodër, $p=0.9$. Funksioni i shpërndarjes:
+  \begin{center}
+    \begin{tabular}{cccccc}
+      \toprule $s$ & 0 & 100 & 200 & 300 & 400 \\
+      $F_S(s)$ & 0.500 & 0.680 & 0.872 & 0.968 & 1.000 \\ \bottomrule
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item<2-> $\mathrm{VaR}_{0.9}=300$: vlera e parë me $F_S(s)\ge0.9$.
+    \item<3-> Kuantilet për $u\in(0.9,0.968]$ janë 300; për $u\in(0.968,1)$ janë 400.
+    \item<4-> $\mathrm{TVaR}_{0.9}=\dfrac{0.068\times300+0.032\times400}{0.1}=\dfrac{20.4+12.8}{0.1}=332$.
+  \end{itemize}
+  \onslide<5->{\small Kujdes: $E[S\mid S>300]=400\ne332$. Për shpërndarje diskrete, dy përkufizimet ndryshojnë.}
+\end{frame}
+
+\begin{frame}[fragile]{VaR dhe TVaR nga një pmf}
+<<w3h3-var-pmf>>=
+risk_pmf <- function(s, g, p) {
+  Fs  <- cumsum(g)
+  VaR <- s[which(Fs >= p)[1]]
+  up  <- s > VaR                                    # mass strictly above VaR
+  TVaR <- (sum(s[up] * g[up]) + VaR * (Fs[s == VaR] - p)) / (1 - p)
+  c(VaR = VaR, TVaR = TVaR)
+}
+risk_pmf(seq(0, 400, 100), c(0.5, 0.18, 0.192, 0.096, 0.032), 0.9)
+risk_pmf(s, g, 0.995)                               # Fier, Panjer
+@
+\end{frame}
+
+\begin{frame}[fragile]{VaR dhe TVaR nga simulimi}
+<<w3h3-var-sim>>=
+risk_sim <- function(S, p) {
+  VaR <- quantile(S, p, type = 1, names = FALSE)    # empirical quantile
+  c(VaR = VaR, TVaR = mean(S[S > VaR]))
+}
+rbind(Fier_sim = risk_sim(S_f, 0.995),
+      motor_sim = risk_sim(S_sim, 0.995),
+      motor_normal = c(lambda * EX + qnorm(0.995) * sqrt(lambda * EX2), NA))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Për Fierin, Panjer dhe simulimi japin VaR$_{0.995}$ afër njëri-tjetrit.
+    \item<2-> TVaR > VaR gjithmonë: është mesatarja e humbjeve \textbf{përtej} VaR.
+    \item<3-> Për gjithë portofolin, VaR i simuluar është pak \textbf{mbi} përafrimin normal: anësia djathtas.
+    \item<4-> Kapitali sipas Solvency II $\approx$ VaR$_{0.995}-E[S]$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Me 20\,000 vite, vetëm 100 vite janë mbi VaR$_{0.995}$: TVaR-i i simuluar ka gabim rastësor të dukshëm.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Gabim i zakonshëm: \texttt{quantile()} dhe TVaR}
+  \begin{Gabim}
+    \begin{enumerate}
+      \item \texttt{quantile(S, 0.995)} pa \texttt{type = 1} \textbf{interpolon} midis dy vlerave.
+      \item \texttt{mean(S > VaR)} jep \textbf{probabilitetin} e tejkalimit, jo TVaR.
+    \end{enumerate}
+  \end{Gabim}
+  \pause
+  \begin{itemize}
+    \item Me mostra të mëdha, (1) ndryshon pak. Me pmf diskrete, ndryshon shumë.
+    \item (2) duhet të japë rreth $1-p=0.005$: përdore si \textbf{kontroll}.
+    \item TVaR i saktë: \texttt{mean(S[S > VaR])}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w3mc4]{Zgjedhje e shumëfishtë}
+  Për të njëjtin portofol, cili renditje është gjithmonë e vërtetë?
+  \begin{enumerate}[A)]
+    \item $\mathrm{VaR}_{0.995}\le\mathrm{TVaR}_{0.99}$
+    \item $\mathrm{VaR}_{0.99}\le\mathrm{TVaR}_{0.99}$
+    \item $\mathrm{TVaR}_{0.99}\le E[S]$
+    \item $\mathrm{TVaR}_{0.995}\le\mathrm{VaR}_{0.995}$
+  \end{enumerate}
+  \vfill\shkoTe{w3zgjMC4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w3ush3b]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Për degën e Fierit, me pmf-në e Panjer-it:
+    \begin{enumerate}
+      \item llogarit $\mathrm{VaR}_{0.95}$ dhe $\mathrm{TVaR}_{0.95}$ me \texttt{risk\_pmf()};
+      \item kontrollo me simulimin \texttt{S\_f};
+      \item sa kapital (mbi $E[S]$) duhet për nivelin 99.5\%?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w3zgjUsh3b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse \texttt{sum(rgamma(rpois(1, lambda), ...))} trajton saktë rastin $N=0$?
+    \item Me $\lambda=2$, $f_0=0.25$: sa është $g_0$?
+    \item Cila metodë diskretizimi jep mesatare më të vogël se e vërteta?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) \texttt{rgamma(0, ...)} jep vektor bosh dhe \texttt{sum()} i tij është 0;
+  (2) $e^{-2\times0.75}=e^{-1.5}\approx0.223$; (3) \texttt{upper}.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item Simulimi: \texttt{vapply(1:B, function(b) sum(rgamma(rpois(1, l), ...)), numeric(1))}.
+    \item Panjer (Poisson): $g_0=e^{-\lambda(1-f_0)}$, \; $g_s=\frac{\lambda}{s}\sum_j j f_j g_{s-j}$.
+    \item Diskretizimi: \texttt{upper} $<$ \texttt{rounding} $\approx$ e vërteta $<$ \texttt{lower} (mesataret).
+    \item VaR = kuantil; TVaR = mesatarja e kuantileve mbi $p$; kontroll me dy metoda.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria e klasës (a, b, 0), vërtetimi i Panjer-it, përafrimet, stop-loss për portofolin, GLM.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për modelet e dëmeve agregate).
+    \item H.~H.~Panjer (1981), ``Recursive evaluation of a family of compound distributions'', \emph{ASTIN Bulletin} 12(1).
+    \item V.~Goulet et al., vinjetat e paketës \Rkey{actuar}: \texttt{?discretize}, \texttt{?aggregateDist}.
+    \item README i të dhënave: \texttt{motor\_portfolio\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
