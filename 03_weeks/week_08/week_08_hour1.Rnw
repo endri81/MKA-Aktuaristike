@@ -1,0 +1,275 @@
+% ============================================================
+%  Java 8 · Ora 1 — Motivimi: fondi i pensionit dhe garancia
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w8h1-setup, include=FALSE>>=
+suppressMessages(library(derivmkts))
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+st  <- read.csv(file.path(DATA, "stock_prices_gbm_synthetic.csv"))
+st$date <- as.Date(st$date)
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e javës}
+% ------------------------------------------------------------
+
+\begin{frame}{Fondi ``Pensioni Plus''}
+  \begin{itemize}
+    \item<1-> Një fond pensioni privat investon 10\,000\,000 lekë të një anëtari në një aksion.
+    \item<2-> Fondi i premton anëtarit: ``pas 5 vitesh, të paktën \textbf{kapitali fillestar}''.
+    \item<3-> Kjo është një \termi{garanci}{guarantee}: nëse aksioni bie, fondi paguan diferencën.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja e javës)]
+    ``Sa luhatet ky investim? Dhe sa kushton sot garancia që fondi i jep anëtarit?''
+  \end{Shembull}}
+  \onslide<5->{\small Shembull ilustrues: fondi dhe anëtari janë fiktivë.}
+\end{frame}
+
+\begin{frame}[fragile]{Çmimi i aksionit (sintetik)}
+<<w8h1-plot, echo=FALSE, fig.height=3>>=
+ggplot(st, aes(date, close)) + geom_line(colour = "#2C5AA0", linewidth = 0.6) +
+  geom_hline(yintercept = st$close[1], linetype = 2, colour = "#E67E22") +
+  labs(x = NULL, y = "cmimi") + th
+@
+  \small \textbf{Sintetike}: \texttt{stock\_prices\_gbm\_synthetic.csv}, \Sexpr{nrow(st)} çmime ditore, GBM me $\mu=7\%$, $\sigma=25\%$ (README).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Nga \Sexpr{fmt(st$close[1], 2)} në fillim, në \Sexpr{fmt(tail(st$close, 1), 2)} në fund: aksioni \textbf{ra}, edhe pse $\mu=7\%>0$.
+    \item<2-> Minimumi \Sexpr{fmt(min(st$close), 1)}, maksimumi \Sexpr{fmt(max(st$close), 1)}: luhatje të mëdha brenda 3 vitesh.
+    \item<3-> Nëse anëtari do të dilte në fund, garancia do të duhej të paguante.
+  \end{itemize}
+  \onslide<4->{\small Pyetje: a është kjo ``e keqe'' e aksionit, apo thjesht rasti?}
+\end{frame}
+
+\begin{frame}{Dy pyetje, dy mjete}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \begin{block}{Sa luhatet?}
+        Kthimet dhe volatiliteti $\sigma$.\\
+        Orët 2--3.
+      \end{block}
+    \column{0.48\textwidth}
+      \begin{block}{Sa kushton garancia?}
+        Garancia = një opsion \texttt{put}.\\
+        Put--call parity, Orët 4--6.
+      \end{block}
+  \end{columns}
+  \pause
+  \vspace{10pt}
+  \small Formula e plotë e çmimit (Black--Scholes) vjen në Javën 10. Sot e përdorim si ``kuti të zezë'' për të kontrolluar parity.
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 8}
+  \begin{enumerate}
+    \item<1-> Të llogarisim kthimet e thjeshta dhe logaritmike nga çmimet. \LO{S1}
+    \item<2-> Të vlerësojmë $\mu$ dhe $\sigma$ të një GBM, me intervale besimi. \LO{S1}
+    \item<3-> Të kuptojmë pse $\sigma$ vlerësohet mirë dhe $\mu$ keq. \LO{K3}
+    \item<4-> Të vërtetojmë put--call parity me argument arbitrazhi. \LO{K3}
+    \item<5-> Ta kontrollojmë parity numerikisht dhe ta përdorim për garancinë e fondit. \LO{K3}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t1) at (0,0) {\textbf{Kthimet, GBM}\\teori, Ora 2};
+    \node[b] (l1) at (3.6,0) {\textbf{$\hat\mu$, $\hat\sigma$ në R}\\simulim, Ora 3};
+    \node[b] (t2) at (0,-2) {\textbf{Opsionet, parity}\\teori, Ora 4};
+    \node[b] (l2) at (3.6,-2) {\textbf{Payoff, arbitrazh}\\R, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (c) at (7.6,-1) {\textbf{Garancia}\\e fondit, Ora 6};
+    \draw[->,thick,uptmid] (t1) -- (l1); \draw[->,thick,uptmid] (t2) -- (l2);
+    \draw[->,thick,uptmid] (l1) -- (c); \draw[->,thick,uptmid] (l2) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Interesi diskret dhe i vazhdueshëm (Java 2)}
+  \begin{itemize}
+    \item<1-> Diskret: 1 lek bëhet $(1+i)^T$ pas $T$ vitesh.
+    \item<2-> I vazhdueshëm: 1 lek bëhet $e^{rT}$, me $r=\ln(1+i)$.
+    \item<3-> Shembull: $i=3\%$ $\Rightarrow$ $r=\ln1.03=0.029559$; \; $e^{0.03\cdot5}=1.161834$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Në financë, norma pa rrezik zakonisht jepet si $r$ i vazhdueshëm. Këtë javë: $r=3\%$, supozim ilustrues.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Kthimi i thjeshtë dhe kthimi logaritmik}
+  \begin{Definicion}
+    $R_t=\dfrac{S_t}{S_{t-1}}-1$ \quad (i thjeshtë), \qquad $r_t=\ln\dfrac{S_t}{S_{t-1}}$ \quad (logaritmik).
+  \end{Definicion}
+  \pause
+  Shembull: $S=100,\;110,\;99$.
+  \begin{itemize}
+    \item $R_1=10\%$, $R_2=-10\%$; mesatarja $0\%$, por $S_2=99<100$.
+    \item $r_1=0.09531$, $r_2=-0.10536$; shuma $-0.01005=\ln(99/100)$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8mc1]{Zgjedhje e shumëfishtë}
+  Cili kthim \textbf{mblidhet} në kohë, d.m.th.\ kthimi për dy ditë = shuma e kthimeve ditore?
+  \begin{enumerate}[A)]
+    \item Kthimi i thjeshtë $R_t$.
+    \item Kthimi logaritmik $r_t$.
+    \item Të dy.
+    \item Asnjëri.
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjMC1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w8ush1]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Çmimet në katër ditë: $S=50,\;52,\;49,\;51$.
+    \begin{enumerate}
+      \item Llogarit $R_1,R_2,R_3$ dhe $r_1,r_2,r_3$.
+      \item Kontrollo $r_1+r_2+r_3=\ln(51/50)$.
+      \item A është $(1+R_1)(1+R_2)(1+R_3)=51/50$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjUsh1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vlerësimi i parë}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w8par1]{Parashiko}
+  \begin{Parashiko}
+    Duke parë grafikun e çmimeve:
+    \begin{enumerate}
+      \item Volatiliteti vjetor $\hat\sigma$ është afër 5\%, 25\% apo 60\%?
+      \item Kthimi mesatar vjetor $\hat\mu$ do të dalë afër $7\%$ (e vërteta)?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w8zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi i parë në R}
+<<w8h1-est>>=
+r  <- diff(log(st$close))                  # daily log returns
+n  <- length(r)
+sig_hat <- sd(r) * sqrt(252)               # annual volatility
+mu_hat  <- mean(r) * 252 + sig_hat^2 / 2   # GBM drift (Hour 2)
+round(c(n = n, sigma_hat = sig_hat, mu_hat = mu_hat,
+        se_mu = sig_hat / sqrt(n / 252)), 4)
+@
+  \small 252 ditë tregtimi në vit; datat e skedarit janë vetëm ditë pune.
+\end{frame}
+
+\begin{frame}{Vlerësimi kundrejt së vërtetës}
+  \begin{center}
+    \begin{tabular}{lccc}
+      \toprule
+      & E vërteta & Vlerësimi & Gabimi standard \\
+      \midrule
+      $\sigma$ & 25\% & \Sexpr{fmt(100 * sig_hat, 1)}\% & $\approx$ \Sexpr{fmt(100 * sig_hat / sqrt(2 * n), 1)}\% \\
+      $\mu$ & 7\% & \Sexpr{fmt(100 * mu_hat, 1)}\% & $\approx$ \Sexpr{fmt(100 * sig_hat / sqrt(n / 252), 1)}\% \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item $\sigma$: shumë i saktë. \textcolor{okgreen}{$\checkmark$}
+    \item $\mu$: shenja është e gabuar, por e vërteta është brenda $\pm2$ gabime standarde.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me 3 vite të dhëna, $\hat\mu$ ka gabim standard rreth \Sexpr{fmt(100 * sig_hat / sqrt(n / 252))}\%: më i madh se vetë $\mu$.
+    \item<2-> $\hat\sigma$ ka gabim standard nën 1\%: çdo ditë jep informacion për $\sigma$.
+    \item<3-> Ky është mesazhi më i rëndësishëm i Orës 3.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}``Aksioni ka kthim të pritur negativ, sepse ra në 3 vitet e fundit.'' Me këto të dhëna, kjo nuk mund të thuhet.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Garancia si opsion}
+% ------------------------------------------------------------
+
+\begin{frame}{Vlera e fondit në vitin 5}
+  \centering
+  \begin{tikzpicture}[x=0.55cm,y=0.45cm,>=Stealth]
+    \draw[->] (0,0) -- (12,0) node[right,font=\small]{$S_T$};
+    \draw[->] (0,0) -- (0,9) node[above,font=\small]{vlera};
+    \draw[dashed,gray] (0,0) -- (8.5,8.5) node[right,font=\scriptsize,gray]{pa garanci: $S_T$};
+    \draw[very thick,uptblue] (0,4) -- (4,4) -- (8.5,8.5);
+    \node[font=\scriptsize,uptblue] at (2,4.6) {$\max(S_T,K)$};
+    \draw[dotted] (4,0) -- (4,4); \node[below,font=\scriptsize] at (4,0) {$K$};
+    \draw[very thick,accent] (0,4) -- (4,0) -- (11,0);
+    \node[font=\scriptsize,accent] at (7,0.7) {garancia: $\max(K-S_T,0)$};
+  \end{tikzpicture}\par
+  \pause
+  \small $\max(S_T,K)=S_T+\max(K-S_T,0)$: \; aksioni + një \textbf{put} me çmim ushtrimi $K$.
+\end{frame}
+
+\begin{frame}[label=w8tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item Kush e paguan garancinë: anëtari, fondi, apo të dy? Si?
+      \item Nëse volatiliteti i aksionit dyfishohet, garancia bëhet më e shtrenjtë apo më e lirë? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjTps1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item<1-> \textbf{Sigurimet unit-linked}: vlera e kontratës ndjek fondet; garancitë minimale janë opsione.
+    \item<2-> \textbf{Fondet e pensionit}: garancitë e kthimit krijojnë detyrime që varen nga tregu.
+    \item<3-> \textbf{Solvency II}: kërkon kapital për rrezikun e tregut; vlerësimi i garancive kërkon modele stokastike.
+    \item<4-> \textbf{Aktuari}: duhet të flasë gjuhën e financës: kthime, volatilitet, opsione.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj kthimin logaritmik me $S_t$ dhe $S_{t-1}$.
+    \item Pse $\hat\sigma$ është më i saktë se $\hat\mu$?
+    \item Garancia ``të paktën $K$'' është ekuivalente me cilin opsion?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\ln(S_t/S_{t-1})$; (2) $\hat\sigma$ përdor çdo ditë, $\hat\mu$ varet vetëm nga çmimi i parë dhe i fundit;
+  (3) një put me çmim ushtrimi $K$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Fondi ``Pensioni Plus'': aksion + garanci kapitali.
+    \item Kthimet logaritmike mblidhen në kohë.
+    \item $\hat\sigma=\Sexpr{fmt(100 * sig_hat, 1)}\%$ (e vërteta 25\%); \; $\hat\mu=\Sexpr{fmt(100 * mu_hat, 1)}\%$ (e vërteta 7\%).
+    \item Garancia = put: $\max(S_T,K)=S_T+(K-S_T)^+$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria e kthimeve dhe e modelit GBM; vlerësuesit e $\mu$ dhe $\sigma$ dhe gabimet e tyre standarde.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike, parametrat e vërtetë).
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{bscall()}, \texttt{bsput()}.
+    \item Java 2 e këtij kursi: interesi diskret dhe i vazhdueshëm (\Rkey{tvm}).
+  \end{itemize}
+\end{frame}

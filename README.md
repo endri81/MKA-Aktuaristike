@@ -28,7 +28,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 | 05 | `lifecontingencies`, tabelat e vdekshmërisë | ✅ gati (225 slide) |
 | 06 | Tabela aktuariale, funksione të përziera, SOA | ✅ gati (427 slide) |
 | 07 | Sigurime rritëse/zbritëse, anuitete | ✅ gati (361 slide) |
-| 08 | R në financë, put–call parity | ⏳ |
+| 08 | R në financë, put–call parity | 🔄 Ora 1 |
 | 09 | Opsionet europiane dhe amerikane | ⏳ |
 | 10 | Black–Scholes · kolegium | ⏳ |
 | 11 | Cox–Ross–Rubinstein (binomial) | ⏳ |

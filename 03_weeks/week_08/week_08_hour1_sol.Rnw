@@ -1,0 +1,39 @@
+% ============================================================
+%  Java 8 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $r_1+r_2=\ln\frac{S_1}{S_0}+\ln\frac{S_2}{S_1}=\ln\frac{S_2}{S_0}$.
+  \begin{itemize}
+    \item Kthimet e thjeshta \textbf{shumëzohen}: $(1+R_1)(1+R_2)=S_2/S_0$, nuk mblidhen.
+    \item Për kthime të vogla, $r_t\approx R_t$: diferenca shihet në luhatje të mëdha.
+  \end{itemize}
+  \vfill\kthehu{w8mc1}
+\end{frame}
+
+\begin{frame}[label=w8zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $R=0.040000,\;-0.057692,\;0.040816$; \quad $r=0.039221,\;-0.059423,\;0.040005$.
+    \item $0.039221-0.059423+0.040005=0.019803=\ln1.02$. \textcolor{okgreen}{$\checkmark$}
+    \item $1.04\cdot0.942308\cdot1.040816=1.02$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small Mesatarja e $R$ është $0.007708$, por kthimi total është $2\%$ në 3 ditë: mesatarja aritmetike e $R$ nuk tregon rritjen.
+  \vfill\kthehu{w8ush1}
+\end{frame}
+
+\begin{frame}[label=w8zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $\hat\sigma=\Sexpr{fmt(100 * sig_hat, 1)}\%$: luhatje ditore rreth $25\%/\sqrt{252}\approx1.6\%$.
+    \item Jo: $\hat\mu=\Sexpr{fmt(100 * mu_hat, 1)}\%$. Me 3 vite, gabimi standard i $\hat\mu$ është rreth \Sexpr{fmt(100 * sig_hat / sqrt(n / 252))}\%.
+  \end{enumerate}
+  \vfill\kthehu{w8par1}
+\end{frame}
+
+\begin{frame}[label=w8zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Zakonisht të dy: fondi mban një tarifë ose heq një pjesë të kthimit; nëse garancia nuk çmohet, kostoja bie mbi fondin (dhe mbi anëtarët e tjerë).
+    \item Më e shtrenjtë: me $\sigma$ më të madh, $S_T$ ka më shumë gjasa të bjerë shumë nën $K$. Put-i paguan pikërisht atëherë.
+  \end{enumerate}
+  \small Formulën që e tregon këtë do ta shohim në Javën 10.
+  \vfill\kthehu{w8tps1}
+\end{frame}
