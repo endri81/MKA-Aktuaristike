@@ -1,0 +1,355 @@
+% ============================================================
+%  Java 4 · Ora 2 — Teoria I: chain-ladder dhe Mack
+% ============================================================
+\section{Teoria I: chain-ladder}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w4h2-setup, include=FALSE>>=
+library(ggplot2)
+th <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+rt <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+tri <- xtabs(cum_paid_eur ~ accident_year + dev_year, data = rt)
+tri[tri == 0] <- NA
+@
+
+% ------------------------------------------------------------
+\subsection{Chain-ladder si vlerësues}
+% ------------------------------------------------------------
+
+\begin{frame}{Shënimet}
+  \begin{itemize}
+    \item<1-> $n$ vite aksidenti dhe $n$ vite zhvillimi; $i$ = viti i aksidentit, $j$ = viti i zhvillimit.
+    \item<2-> Të njohura: qelizat me $i+j\le n+1$. Bashkësia e informacionit: $\mathcal D=\{C_{ij}:\,i+j\le n+1\}$.
+    \item<3-> Diagonalja e fundit: $C_{i,n+1-i}$, pagesa e fundit e njohur e vitit $i$.
+    \item<4-> \termi{Raporti individual i zhvillimit}{individual development factor}: \; $F_{ij}=C_{i,j+1}/C_{ij}$.
+  \end{itemize}
+  \onslide<5->{\small Në trekëndëshin tonë: $n=10$, viti $i=1$ është 2016, viti $i=10$ është 2025.}
+\end{frame}
+
+\begin{frame}{Vlerësuesi chain-ladder}
+  \begin{Definicion}[(faktori chain-ladder)]
+    \[
+      \hat f_j=\frac{\sum_{i=1}^{n-j}C_{i,j+1}}{\sum_{i=1}^{n-j}C_{ij}},\qquad j=1,\dots,n-1.
+    \]
+  \end{Definicion}
+  \pause
+  \textbf{Si mesatare e peshuar} e raporteve individuale:
+  \[
+    \hat f_j=\sum_{i=1}^{n-j}w_{ij}\,F_{ij},\qquad w_{ij}=\frac{C_{ij}}{\sum_{k=1}^{n-j}C_{kj}}.
+  \]
+  \pause
+  \small Vitet me më shumë pagesa kanë më shumë peshë. Pse kjo është zgjedhja e duhur? Pas pak.
+\end{frame}
+
+\begin{frame}{Projeksioni dhe rezerva}
+  \begin{align*}
+    \hat C_{in} &= C_{i,n+1-i}\cdot\hat f_{n+1-i}\cdots\hat f_{n-1}=C_{i,n+1-i}\,\hat F_{n+1-i} \\
+    \onslide<2->{\hat R_i &= \hat C_{in}-C_{i,n+1-i}} \\
+    \onslide<3->{\hat R &= \sum_{i=2}^{n}\hat R_i}
+  \end{align*}
+  \onslide<4->{
+  \begin{Keshille}Viti $i=1$ ka mbaruar: $\hat R_1=0$, përveç rastit kur ka faktor bishti.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Faktori i bishtit \Zgj}
+  \begin{itemize}
+    \item<1-> Kur zhvillimi \textbf{nuk} mbaron te kolona $n$, duhet $f_{\text{tail}}=C_{i\infty}/C_{in}>1$.
+    \item<2-> Vlerësohet duke ekstrapoluar $\log(\hat f_j-1)$ si funksion linear i $j$.
+    \item<3-> Në të dhënat tona: modeli i vërtetë arrin 100\% te viti 10, pra $f_{\text{tail}}=1$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Të harrosh bishtin në linja shumë të gjata (përgjegjësi, dëme trupore të rënda): rezerva nënvlerësohet për \textbf{çdo} vit aksidenti.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w4mc2a]{Zgjedhje e shumëfishtë}
+  Në trekëndëshin $10\times10$, cilët vite aksidenti hyjnë në $\hat f_3$?
+  \begin{enumerate}[A)]
+    \item 2016--2025 (të gjithë)
+    \item 2016--2023
+    \item 2016--2022
+    \item 2016--2019
+  \end{enumerate}
+  \vfill\shkoTe{w4zgjMC2a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Modeli i Mack-ut}
+% ------------------------------------------------------------
+
+\begin{frame}{Pse një model stokastik?}
+  \begin{itemize}
+    \item<1-> Chain-ladder është një \textbf{algoritëm}: jep një numër, por jo sa i sigurt është.
+    \item<2-> Mbikëqyrësi dhe IFRS 17 kërkojnë edhe \textbf{pasigurinë}: gabimin standard, kuantilet.
+    \item<3-> Mack (1993): një model \termi{pa shpërndarje}{distribution-free}, vetëm me dy momente, që riprodhon chain-ladder.
+  \end{itemize}
+  \onslide<4->{
+  \begin{block}{Ideja}
+    Nëse modeli i jep të njëjtat $\hat f_j$ si algoritmi, atëherë ``besimi'' tek algoritmi bëhet i matshëm.
+  \end{block}}
+\end{frame}
+
+\begin{frame}{Tri supozimet e Mack-ut}
+  \begin{enumerate}
+    \item<1-> \textbf{(M1)} Vitet e aksidentit janë të pavarura.
+    \item<2-> \textbf{(M2)} Pritja: \; $E\big[C_{i,j+1}\mid C_{i1},\dots,C_{ij}\big]=f_j\,C_{ij}$.
+    \item<3-> \textbf{(M3)} Varianca: \; $\mathrm{Var}\big(C_{i,j+1}\mid C_{i1},\dots,C_{ij}\big)=\sigma_j^2\,C_{ij}$.
+  \end{enumerate}
+  \onslide<4->{
+  \begin{itemize}
+    \item (M2): forma e përbashkët e zhvillimit, si në Orën 1.
+    \item (M3): varianca rritet \textbf{proporcionalisht} me vëllimin, si te Poisson-i i përbërë (Java 3).
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}[fragile]{Figura: (M2) si regresion nga origjina}
+<<w4h2-scatter, echo=FALSE, fig.height=3.1>>=
+j <- 1; rows <- 1:(10 - j)
+df <- data.frame(x = tri[rows, j] / 1e6, y = tri[rows, j + 1] / 1e6,
+                 ay = rownames(tri)[rows])
+fhat <- sum(df$y) / sum(df$x)
+ggplot(df, aes(x, y)) + geom_point(size = 2.5, colour = "#2C5AA0") +
+  geom_abline(slope = fhat, intercept = 0, colour = "#C0392B", linewidth = 1) +
+  geom_text(aes(label = ay), nudge_y = 0.07, size = 3) +
+  expand_limits(x = 2, y = 3.3) +
+  labs(x = "C(i,1)  (mln EUR)", y = "C(i,2)  (mln EUR)") + th
+@
+  \small Çdo pikë është një vit aksidenti. Vija e kuqe: $y=\hat f_1x$, me $\hat f_1=\Sexpr{fmt(fhat, 4)}$.
+\end{frame}
+
+\begin{frame}{$\hat f_j$ është i paanshëm}
+  Le të jetë $\mathcal B_j=\{C_{ik}:\,k\le j\}$, kolonat deri në $j$.
+  \begin{align*}
+    E\big[\hat f_j\mid\mathcal B_j\big]
+    &= \frac{\sum_i E\big[C_{i,j+1}\mid\mathcal B_j\big]}{\sum_i C_{ij}} \\
+    \onslide<2->{&= \frac{\sum_i f_j\,C_{ij}}{\sum_i C_{ij}}\qquad\text{(M1), (M2)}} \\
+    \onslide<3->{&= f_j.}
+  \end{align*}
+  \onslide<4->{\small Me vetinë e kullës: $E[\hat f_j]=f_j$. Për më tepër, $\hat f_1,\dots,\hat f_{n-1}$ janë të pakorreluar (Mack, 1993).}
+\end{frame}
+
+\begin{frame}{Pse pesha $w_{ij}\propto C_{ij}$?}
+  \begin{itemize}
+    \item<1-> Nga (M3): \; $\mathrm{Var}(F_{ij}\mid\mathcal B_j)=\mathrm{Var}(C_{i,j+1}\mid C_{ij})/C_{ij}^2=\sigma_j^2/C_{ij}$.
+    \item<2-> Për një mesatare të peshuar të vlerave të pavarura me variancë $v_i$, pesha optimale është $w_i\propto1/v_i$.
+    \item<3-> Pra $w_{ij}\propto C_{ij}/\sigma_j^2\propto C_{ij}$: pikërisht chain-ladder!
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}
+    Nën (M1)--(M3), $\hat f_j$ ka variancën më të vogël ndër të gjitha mesataret e peshuara të paanshme të $F_{ij}$.
+  \end{Teoreme}}
+  \onslide<5->{\small Mesatarja e thjeshtë (Ora 1) është e paanshme, por më pak e saktë.}
+\end{frame}
+
+\begin{frame}{Vlerësimi i $\sigma_j^2$}
+  \[
+    \hat\sigma_j^2=\frac{1}{n-j-1}\sum_{i=1}^{n-j}C_{ij}\,\big(F_{ij}-\hat f_j\big)^2,\qquad j=1,\dots,n-2.
+  \]
+  \pause
+  \begin{itemize}
+    \item $n-j$ vrojtime, një parametër i vlerësuar ($\hat f_j$): $n-j-1$ shkallë lirie.
+    \item Për $j=n-1$ ka vetëm një vrojtim: Mack propozon ekstrapolim,
+      \[ \hat\sigma_{n-1}^2=\min\Big(\hat\sigma_{n-2}^4/\hat\sigma_{n-3}^2,\;\hat\sigma_{n-3}^2,\;\hat\sigma_{n-2}^2\Big). \]
+  \end{itemize}
+  \pause
+  \small \Rkey{ChainLadder} përdor si parazgjedhje një ekstrapolim log-linear të $\hat\sigma_j$.
+\end{frame}
+
+\begin{frame}{$\hat\sigma_1^2$ pa ndihmën e PC}
+  Trekëndëshi $3\times3$ i Orës 1: $\hat f_1=1.47619$, me dy vrojtime ($n-j-1=1$).
+  \begin{itemize}
+    \item<2-> $F_{11}=150/100=1.5$, \quad $F_{21}=160/110=1.45455$.
+    \item<3-> $\hat\sigma_1^2=100\,(1.5-1.47619)^2+110\,(1.45455-1.47619)^2$
+    \item<4-> $\phantom{\hat\sigma_1^2}=100\times0.000567+110\times0.000468=0.0567+0.0515=0.1082$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Njësia e $\sigma_j^2$ është ``mijë €'', si $C_{ij}$: $\mathrm{Var}(C_{i,j+1}\mid C_{ij})=0.1082\times C_{ij}$.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimi i parashikimit}
+% ------------------------------------------------------------
+
+\begin{frame}{MSEP: dy burime gabimi}
+  \begin{Definicion}[(gabimi mesatar katror i parashikimit)]
+    \[
+      \mathrm{msep}(\hat R_i)=E\big[(R_i-\hat R_i)^2\mid\mathcal D\big]
+      =\underbrace{\mathrm{Var}(C_{in}\mid\mathcal D)}_{\text{gabimi i procesit}}
+      +\underbrace{\big(E[C_{in}\mid\mathcal D]-\hat C_{in}\big)^2}_{\text{gabimi i vlerësimit}}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item \textbf{Procesi}: edhe me $f_j$ të njohur, pagesat e ardhshme janë të rastit.
+    \item \textbf{Vlerësimi}: $\hat f_j\ne f_j$, sepse trekëndëshi ka pak të dhëna.
+  \end{itemize}
+  \pause
+  \small E njëjta ndarje si $\mathrm{Var}[S]$ në Javën 3: dy burime pasigurie, të mbledhura.
+\end{frame}
+
+\begin{frame}{Gabimi i procesit në dy hapa}
+  Ligji i variancës totale, nga $C_{ij}$ te $C_{i,j+2}$:
+  \begin{align*}
+    \mathrm{Var}(C_{i,j+2}\mid C_{ij})
+    &= E\big[\mathrm{Var}(C_{i,j+2}\mid C_{i,j+1})\big]+\mathrm{Var}\big(E[C_{i,j+2}\mid C_{i,j+1}]\big) \\
+    \onslide<2->{&= E\big[\sigma_{j+1}^2C_{i,j+1}\big]+\mathrm{Var}\big(f_{j+1}C_{i,j+1}\big)} \\
+    \onslide<3->{&= \sigma_{j+1}^2\,f_j\,C_{ij}+f_{j+1}^2\,\sigma_j^2\,C_{ij}.}
+  \end{align*}
+  \onslide<4->{\small Përsëritur për çdo hap, kjo jep gabimin e procesit të Mack-ut.}
+\end{frame}
+
+\begin{frame}{Formula e Mack-ut}
+  \begin{Teoreme}[(Mack, 1993)]
+    \[
+      \widehat{\mathrm{msep}}(\hat R_i)=\hat C_{in}^2\sum_{k=n+1-i}^{n-1}\frac{\hat\sigma_k^2}{\hat f_k^2}
+      \Bigg(\underbrace{\frac{1}{\hat C_{ik}}}_{\text{procesi}}+\underbrace{\frac{1}{\sum_{l=1}^{n-k}C_{lk}}}_{\text{vlerësimi}}\Bigg),
+    \]
+    ku $\hat C_{ik}=C_{ik}$ për qelizat e njohura.
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Gabimi standard: $\mathrm{se}(\hat R_i)=\sqrt{\widehat{\mathrm{msep}}(\hat R_i)}$; \; CV $=\mathrm{se}/\hat R_i$.
+    \item Për $\hat R$ total shtohet një term kovariance: vitet ndajnë të njëjtët $\hat f_k$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull: gabimi i procesit për vitin 3}
+  Trekëndëshi $3\times3$; supozojmë $\hat\sigma_1^2=0.1082$ dhe $\hat\sigma_2^2=0.05$.
+  \pause
+  \begin{itemize}
+    \item Me dy hapat: \; $0.05\times1.47619\times120+1.1^2\times0.1082\times120=8.86+15.71=24.57$.
+    \item<3-> Me formulën e Mack-ut (vetëm termi i procesit):
+      \[ 194.86^2\Big(\frac{0.1082}{1.47619^2\times120}+\frac{0.05}{1.1^2\times177.14}\Big)=37\,970\times0.000647=24.57. \]
+    \item<4-> Devijimi i procesit: $\sqrt{24.57}\approx4.96$ mijë €, rreth 6.6\% e rezervës 74.86.
+  \end{itemize}
+  \onslide<5->{\small Dy rrugë, i njëjti numër. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}[label=w4par2]{Parashiko}
+  \begin{Parashiko}
+    Në trekëndëshin $10\times10$:
+    \begin{enumerate}
+      \item Cili vit aksidenti do të ketë rezervën më të madhe?
+      \item Cili do të ketë \textbf{CV} më të madh, $\mathrm{se}(\hat R_i)/\hat R_i$?
+      \item A është CV i rezervës totale më i madh apo më i vogël se CV-të e viteve? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w4zgjPar2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w4gab2]{Gjej gabimin}
+  Një student shkruan vlerësuesin e $\sigma_j^2$:
+<<w4h2-bug, eval=FALSE>>=
+sigma2 <- sapply(1:(n - 2), function(j) {
+  rows <- 1:(n - j)
+  Fij  <- C[rows, j + 1] / C[rows, j]
+  fj   <- mean(Fij)
+  sum(C[rows, j] * (Fij - fj)^2) / (n - j)
+})
+@
+  Gjej \textbf{dy} gabime.
+  \vfill\shkoTe{w4zgjGab2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kufijtë dhe alternativat}
+% ------------------------------------------------------------
+
+\begin{frame}{Kur dështon chain-ladder?}
+  \begin{itemize}
+    \item<1-> \textbf{Efekte të vitit kalendarik}: inflacion i papritur, ndryshim ligji, ndërprerje pagesash (kolona 7!).
+    \item<2-> \textbf{Ndryshim i shpejtësisë së trajtimit}: forma nuk është më e përbashkët.
+    \item<3-> \textbf{Vitet e reja}: $\hat C_{n,n}=C_{n1}\hat F_1$ shumëzon një vrojtim të vetëm me 9 faktorë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Kontrolli: mbetjet e standardizuara $r_{ij}=(F_{ij}-\hat f_j)\sqrt{C_{ij}}/\hat\sigma_j$ kundrejt vitit kalendarik. Në Orën 5 me \texttt{plot(MackChainLadder(...))}.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Bornhuetter--Ferguson \Zgj}
+  \begin{Definicion}[(BF)]
+    Me një ultimate \textbf{paraprake} $U_i$ (p.sh.\ prima $\times$ raporti i pritur i dëmeve) dhe $\hat p_i=1/\hat F_{n+1-i}$:
+    \[ \hat R_i^{\text{BF}}=U_i\,(1-\hat p_i),\qquad \hat C_{in}^{\text{BF}}=C_{i,n+1-i}+U_i(1-\hat p_i). \]
+  \end{Definicion}
+  \pause
+  \textbf{Lidhja me kredibilitetin} (Ora 4):
+  \[
+    \hat C_{in}^{\text{BF}}=\hat p_i\cdot\underbrace{\frac{C_{i,n+1-i}}{\hat p_i}}_{\hat C_{in}^{\text{CL}}}+(1-\hat p_i)\cdot U_i.
+  \]
+  \pause
+  \small Pesha e chain-ladder = sa është zhvilluar viti. Vitet e reja mbështeten më shumë te $U_i$.
+\end{frame}
+
+\begin{frame}[label=w4ush2]{Radha jote!}
+  \begin{Ushtrim}[(4 minuta, pa ndihmën e PC)]
+    Trekëndëshi $3\times3$, me $\hat F_2=1.1$ dhe $\hat F_1=1.62381$.
+    \begin{enumerate}
+      \item Viti 2: $U_2=180$. Llogarit $\hat R_2^{\text{BF}}$.
+      \item Viti 3: $U_3=200$. Llogarit $\hat R_3^{\text{BF}}$ dhe krahasoje me chain-ladder (74.86).
+      \item Cila metodë reagon më shumë ndaj një $C_{31}$ të çuditshëm?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w4zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Chain-ladder si GLM \Zgj}
+  \begin{itemize}
+    \item<1-> Modeli ODP (\emph{over-dispersed Poisson}) për pagesat inkrementale:
+      \[ E[X_{ij}]=\mu_{ij},\quad \log\mu_{ij}=c+\alpha_i+\beta_j,\quad \mathrm{Var}[X_{ij}]=\phi\,\mu_{ij}. \]
+    \item<2-> Teorema (Renshaw--Verrall, 1998): ky GLM jep \textbf{të njëjtat} rezerva si chain-ladder.
+    \item<3-> Lidhja me Javën 3: i njëjti \texttt{glm(..., family = poisson)}, me faktorë për rreshtin dhe kolonën.
+  \end{itemize}
+  \onslide<4->{\small Në R: \texttt{ChainLadder::glmReserve()} (Ora 6) dhe \texttt{BootChainLadder()} (Ora 5) bazohen te ky model.}
+\end{frame}
+
+\begin{frame}[label=w4mc2b]{Zgjedhje e shumëfishtë}
+  Cili pohim për modelin e Mack-ut është i \textbf{gabuar}?
+  \begin{enumerate}[A)]
+    \item Riprodhon faktorët chain-ladder $\hat f_j$.
+    \item Supozon që $C_{ij}$ ndjek shpërndarjen lognormale.
+    \item Ndan gabimin në gabim procesi dhe gabim vlerësimi.
+    \item Supozon variancë proporcionale me $C_{ij}$.
+  \end{enumerate}
+  \vfill\shkoTe{w4zgjMC2b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse $\hat f_j$ është mesatare e peshuar me pesha $C_{ij}$?
+    \item Cilat janë dy burimet e gabimit të parashikimit?
+    \item Në BF, sa peshë merr chain-ladder për një vit 40\% të zhvilluar?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) nga (M3), $\mathrm{Var}(F_{ij})=\sigma_j^2/C_{ij}$, pesha optimale $\propto C_{ij}$;
+  (2) procesi dhe vlerësimi i parametrave; (3) 40\%.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item $\hat f_j=\sum C_{i,j+1}/\sum C_{ij}$: mesatare e peshuar, e paanshme dhe me variancë minimale nën Mack.
+    \item Mack: (M1) pavarësi, (M2) $E=f_jC_{ij}$, (M3) $\mathrm{Var}=\sigma_j^2C_{ij}$.
+    \item msep = gabimi i procesit + gabimi i vlerësimit; formula e Mack-ut.
+    \item BF = përzierje kredibiliteti e chain-ladder dhe ultimate paraprake.
+    \item Chain-ladder = GLM ODP me faktorë rreshti dhe kolone.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator nga zero: chain-ladder dhe Mack mbi trekëndëshin $10\times10$, vlerësimi kundrejt së vërtetës.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item T.~Mack (1993), ``Distribution-free calculation of the standard error of chain ladder reserve estimates'', \emph{ASTIN Bulletin} 23(2).
+    \item A.~E.~Renshaw, R.~J.~Verrall (1998), ``A stochastic model underlying the chain-ladder technique'', \emph{British Actuarial Journal} 4(4).
+    \item M.~V.~Wüthrich, M.~Merz, \emph{Stochastic Claims Reserving Methods in Insurance}, Wiley, 2008.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për rezervat).
+  \end{itemize}
+\end{frame}

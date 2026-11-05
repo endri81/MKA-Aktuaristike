@@ -1,0 +1,65 @@
+% ============================================================
+%  Java 4 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w4zgjMC2a]{Zgjidhja: zgjedhja e shumëfishtë ($\hat f_3$)}
+  \textbf{C)} $\hat f_3$ përdor rreshtat $i=1,\dots,n-j=7$, pra 2016--2022.
+  \begin{itemize}
+    \item Viti 2023 ka vlerë në kolonën 3, por jo në kolonën 4: nuk hyn.
+    \item Kujdes: numri i rreshtave bie me $j$; $\hat f_9$ mbështetet vetëm te viti 2016.
+  \end{itemize}
+  \vfill\kthehu{w4mc2a}
+\end{frame}
+
+\begin{frame}[fragile,label=w4zgjPar2]{Zgjidhja: Parashiko (rezerva dhe CV)}
+<<w4s2-par, warning=FALSE>>=
+library(ChainLadder)
+rt  <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+trc <- as.triangle(rt, origin = "accident_year", dev = "dev_year",
+                   value = "cum_paid_eur")
+s <- summary(MackChainLadder(trc, est.sigma = "Mack"))
+res <- data.frame(IBNR_mln = s$ByOrigin$IBNR / 1e6,
+                  CV = s$ByOrigin[, "CV(IBNR)"], row.names = rownames(s$ByOrigin))
+round(res[6:10, ], 3); c(total_CV = s$Totals["CV(IBNR):", 1])
+@
+  \vfill\kthehu{w4par2}
+\end{frame}
+
+\begin{frame}{Zgjidhja: Parashiko (interpretimi)}
+  \begin{enumerate}
+    \item 2025 ka rezervën më të madhe: vetëm $\approx40\%$ e zhvilluar.
+    \item CV më i madh del te vitet e mesme (2022--2023), jo te 2025: për 2025 gabimi standard është i madh, por rezerva është edhe më e madhe.
+    \item CV total është më i vogël se CV-të e viteve 2019--2025: gabimet e viteve kompensohen pjesërisht.
+  \end{enumerate}
+  \small Rezultat me \Rkey{ChainLadder}; e njëjta llogaritje nga zero në Orën 3.
+  \vfill\kthehu{w4par2}
+\end{frame}
+
+\begin{frame}[label=w4zgjGab2]{Zgjidhja: Gjej gabimin ($\hat\sigma_j^2$)}
+  \begin{enumerate}
+    \item \texttt{fj <- mean(Fij)} është mesatarja e thjeshtë. E saktë:
+          \texttt{fj <- sum(C[rows, j + 1]) / sum(C[rows, j])}.
+    \item Pjesëtuesi \texttt{(n - j)} duhet të jetë \texttt{(n - j - 1)}: një shkallë lirie humbet për $\hat f_j$.
+  \end{enumerate}
+  \begin{Keshille}Me pjesëtuesin $n-j$, $\hat\sigma_j^2$ nënvlerësohet sistematikisht, dhe gabimi standard i rezervës del shumë i vogël.\end{Keshille}
+  \vfill\kthehu{w4gab2}
+\end{frame}
+
+\begin{frame}[label=w4zgjUsh2]{Zgjidhja: Radha jote! (BF)}
+  \begin{enumerate}
+    \item $\hat p_2=1/1.1=0.90909$: \; $\hat R_2^{\text{BF}}=180\times(1-0.90909)=16.36$ (chain-ladder: 16.00).
+    \item $\hat p_3=1/1.62381=0.61584$: \; $\hat R_3^{\text{BF}}=200\times0.38416=76.83$ (chain-ladder: 74.86).
+    \item Chain-ladder: $\hat R_3=C_{31}(\hat F_1-1)$ ndryshon \textbf{proporcionalisht} me $C_{31}$.
+          BF: $\hat R_3$ \textbf{nuk varet} nga $C_{31}$. BF është më i qëndrueshëm për vitet e reja.
+  \end{enumerate}
+  \vfill\kthehu{w4ush2}
+\end{frame}
+
+\begin{frame}[label=w4zgjMC2b]{Zgjidhja: zgjedhja e shumëfishtë (Mack)}
+  \textbf{B)} Modeli i Mack-ut është \emph{pa shpërndarje}: përdor vetëm pritjen (M2) dhe variancën (M3).
+  \begin{itemize}
+    \item Lognormalja përdoret ndonjëherë më vonë, për të ndërtuar kuantile nga $\hat R$ dhe se$(\hat R)$.
+    \item A), C), D) janë pohime të sakta.
+  \end{itemize}
+  \vfill\kthehu{w4mc2b}
+\end{frame}
