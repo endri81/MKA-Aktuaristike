@@ -1,0 +1,324 @@
+% ============================================================
+%  Java 7 · Ora 1 — Motivimi: kredia, sigurimi dhe rezerva
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w7h1-setup, include=FALSE>>=
+suppressMessages({library(lifecontingencies); library(tvm)})
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e javës}
+% ------------------------------------------------------------
+
+\begin{frame}{Arbeni merr një kredi}
+  \begin{itemize}
+    \item<1-> Arbeni, 40 vjeç, blen një apartament në Tiranë.
+    \item<2-> Banka i jep kredi 8\,000\,000 lekë, për 20 vjet, me interes 6\% në vit.
+    \item<3-> Kusht: një \textbf{sigurim jete} që, nëse Arbeni vdes, paguan bankës \textbf{mbetjen e kredisë}.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja e javës)]
+    ``Sa kushton ky sigurim? Dhe pse kompania duhet të mbajë një \textbf{rezervë} për të, edhe kur Arbeni është plotësisht mirë?''
+  \end{Shembull}}
+  \onslide<5->{\small Shembull ilustrues: Arbeni, kredia dhe kompania janë fiktive.}
+\end{frame}
+
+\begin{frame}[fragile]{Kësti dhe mbetja e kredisë}
+<<w7h1-loan>>=
+L0 <- 8e6; r <- 0.06; n <- 20
+P  <- pmt(amt = L0, maturity = n, rate = r)      # tvm, Week 2
+k  <- 0:(n - 1)                                  # start of loan year k + 1
+B  <- P * (1 - (1 + r)^-(n - k)) / r             # outstanding balance
+c(annual_payment = round(P))
+round(B[c(1, 6, 11, 16, 20)])
+@
+  \small Mbetja në fillim të çdo viti: vlera aktuale e kësteve që kanë mbetur.
+\end{frame}
+
+\begin{frame}[fragile]{Mbetja nuk bie në vijë të drejtë}
+<<w7h1-plot, echo=FALSE, fig.height=3>>=
+db <- data.frame(year = rep(k + 1, 2), amount = c(B, L0 * (n - k) / n) / 1e6,
+                 type = rep(c("mbetja reale (6%)", "linear 8M x (20-k)/20"), each = n))
+ggplot(db, aes(year, amount, colour = type)) + geom_step(linewidth = 1, direction = "hv") +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0")) +
+  labs(x = "viti i kredise", y = "milione leke", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në fillim, kësti paguan kryesisht \textbf{interes}: mbetja bie ngadalë.
+    \item<2-> Në vitin 11, mbetja është ende \Sexpr{fmt(B[11] / 1e6, 2)} milionë, jo 4.
+    \item<3-> Shuma e siguruar \textbf{zbret} me kohën: ky është një sigurim \textbf{zbritës}.
+  \end{itemize}
+  \onslide<4->{\small Në Orën 3: sa gabon përafrimi linear (sigurimi zbritës ``klasik'') për çmimin?}
+\end{frame}
+
+\begin{frame}{Tri forma të shumës së siguruar}
+  \centering
+  \begin{tikzpicture}[x=0.42cm,y=0.42cm]
+    \foreach \ox/\lab in {0/{Konstante: $A^1_{x:\overline n|}$}, 9/{Rritëse: $(IA)^1_{x:\overline n|}$}, 18/{Zbritëse: $(DA)^1_{x:\overline n|}$}}{
+      \draw[->] (\ox,0) -- (\ox+7,0); \draw[->] (\ox,0) -- (\ox,5.5);
+      \node[font=\scriptsize,above] at (\ox+3.5,5.6) {\lab};
+    }
+    \fill[uptblue!70] (0.3,0) rectangle (1.3,3); \fill[uptblue!70] (1.6,0) rectangle (2.6,3);
+    \fill[uptblue!70] (2.9,0) rectangle (3.9,3); \fill[uptblue!70] (4.2,0) rectangle (5.2,3);
+    \fill[okgreen!70] (9.3,0) rectangle (10.3,1); \fill[okgreen!70] (10.6,0) rectangle (11.6,2);
+    \fill[okgreen!70] (11.9,0) rectangle (12.9,3); \fill[okgreen!70] (13.2,0) rectangle (14.2,4);
+    \fill[accent!80] (18.3,0) rectangle (19.3,4); \fill[accent!80] (19.6,0) rectangle (20.6,3);
+    \fill[accent!80] (20.9,0) rectangle (21.9,2); \fill[accent!80] (22.2,0) rectangle (23.2,1);
+    \node[font=\scriptsize,below] at (3.5,0) {viti i vdekjes};
+    \node[font=\scriptsize,below] at (12.5,0) {viti i vdekjes};
+    \node[font=\scriptsize,below] at (21.5,0) {viti i vdekjes};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Shembull me $n=4$: shumat $3,3,3,3$ \quad $1,2,3,4$ \quad $4,3,2,1$.
+\end{frame}
+
+\begin{frame}{Ku përdoren?}
+  \begin{itemize}
+    \item<1-> \textbf{Zbritëse} (DA): sigurimi i kredisë; mbron familjen dhe bankën.
+    \item<2-> \textbf{Rritëse} (IA): shuma e siguruar e indeksuar; kthimi i primave të paguara në rast vdekjeje.
+    \item<3-> \textbf{Anuitetet}: pensionet, me pagesa në fillim ($\ddot a$) ose në fund ($a$) të vitit.
+    \item<4-> \textbf{Rezervat}: detyrimi i kompanisë sot për pagesat e ardhshme (IFRS 17, Solvency II).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 7}
+  \begin{enumerate}
+    \item<1-> Të llogarisim $(IA)_x$, $(IA)^1_{x:\overline n|}$, $(DA)^1_{x:\overline n|}$ me komutime dhe në R. \LO{C3}
+    \item<2-> Të çmojmë sigurimin e kredisë me mbetjen \textbf{reale}. \LO{S2}
+    \item<3-> Të përdorim anuitetet e menjëhershme, me afat dhe të shtyra. \LO{C3}
+    \item<4-> Të llogarisim primat neto dhe \textbf{rezervat matematike prospektive}. \LO{C2}
+    \item<5-> Të krahasojmë Shqipërinë 2011, tabelën sintetike dhe SOA. \LO{C2}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t1) at (0,0) {\textbf{IA dhe DA}\\teori, Ora 2};
+    \node[b] (l1) at (3.6,0) {\textbf{Kredia në R}\\\texttt{IAxn}, \texttt{DAxn}, Ora 3};
+    \node[b] (t2) at (0,-2) {\textbf{Anuitete, rezerva}\\teori, Ora 4};
+    \node[b] (l2) at (3.6,-2) {\textbf{Kurbat e rezervës}\\R, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (c) at (7.6,-1) {\textbf{Portofoli}\\3 tabela, Ora 6};
+    \draw[->,thick,uptmid] (t1) -- (l1); \draw[->,thick,uptmid] (t2) -- (l2);
+    \draw[->,thick,uptmid] (l1) -- (c); \draw[->,thick,uptmid] (l2) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Rifreskim: komutimet (Java 6)}
+  \begin{itemize}
+    \item $D_x=v^xl_x$, \; $N_x=\sum_{k\ge0}D_{x+k}$.
+    \item $C_x=v^{x+1}d_x$, \; $M_x=\sum_{k\ge0}C_{x+k}$, \; $R_x=\sum_{k\ge0}M_{x+k}$.
+    \item $\ddot a_x=N_x/D_x$, \; $A_x=M_x/D_x$, \; $(IA)_x=R_x/D_x$.
+    \item Me afat: $A^1_{x:\overline n|}=(M_x-M_{x+n})/D_x$.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Sot $R_x$ bëhet ``yll'': pa të, sigurimet rritëse dhe zbritëse kërkojnë shuma të gjata.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Tabela e vogël (Javët 5--6)}
+  Mosha 100, $i=5\%$, $l_{100..104}=1000,\,600,\,300,\,100,\,0$:
+  \begin{center}
+    \small
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 100 & 101 & 102 & 103 \\
+      \midrule
+      $d_x$ & 400 & 300 & 200 & 100 \\
+      $C_x$ & 380.952 & 272.109 & 172.768 & 82.270 \\
+      $M_x$ & 908.099 & 527.147 & 255.038 & 82.270 \\
+      $R_x$ & 1772.554 & 864.455 & 337.308 & 82.270 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \small Me $D_{100}=1000$ (baza e moshës 100).
+\end{frame}
+
+\begin{frame}[label=w7par1]{Parashiko}
+  \begin{Parashiko}
+    Për 100-vjeçarin, me afat $n=3$ vjet:
+    \begin{itemize}
+      \item $A^1_{100:\overline3|}$: 1 lek në çdo vit vdekjeje;
+      \item $(IA)^1_{100:\overline3|}$: 1, 2, 3 lekë;
+      \item $(DA)^1_{100:\overline3|}$: 3, 2, 1 lekë.
+    \end{itemize}
+    Rendit tri vlerat. A është $(DA)^1$ më e madhe se $(IA)^1$? Pse?
+  \end{Parashiko}
+  \vfill\shkoTe{w7zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Llogaritje pa ndihmën e PC}
+  Probabilitetet e vdekjes në vitin $k+1$: ${}_{k|}q_{100}=0.4,\;0.3,\;0.2$.
+  \pause
+  \begin{align*}
+    A^1_{100:\overline3|} &= 0.4v+0.3v^2+0.2v^3=0.380952+0.272109+0.172768=0.825829 \\
+    \onslide<3->{(IA)^1_{100:\overline3|} &= 1(0.380952)+2(0.272109)+3(0.172768)=1.443474} \\
+    \onslide<4->{(DA)^1_{100:\overline3|} &= 3(0.380952)+2(0.272109)+1(0.172768)=1.859842}
+  \end{align*}
+  \onslide<5->{\small Kontroll: $1.443474+1.859842=3.303316=4\cdot0.825829$. \textcolor{okgreen}{$\checkmark$}}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Këtu $(DA)^1>(IA)^1$: shumica e vdekjeve ndodhin \textbf{herët}, kur shuma zbritëse është e madhe.
+    \item<2-> Skontimi e favorizon edhe më shumë pagesën e hershme.
+    \item<3-> $(IA)^1+(DA)^1=(n+1)\,A^1$: shumat $1+3=2+2=3+1=4$ në çdo vit.
+  \end{itemize}
+  \onslide<4->{\small Në Orën 2 këtë identitet e vërtetojmë në përgjithësi.}
+\end{frame}
+
+\begin{frame}[label=w7ush1]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    Vetëm me kolonat $M$ dhe $R$ të tabelës së vogël:
+    \begin{enumerate}
+      \item Llogarit $(IA)_{100}=R_{100}/D_{100}$ (pa afat).
+      \item Verifiko $(IA)^1_{100:\overline3|}=(R_{100}-R_{103}-3M_{103})/D_{100}$.
+      \item Verifiko $(DA)^1_{100:\overline3|}=(3M_{100}-R_{101}+R_{104})/D_{100}$, me $R_{104}=0$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjUsh1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll në R}
+<<w7h1-toy>>=
+toy <- new("actuarialtable", x = 100:104, lx = c(1000, 600, 300, 100, 0), interest = 0.05)
+round(c(A1 = Axn(toy, 100, 3), IA1 = IAxn(toy, 100, 3), DA1 = DAxn(toy, 100, 3),
+        IA_whole = IAxn(toy, 100)), 6)
+@
+  \small \texttt{IAxn()} dhe \texttt{DAxn()}: emrat ndjekin simbolet $(IA)$ dhe $(DA)$.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Anuitetet dhe rezervat: një vështrim}
+% ------------------------------------------------------------
+
+\begin{frame}{Në fillim apo në fund të vitit?}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw[->,thick] (0,0) -- (9.5,0) node[right,font=\small]{$t$};
+    \foreach \t in {0,2,4,6,8}{\draw (\t,0.1) -- (\t,-0.1); }
+    \node[below,font=\scriptsize] at (0,-0.1) {0}; \node[below,font=\scriptsize] at (2,-0.1) {1};
+    \node[below,font=\scriptsize] at (4,-0.1) {2}; \node[below,font=\scriptsize] at (6,-0.1) {3};
+    \node[below,font=\scriptsize] at (8,-0.1) {4};
+    \draw[->,very thick,uptblue] (0,0.2) -- (0,1.1); \draw[->,very thick,uptblue] (2,0.2) -- (2,1.1);
+    \draw[->,very thick,uptblue] (4,0.2) -- (4,1.1); \draw[->,very thick,uptblue] (6,0.2) -- (6,1.1);
+    \node[left,font=\small,uptblue] at (-0.3,0.7) {$\ddot a_x$: në fillim};
+    \draw[->,very thick,accent] (2,-0.7) -- (2,-1.6); \draw[->,very thick,accent] (4,-0.7) -- (4,-1.6);
+    \draw[->,very thick,accent] (6,-0.7) -- (6,-1.6); \draw[->,very thick,accent] (8,-0.7) -- (8,-1.6);
+    \node[left,font=\small,accent] at (-0.3,-1.2) {$a_x$: në fund};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \pause
+  \small Pagesat në fund janë të njëjtat, pa pagesën e kohës 0: \; $\ddot a_x=1+a_x$.
+\end{frame}
+
+\begin{frame}[fragile]{Pse rezervë? Primë konstante, rrezik në rritje}
+<<w7h1-nat, echo=FALSE, fig.height=2.9>>=
+aM3 <- new("actuarialtable", x = mt$age, lx = mt$lx_male, interest = 0.03)
+nat <- 8e6 * qxt(aM3, 40 + k, 1) / 1.03                  # one-year cost, level sum assured
+lev <- 8e6 * Axn(aM3, 40, 20) / axn(aM3, 40, 20)         # level annual premium
+ggplot(data.frame(age = 40 + k, nat), aes(age, nat / 1000)) +
+  geom_col(fill = "#2C5AA0", width = 0.8) + geom_hline(yintercept = lev / 1000, colour = "#E67E22", linewidth = 1.2) +
+  annotate("text", x = 43.5, y = lev / 1000 + 4, label = "prima konstante", colour = "#E67E22", size = 4) +
+  labs(x = "mosha e Arbenit", y = "mije leke ne vit") + th
+@
+  \small Sigurim me afat 20 vjet, 8 milionë konstante, tabela sintetike M, $i=3\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kostoja vjetore e rrezikut rritet nga \Sexpr{fmt(nat[1])} në \Sexpr{fmt(nat[20])} lekë.
+    \item<2-> Prima konstante \Sexpr{fmt(lev)} lekë është \textbf{më e lartë} se kostoja në vitet e para.
+    \item<3-> Teprica e viteve të para nuk është fitim: ruhet si \textbf{rezervë} për vitet e fundit.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}``Arbeni nuk ka vdekur, pra kompania nuk i detyrohet asgjë.'' E gabuar: detyrimi i kompanisë është rezerva ${}_tV$, jo zero.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w7mc1]{Zgjedhje e shumëfishtë}
+  Cila lidhje është e vërtetë për anuitetet e përjetshme?
+  \begin{enumerate}[A)]
+    \item $a_x=1+\ddot a_x$
+    \item $\ddot a_x=1+a_x$
+    \item $\ddot a_x=(1+i)\,a_x$
+    \item $a_x=v\,\ddot a_{x+1}$
+  \end{enumerate}
+  \vfill\shkoTe{w7zgjMC1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w7tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Banka i ofron Arbenit dy sigurime:
+    \begin{itemize}
+      \item (A) 8 milionë konstante për 20 vjet;
+      \item (B) shuma e barabartë me mbetjen e kredisë.
+    \end{itemize}
+    \begin{enumerate}
+      \item Cili është më i lirë? Pse?
+      \item Çfarë përfiton familja e Arbenit nga (A) që nuk e ka me (B)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjTps1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item<1-> \textbf{Bancassurance}: sigurimi i jetës së kredimarrësit shitet bashkë me kredinë.
+    \item<2-> \textbf{Çmimi}: varet nga forma e shumës (reale ose lineare) dhe nga tabela e vdekshmërisë.
+    \item<3-> \textbf{Rezervat}: në bilanc si \termi{provizione teknike}{technical provisions}; në IFRS 17 si vlerë e pritur e flukseve të ardhshme.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse mbetja e kredisë bie më ngadalë se vija e drejtë?
+    \item Shkruaj $(IA)_x$ me komutime.
+    \item Pse një primë konstante krijon rezervë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) në fillim kësti paguan kryesisht interes; (2) $R_x/D_x$;
+  (3) në vitet e para prima është më e madhe se kostoja e rrezikut.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Kredia e Arbenit: shuma e siguruar \textbf{zbret} sipas mbetjes reale.
+    \item Tri forma: $A^1$, $(IA)^1$, $(DA)^1$; \; $(IA)^1+(DA)^1=(n+1)A^1$.
+    \item $\ddot a_x=1+a_x$.
+    \item Prima konstante + rrezik në rritje $\Rightarrow$ rezervë.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria e sigurimeve rritëse dhe zbritëse: përkufizime, formula me komutime, identitete.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{IAxn}, \texttt{DAxn}.
+    \item Dokumentacioni i paketës \Rkey{tvm}: \texttt{pmt()} (Java 2).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

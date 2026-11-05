@@ -1,0 +1,41 @@
+% ============================================================
+%  Java 7 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7zgjPar1]{Zgjidhja: Parashiko}
+  \begin{itemize}
+    \item $A^1=0.8258 \;<\; (IA)^1=1.4435 \;<\; (DA)^1=1.8598$.
+    \item $A^1$ është më e vogla sepse paguan vetëm 1 lek. Mes dy të tjerave, shumat totale janë të njëjta (1+2+3).
+    \item $(DA)^1$ fiton sepse shuma e madhe (3) është në vitin e parë, kur vdesin më shumë (0.4) dhe skontimi është më i vogël.
+  \end{itemize}
+  \small Për një 30-vjeçar ($n=3$, tabela sintetike, 5\%) të dyja janë pothuajse të barabarta; $(IA)^1$ del madje pak më e madhe, sepse $q$ rritet me moshën.
+  \vfill\kthehu{w7par1}
+\end{frame}
+
+\begin{frame}[label=w7zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $(IA)_{100}=1772.554/1000=1.772554$.
+    \item $(1772.554-82.270-3\cdot82.270)/1000=1443.474/1000=1.443474$. \textcolor{okgreen}{$\checkmark$}
+    \item $(3\cdot908.099-864.455+0)/1000=1859.842/1000=1.859842$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small Pse funksionojnë këto formula? Përgjigjja në Orën 2.
+  \vfill\kthehu{w7ush1}
+\end{frame}
+
+\begin{frame}[label=w7zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $\ddot a_x=1+a_x$: e njëjta varg pagesash, plus pagesa e kohës 0.
+  \begin{itemize}
+    \item A) i kundërt. \; C) vlen për anuitetet \textbf{e sigurta}, jo për ato të jetës.
+    \item D) mungon probabiliteti: $a_x=v\,p_x\,\ddot a_{x+1}$.
+  \end{itemize}
+  \vfill\kthehu{w7mc1}
+\end{frame}
+
+\begin{frame}[label=w7zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item (B) është më i lirë: mbetja $B_k\le8$ milionë çdo vit, dhe është shumë më e vogël në vitet e fundit.
+    \item Me (A), nëse Arbeni vdes, banka merr mbetjen dhe familja merr diferencën $8\,000\,000-B_k$.
+  \end{enumerate}
+  \small Në Orën 3 llogarisim të dyja primat me tabelën sintetike.
+  \vfill\kthehu{w7tps1}
+\end{frame}
