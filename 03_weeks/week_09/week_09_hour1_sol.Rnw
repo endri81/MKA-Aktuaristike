@@ -1,0 +1,40 @@
+% ============================================================
+%  Java 9 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w9zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Call-i amerikan: \textbf{njësoj} si europiani (\Sexpr{fmt(am["call"], 2)}), për aksion pa dividendë.
+    \item Put-i amerikan: \textbf{më shumë} (\Sexpr{fmt(am["put"], 2)} kundrejt \Sexpr{fmt(eu["put"], 2)}).
+  \end{enumerate}
+  \small Shumica parashikojnë ``të dy më shumë''. E drejta shtesë mund të mos ketë vlerë, nëse nuk përdoret kurrë në mënyrë racionale.
+  \vfill\kthehu{w9par1}
+\end{frame}
+
+\begin{frame}[label=w9zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Amerikani ka të gjitha të drejtat e europianit, plus disa: nuk mund të vlejë më pak.
+  \begin{itemize}
+    \item A) e gabuar për put-in. \; C) e gabuar për call-in pa dividendë ($C_A=C$).
+    \item D) të ushtruarit më herët është një mundësi, jo detyrim.
+  \end{itemize}
+  \vfill\kthehu{w9mc1}
+\end{frame}
+
+\begin{frame}[label=w9zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $Ke^{-rT}=45.242$; \; ushtrim menjëherë kur $S<K(1-e^{-rT})=50\cdot0.095163=4.758$.
+    \item $C\ge80-45.242=34.758>30$ (vlera intrinsike): ushtrimi i hershëm humbet të paktën 4.758. Jo.
+    \item Vlera intrinsike $50-30=20$; \; $P\le Ke^{-rT}=45.242$.
+  \end{enumerate}
+  \vfill\kthehu{w9ush1}
+\end{frame}
+
+\begin{frame}[label=w9zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Kur vlera e rimarrjes kalon vlerën e vazhdimit: p.sh.\ kur normat e reja në treg janë më të larta se ato të kontratës,
+      ose kur rimarrja e garantuar vlen më shumë se fondi pas një rënieje.
+    \item Nevoja për para, ndryshime në jetë, mungesë informacioni: sjellja nuk është ``optimale'' financiarisht.
+    \item Rrezik likuiditeti: kompania duhet të shesë aktive menjëherë, ndoshta me humbje, dhe humbet fitimet e ardhshme.
+  \end{enumerate}
+  \vfill\kthehu{w9tps1}
+\end{frame}

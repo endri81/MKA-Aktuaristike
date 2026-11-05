@@ -1,0 +1,262 @@
+% ============================================================
+%  Java 9 · Ora 1 — Motivimi: e drejta për të dalë herët
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w9h1-setup, include=FALSE>>=
+suppressMessages(library(derivmkts))
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+st  <- read.csv(file.path(DATA, "stock_prices_gbm_synthetic.csv"))
+sig_hat <- sd(diff(log(st$close))) * sqrt(252)          # Week 8
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e javës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kontrata ``Kursimi Plus''}
+  \begin{itemize}
+    \item<1-> Një kompani sigurimi shet një kontratë kursimi 5-vjeçare, të lidhur me një fond.
+    \item<2-> Klienti mund ta \textbf{anulojë} kontratën në çdo moment dhe merr \termi{vlerën e rimarrjes}{surrender value}.
+    \item<3-> Kjo e drejtë nuk ka çmim të shkruar në kontratë. Por ka vlerë: është një \textbf{opsion}.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja e javës)]
+    ``Sa vlen e drejta për të dalë herët? Dhe kur është racionale ta përdorë klienti?''
+  \end{Shembull}}
+  \onslide<5->{\small Shembull ilustrues: kompania dhe kontrata janë fiktive.}
+\end{frame}
+
+\begin{frame}{Europian apo amerikan?}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Europian & Amerikan \\
+      \midrule
+      Ushtrimi & vetëm në $T$ & në çdo $t\le T$ \\
+      Vlera & $C$, $P$ & $C_A$, $P_A$ \\
+      Lidhja & \multicolumn{2}{c}{$C_A\ge C$, \quad $P_A\ge P$} \\
+      Formula e mbyllur & Black--Scholes (Java 10) & zakonisht jo \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Emrat nuk kanë lidhje me gjeografinë. Ka edhe opsione \textbf{bermudiane}: ushtrim në disa data të caktuara.
+\end{frame}
+
+\begin{frame}{Vlera intrinsike dhe vlera kohore}
+  \begin{Definicion}
+    \begin{itemize}
+      \item \termi{Vlera intrinsike}{intrinsic value}: sa merr mbajtësi po ta ushtrojë \textbf{tani}: $(S-K)^+$ ose $(K-S)^+$.
+      \item \termi{Vlera kohore}{time value}: çmimi i opsionit minus vlera intrinsike.
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item Opsioni amerikan vlen \textbf{të paktën} sa vlera intrinsike: $C_A\ge(S-K)^+$, $P_A\ge(K-S)^+$.
+    \item Ushtrimi i hershëm ka kuptim vetëm kur vlera kohore e amerikanit bëhet 0.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 9}
+  \begin{enumerate}
+    \item<1-> Të nxjerrim kufijtë pa arbitrazh të opsioneve europiane dhe amerikane. \LO{K3}
+    \item<2-> T'i kontrollojmë numerikisht në R. \LO{K3}
+    \item<3-> Të vërtetojmë pse call-i amerikan pa dividendë nuk ushtrohet kurrë herët. \LO{K3}
+    \item<4-> Të kuptojmë kur put-i amerikan ushtrohet herët. \LO{K3}
+    \item<5-> Të vlerësojmë opsionin e anulimit në një kontratë sigurimi. \LO{C3}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t1) at (0,0) {\textbf{Kufijtë}\\teori, Ora 2};
+    \node[b] (l1) at (3.6,0) {\textbf{Kufijtë në R}\\rrjeta, Ora 3};
+    \node[b] (t2) at (0,-2) {\textbf{Ushtrimi i hershëm}\\teori, Ora 4};
+    \node[b] (l2) at (3.6,-2) {\textbf{Prima e ushtrimit}\\R, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (c) at (7.6,-1) {\textbf{Anulimi}\\i kontratës, Ora 6};
+    \draw[->,thick,uptmid] (t1) -- (l1); \draw[->,thick,uptmid] (t2) -- (l2);
+    \draw[->,thick,uptmid] (l1) -- (c); \draw[->,thick,uptmid] (l2) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga Java 8}
+  \begin{itemize}
+    \item Payoff: call $(S_T-K)^+$, put $(K-S_T)^+$.
+    \item Parity europiane: $C-P=S_0-Ke^{-rT}$.
+    \item Kufijtë: $\max(S_0-Ke^{-rT},0)\le C\le S_0$; \; $\max(Ke^{-rT}-S_0,0)\le P\le Ke^{-rT}$.
+    \item Volatiliteti i të dhënave tona: $\hat\sigma=\Sexpr{fmt(100 * sig_hat, 1)}\%$.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Sot shtojmë një pyetje të re: a ndryshojnë këta kufij kur opsioni mund të ushtrohet \textbf{në çdo kohë}?\end{Keshille}
+\end{frame}
+
+\begin{frame}[label=w9par1]{Parashiko}
+  \begin{Parashiko}
+    $S_0=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$. Europiani: $C=11.35$, $P=8.39$.
+    \begin{enumerate}
+      \item Sa vlen call-i \textbf{amerikan}: më shumë se 11.35, apo njësoj?
+      \item Sa vlen put-i \textbf{amerikan}: më shumë se 8.39, apo njësoj?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w9zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Numrat e parë}
+<<w9h1-first>>=
+eu <- c(call = bscall(100, 100, 0.25, 0.03, 1, 0), put = bsput(100, 100, 0.25, 0.03, 1, 0))
+am <- c(call = unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 500, american = TRUE, putopt = FALSE)),
+        put  = unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 500, american = TRUE, putopt = TRUE)))
+round(rbind(european = eu, american = am, difference = am - eu), 4)
+@
+  \small \texttt{binomopt()}: pemë binomiale me 500 hapa. Si funksionon: Java 11. Sot e përdorim si ``kuti të zezë''.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Call-i amerikan = call-i europian (diferenca vjen nga pema, jo nga ushtrimi).
+    \item<2-> Put-i amerikan vlen \Sexpr{fmt(am["put"] - eu["put"], 3)} më shumë: \textbf{prima e ushtrimit të hershëm}.
+    \item<3-> Pse kjo asimetri? Kjo është pyetja kryesore e javës.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w9mc1]{Zgjedhje e shumëfishtë}
+  Cila është \textbf{gjithmonë} e vërtetë?
+  \begin{enumerate}[A)]
+    \item $C_A=C$ dhe $P_A=P$.
+    \item $C_A\ge C$ dhe $P_A\ge P$.
+    \item $C_A>C$ dhe $P_A>P$.
+    \item $C_A\le C$, sepse amerikani ushtrohet më herët.
+  \end{enumerate}
+  \vfill\shkoTe{w9zgjMC1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Dy situata ekstreme}
+% ------------------------------------------------------------
+
+\begin{frame}{Call ``thellë në para''}
+  $S=150$, $K=100$, $r=3\%$, $T=1$.
+  \begin{itemize}
+    \item<1-> Ushtro tani: merr $150-100=50$.
+    \item<2-> Shite call-in në treg: vlen të paktën $S-Ke^{-rT}=150-97.04=52.96$.
+    \item<3-> Pra ushtrimi tani \textbf{humbet} të paktën 2.96: interesin mbi $K$.
+  \end{itemize}
+  \onslide<4->{\small Në R: \texttt{bscall(150, 100, 0.25, 0.03, 1, 0)} $=\Sexpr{fmt(bscall(150, 100, 0.25, 0.03, 1, 0), 2)}>50$.}
+\end{frame}
+
+\begin{frame}{Put ``thellë në para''}
+  $S=1$, $K=100$, $r=3\%$, $T=1$.
+  \begin{itemize}
+    \item<1-> Ushtro tani: merr $100-1=99$, menjëherë.
+    \item<2-> Put-i europian vlen \textbf{shumë} $Ke^{-rT}=97.04$: maksimumi i mundshëm në $T$, i skontuar.
+    \item<3-> Pra amerikani duhet ushtruar: 99 sot $>$ çdo gjë që mund të merret duke pritur.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}
+    Nëse $K-S>Ke^{-rT}$, pra $S<K(1-e^{-rT})$, put-i amerikan ushtrohet menjëherë. Këtu: $S<2.96$.
+  \end{Teoreme}}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \textbf{Call}: duke pritur, mbajtësi e ``shtyn'' pagesën e $K$ dhe fiton interes mbi të.
+    \item<2-> \textbf{Put}: duke pritur, mbajtësi e ``shtyn'' \textbf{marrjen} e $K$ dhe humbet interes mbi të.
+    \item<3-> Interesi punon \textbf{kundër} ushtrimit të hershëm të call-it dhe \textbf{në favor} të atij të put-it.
+  \end{itemize}
+  \onslide<4->{\small Në Orën 4: prova e plotë, dhe roli i dividendëve.}
+\end{frame}
+
+\begin{frame}[label=w9ush1]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    $K=50$, $r=5\%$, $T=2$; \; $e^{-0.1}=0.904837$.
+    \begin{enumerate}
+      \item Për cilat $S$ put-i amerikan ushtrohet me siguri menjëherë?
+      \item Me $S=80$: sa është kufiri i poshtëm i call-it europian? A ia vlen ushtrimi i hershëm i call-it amerikan?
+      \item Me $S=30$: sa është vlera intrinsike e put-it? Po kufiri i sipërm i put-it europian?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjUsh1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Opsionet në kontratat e sigurimit}
+% ------------------------------------------------------------
+
+\begin{frame}{Opsione të fshehura}
+  \begin{itemize}
+    \item<1-> \textbf{Anulimi} (\emph{surrender}): klienti ``ushtron'' kur vlera e rimarrjes është më e mirë se vazhdimi.
+    \item<2-> \textbf{Garancia në maturim}: një put europian (Java 8).
+    \item<3-> \textbf{Garancia në çdo kohë} me rimarrje të garantuar: më afër një put-i amerikan.
+    \item<4-> Kompania i ka \textbf{shitur} këto opsione: janë detyrime, edhe pse nuk shfaqen si ``opsione'' në kontratë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w9tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item Kur një klient racional do ta anulonte kontratën ``Kursimi Plus''? Kur tregu bie, apo kur rritet?
+      \item Pse klientët realë shpesh anulojnë për arsye që nuk kanë lidhje me tregun?
+      \item Çfarë rreziku krijon për kompaninë një anulim masiv?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w9zgjTps1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item<1-> Kontratat e kursimit me rimarrje të garantuar kanë opsione amerikane ose bermudiane.
+    \item<2-> \textbf{Solvency II} trajton rrezikun e anulimeve (\emph{lapse risk}), përfshirë skenarin e anulimit masiv.
+    \item<3-> Vlerësimi i këtyre opsioneve kërkon modele që lejojnë ushtrim në çdo kohë: pema binomiale (Java 11) ose simulime.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Cili është dallimi midis opsionit europian dhe amerikan?
+    \item Çfarë është vlera kohore e një opsioni?
+    \item Pse put-i amerikan me $S$ shumë të vogël ushtrohet menjëherë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) ushtrimi vetëm në $T$ kundrejt çdo kohe; (2) çmimi $-$ vlera intrinsike;
+  (3) $K-S>Ke^{-rT}$: marrja e $K$ sot vlen më shumë se çdo pagesë e ardhshme.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item ``Kursimi Plus'': anulimi = opsion amerikan i fshehur.
+    \item $C_A\ge C$, $P_A\ge P$; amerikani $\ge$ vlera intrinsike.
+    \item Numrat: $C_A=C$, por $P_A-P=\Sexpr{fmt(am["put"] - eu["put"], 3)}$.
+    \item Interesi: kundër ushtrimit të hershëm të call-it, në favor të put-it.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria e kufijve pa arbitrazh: europiane dhe amerikane, monotonia, parity amerikane.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: vetitë e opsioneve.
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{bscall()}, \texttt{bsput()}, \texttt{binomopt()}.
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
