@@ -1,0 +1,52 @@
+% ============================================================
+%  Java 7 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7zgjGab2]{Zgjidhja: Gjej gabimin ($-nM_{x+n}$)}
+  \begin{enumerate}
+    \item Mungon termi $-3M_{103}=-246.810$: \; $(1690.284-246.810)/1000=1.443474$. \textcolor{okgreen}{$\checkmark$}
+    \item $(R_x-R_{x+n})/D_x=\sum_{j=0}^{n-1}{}_{j|}A_x$: tri shtresa që \textbf{nuk ndalen}.
+      Kontrata paguan $\min(K+1,\,3)$: rritëse 1, 2, 3, pastaj 3 lekë konstante gjithë jetën.
+  \end{enumerate}
+  \vfill\kthehu{w7gab2}
+\end{frame}
+
+\begin{frame}[label=w7zgjMC2]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $(2M_x-M_{x+1}-M_{x+2})/D_x$: dy shtresa, $A^1_{x:\overline2|}+A^1_{x:\overline1|}$.
+  \begin{itemize}
+    \item E njëjta si $(2M_x-R_{x+1}+R_{x+3})/D_x$, sepse $R_{x+1}-R_{x+3}=M_{x+1}+M_{x+2}$.
+    \item A) është $(2M_x-M_{x+1})/D_x=A^1_{x:\overline1|}+A_x$: shtresa e dytë nuk ndalet.
+    \item C) është ``rritës pa u ndalur''. \; D) mungon $+R_{x+3}$.
+  \end{itemize}
+  \vfill\kthehu{w7mc2}
+\end{frame}
+
+\begin{frame}[label=w7zgjUsh2]{Zgjidhja: Radha jote! ($n=4$)}
+  \begin{enumerate}
+    \item $(DA)^1_{100:\overline4|}=(4\cdot908.099-864.455+0)/1000=2.767941$.
+    \item $(IA)^1_{100:\overline4|}=(1772.554-0-4\cdot0)/1000=1.772554=(IA)_{100}$:
+      të gjithë vdesin deri në moshën 104, pra afati 4 vjet mbulon gjithë jetën ($M_{104}=R_{104}=0$).
+    \item $1.772554+2.767941=4.540495=5\cdot0.908099$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w7ush2}
+\end{frame}
+
+\begin{frame}[label=w7zgjUsh2b]{Zgjidhja: kthimi i primave}
+  \begin{enumerate}
+    \item $P\,\ddot a_{100:\overline2|}=A^1_{100:\overline2|}+P\,(IA)^1_{100:\overline2|}$.
+    \item $P=\dfrac{A^1}{\ddot a-(IA)^1}=\dfrac{0.653061}{1.571428-0.925170}=1.010526$.
+  \end{enumerate}
+  \small $P>1$: brenda 2 vitesh vdesin 70\% e 100-vjeçarëve, dhe kompania kthen edhe primat. Rreziku është aq i lartë sa prima kalon shumën e siguruar.
+  \vfill\kthehu{w7ush2b}
+\end{frame}
+
+\begin{frame}[label=w7zgjTps2]{Zgjidhja: indeksimi gjeometrik}
+  \begin{enumerate}
+    \item $i^*=\dfrac{1+i}{1+j}-1=\dfrac{i-j}{1+j}\approx i-j$ kur $j$ është i vogël.
+    \item Po: është normë ``reale''. Me $i^*<0$, pagesat rriten më shpejt se skontimi dhe $A_x|_{i^*}>1$
+      (p.sh.\ \texttt{Axn(toy, 100, i = -0.02)} $=1.0414$).
+    \item \texttt{Axn(act, x, i = (1 + i) / (1 + j) - 1) / (1 + j)}. Për $j=3\%$, $i=5\%$: $0.934413$,
+      e njëjta si shuma direkte.
+  \end{enumerate}
+  \vfill\kthehu{w7tps2}
+\end{frame}
