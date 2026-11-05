@@ -1,0 +1,307 @@
+% ============================================================
+%  Java 8 · Ora 4 — Teoria II: opsionet, arbitrazhi, put--call parity
+% ============================================================
+\section{Teoria II: opsionet, parity}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kontratat}
+% ------------------------------------------------------------
+
+\begin{frame}{Forward, call, put}
+  \begin{Definicion}
+    \begin{itemize}
+      \item \termi{Forward}{forward}: \textbf{detyrimi} për të blerë aksionin në kohën $T$ me çmimin $F$. \; Payoff: $S_T-F$.
+      \item \termi{Call europian}{European call}: \textbf{e drejta} për të blerë në $T$ me çmimin $K$. \; Payoff: $(S_T-K)^+$.
+      \item \termi{Put europian}{European put}: \textbf{e drejta} për të shitur në $T$ me çmimin $K$. \; Payoff: $(K-S_T)^+$.
+    \end{itemize}
+  \end{Definicion}
+  \pause
+  \small $(x)^+=\max(x,0)$. $K$: çmimi i ushtrimit (\emph{strike}). Opsionet amerikane (ushtrim në çdo kohë): Java 9.
+\end{frame}
+
+\begin{frame}{Katër pozicione}
+  \centering
+  \begin{tikzpicture}[x=0.32cm,y=0.32cm]
+    \draw[->] (0,0) -- (8,0); \draw[->] (0,-4) -- (0,4.5); \node[font=\scriptsize] at (4,5) {long call};
+    \draw[very thick,uptblue] (0,0) -- (4,0) -- (7.5,3.5); \node[below,font=\tiny] at (4,0) {$K$};
+    \draw[->] (10,0) -- (18,0); \draw[->] (10,-4) -- (10,4.5); \node[font=\scriptsize] at (14,5) {short call};
+    \draw[very thick,warnred] (10,0) -- (14,0) -- (17.5,-3.5); \node[above,font=\tiny] at (14,0) {$K$};
+    \draw[->] (20,0) -- (28,0); \draw[->] (20,-4) -- (20,4.5); \node[font=\scriptsize] at (24,5) {long put};
+    \draw[very thick,okgreen] (20,4) -- (24,0) -- (27.5,0); \node[below,font=\tiny] at (24,0) {$K$};
+    \draw[->] (30,0) -- (38,0); \draw[->] (30,-4) -- (30,4.5); \node[font=\scriptsize] at (34,5) {short put};
+    \draw[very thick,accent] (30,-4) -- (34,0) -- (37.5,0); \node[above,font=\tiny] at (34,0) {$K$};
+  \end{tikzpicture}\par
+  \vspace{6pt}
+  \small Boshti horizontal: $S_T$. Boshti vertikal: payoff në $T$. Shitësi (\emph{short}) merr primën sot dhe mund të humbasë shumë më vonë.
+\end{frame}
+
+\begin{frame}{Payoff dhe fitimi}
+  \begin{itemize}
+    \item<1-> \textbf{Payoff}: sa merr mbajtësi në $T$, p.sh.\ $(S_T-K)^+$.
+    \item<2-> \textbf{Fitimi}: payoff minus çmimi i paguar, i kapitalizuar në $T$: \; $(S_T-K)^+-C\,e^{rT}$.
+    \item<3-> Call-i fiton vetëm nëse $S_T>K+C\,e^{rT}$ (pika e barazimit).
+  \end{itemize}
+  \onslide<4->{\small Në Orën 5 vizatojmë payoff dhe fitimin në R për disa strategji.}
+\end{frame}
+
+\begin{frame}[label=w8mc4]{Zgjedhje e shumëfishtë}
+  Ke shitur (short) një put me $K=100$. Në $T$, $S_T=80$. Sa është payoff-i yt?
+  \begin{enumerate}[A)]
+    \item $+20$
+    \item $-20$
+    \item $0$
+    \item $-80$
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjMC4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Arbitrazhi}
+% ------------------------------------------------------------
+
+\begin{frame}{Arbitrazhi}
+  \begin{Definicion}
+    \termi{Arbitrazh}{arbitrage}: një strategji që sot kushton $\le0$, nuk humbet kurrë, dhe fiton me probabilitet pozitiv.
+  \end{Definicion}
+  \pause
+  \begin{Teoreme}[(ligji i një çmimi)]
+    Nëse nuk ka arbitrazh, dy portofole me të \textbf{njëjtin} payoff në $T$ kanë të njëjtin çmim sot.
+  \end{Teoreme}
+  \pause
+  \small Ky është i vetmi parim që përdorim sot. Nuk na duhen $\mu$, $\sigma$, as GBM.
+\end{frame}
+
+\begin{frame}{Çmimi i forward-it}
+  \begin{itemize}
+    \item<1-> Strategjia: bli aksionin sot ($-S_0$), merr hua $S_0$ ($+S_0$). Kosto sot: 0.
+    \item<2-> Në $T$: ke aksionin, i detyrohesh bankës $S_0e^{rT}$.
+    \item<3-> Kjo është saktësisht një forward me çmim $S_0e^{rT}$. Pra:
+  \end{itemize}
+  \onslide<3->{\begin{center}\fbox{$F=S_0\,e^{rT}$}\end{center}}
+  \onslide<4->{\small Shembull: $S_0=100$, $r=3\%$, $T=1$: \; $F=100e^{0.03}=103.045$.}
+\end{frame}
+
+\begin{frame}{Arbitrazh me forward-in}
+  Supozo se tregu kuoton $F=105>103.045$.
+  \pause
+  \begin{center}
+    \small
+    \begin{tabular}{lcc}
+      \toprule
+      Veprimi & Sot & Në $T$ \\
+      \midrule
+      Shit forward me 105 & 0 & $105-S_T$ \\
+      Bli aksionin & $-100$ & $+S_T$ \\
+      Merr hua 100 & $+100$ & $-103.045$ \\
+      \midrule
+      \textbf{Gjithsej} & \textbf{0} & $\mathbf{+1.955}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Fitim i sigurt, pa kosto sot: arbitrazh. Tregtarët e shfrytëzojnë derisa $F\to103.045$.
+\end{frame}
+
+\begin{frame}[label=w8par4]{Parashiko}
+  \begin{Parashiko}
+    Tani tregu kuoton $F=101<103.045$.
+    \begin{enumerate}
+      \item Çfarë strategjie jep arbitrazh?
+      \item Sa është fitimi në $T$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w8zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Put--call parity}
+% ------------------------------------------------------------
+
+\begin{frame}{Dy portofole}
+  \begin{itemize}
+    \item \textbf{A}: një call + $K e^{-rT}$ lekë në bankë (bëhen $K$ në $T$).
+    \item \textbf{B}: një put + një aksion.
+  \end{itemize}
+  \pause
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      Vlera në $T$ & $S_T<K$ & $S_T\ge K$ \\
+      \midrule
+      A: call + para & $0+K=K$ & $(S_T-K)+K=S_T$ \\
+      B: put + aksion & $(K-S_T)+S_T=K$ & $0+S_T=S_T$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Në çdo skenar, A = B = $\max(S_T,K)$: \textbf{i njëjti payoff}.
+\end{frame}
+
+\begin{frame}{Teorema}
+  \begin{Teoreme}[(put--call parity)]
+    Për opsionet europiane mbi një aksion pa dividendë, me të njëjtët $K$ dhe $T$:
+    \[
+      C+K\,e^{-rT}=P+S_0
+      \qquad\Longleftrightarrow\qquad
+      C-P=S_0-K\,e^{-rT}.
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Prova: ligji i një çmimi për portofolet A dhe B.
+    \item E djathta $S_0-Ke^{-rT}$ është vlera e një forward-i me çmim $K$.
+    \item Nuk varet nga $\mu$, $\sigma$, apo nga modeli i çmimit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Shembull pa ndihmën e PC}
+  $S_0=100$, $K=100$, $r=3\%$, $T=1$; tregu kuoton $C=11.35$.
+  \pause
+  \begin{align*}
+    P &= C-S_0+K e^{-rT} \\
+    \onslide<3->{&= 11.35-100+100e^{-0.03}} \\
+    \onslide<4->{&= 11.35-100+97.0446=8.3946.}
+  \end{align*}
+  \onslide<5->{\small Në Orën 5 kontrollojmë me \texttt{bscall()} dhe \texttt{bsput()}: me $\sigma=25\%$ ato japin 11.348 dhe 8.393.}
+\end{frame}
+
+\begin{frame}{Kur parity prishet: arbitrazh}
+  Tregu kuoton $P=7.50<8.3946$: put-i është \textbf{i lirë}.
+  \pause
+  \begin{center}
+    \small
+    \begin{tabular}{lcc}
+      \toprule
+      Veprimi & Sot & Në $T$ \\
+      \midrule
+      Bli put & $-7.50$ & $(K-S_T)^+$ \\
+      Bli aksionin & $-100$ & $S_T$ \\
+      Shit call & $+11.35$ & $-(S_T-K)^+$ \\
+      Merr hua $Ke^{-rT}$ & $+97.0446$ & $-100$ \\
+      \midrule
+      \textbf{Gjithsej} & $\mathbf{+0.8946}$ & $\mathbf{0}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Në $T$: put + aksion $-$ call $=K=100$, që shlyen huanë. Fitimi 0.89 merret sot, pa asnjë rrezik.
+\end{frame}
+
+\begin{frame}[label=w8gab4]{Gjej gabimin}
+  Një student shkruan:
+  \[
+    C-P=K-S_0\,e^{-rT}.
+  \]
+  \begin{enumerate}
+    \item Gjej dy gabimet.
+    \item Me $S_0=110$, $K=100$, $r=3\%$, $T=1$: çfarë shenje jep formula e tij për $C-P$? Po e sakta?
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjGab4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Kufijtë e opsioneve}
+  Nga arbitrazhi (pa dividendë):
+  \begin{align*}
+    \max\big(S_0-Ke^{-rT},\,0\big) &\le C\le S_0, \\
+    \onslide<2->{\max\big(Ke^{-rT}-S_0,\,0\big) &\le P\le Ke^{-rT}.}
+  \end{align*}
+  \onslide<3->{
+  \begin{itemize}
+    \item $C\ge S_0-Ke^{-rT}$: nga parity, sepse $P\ge0$.
+    \item $C\le S_0$: call-i nuk mund të vlejë më shumë se vetë aksioni.
+  \end{itemize}}
+\end{frame}
+
+\begin{frame}[label=w8ush4]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    $S_0=50$, $K=55$, $r=4\%$, $T=0.5$; tregu kuoton $C=2.10$.
+    \begin{enumerate}
+      \item Llogarit çmimin e put-it nga parity. ($e^{-0.02}=0.980199$.)
+      \item Kontrollo kufijtë e $C$ dhe $P$.
+      \item Nëse tregu kuoton $P=5.50$, ndërto arbitrazhin.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjUsh4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Garancia e fondit, me parity}
+  \begin{itemize}
+    \item<1-> Fondi me garanci: aksion + put $=S_0+P$ (Ora 1).
+    \item<2-> Me parity: $S_0+P=C+Ke^{-rT}$.
+    \item<3-> Pra garancia mund të ndërtohet edhe ndryshe: vendos $Ke^{-rT}$ në obligacion pa rrezik dhe pjesën tjetër në call.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Dy ndërtime, një payoff: $\max(S_T,K)$. Kostoja e garancisë është $P$, sado që të ndërtohet.\end{Keshille}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Zgjerime \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Dividendët \Zgj}
+  \begin{itemize}
+    \item<1-> Dividend i vazhdueshëm me normë $q$: \; $C-P=S_0e^{-qT}-Ke^{-rT}$.
+    \item<2-> Dividendë diskretë me vlerë aktuale $D$: \; $C-P=S_0-D-Ke^{-rT}$.
+    \item<3-> Arsyeja: mbajtësi i aksionit merr dividendët, mbajtësi i call-it jo.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Opsionet amerikane \Zgj}
+  \begin{itemize}
+    \item<1-> Opsioni amerikan mund të ushtrohet në çdo kohë deri në $T$: $C_A\ge C$, $P_A\ge P$.
+    \item<2-> Parity bëhet mosbarazim (pa dividendë):
+      \[ S_0-K\le C_A-P_A\le S_0-Ke^{-rT}. \]
+    \item<3-> Pse nuk ushtrohet herët një call amerikan pa dividendë? Tema e Javës 9.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    \begin{enumerate}
+      \item Parity nuk përdor asnjë model për çmimin. Pse është kjo një avantazh i madh?
+      \item Në praktikë, norma e huamarrjes është më e lartë se norma e depozitës. Çfarë ndodh me parity? (Ndihmë: një ``brez'' në vend të një vije.)
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj payoff-in e një put-i europian.
+    \item Pse $F=S_0e^{rT}$?
+    \item Shkruaj put--call parity dhe dy portofolet që e vërtetojnë.
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $(K-S_T)^+$; (2) blej aksionin me hua: kosto 0, detyrim $S_0e^{rT}$;
+  (3) $C+Ke^{-rT}=P+S_0$; call + para, put + aksion.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item Forward, call, put; payoff dhe fitimi; katër pozicione.
+    \item Arbitrazhi dhe ligji i një çmimi; $F=S_0e^{rT}$.
+    \item Put--call parity: $C-P=S_0-Ke^{-rT}$, pa model.
+    \item Kufijtë e opsioneve; garancia = aksion + put = obligacion + call.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator R II: payoff në ggplot, parity me \texttt{bscall()}/\texttt{bsput()}, arbitrazhi i simuluar.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson (botim i fundit): kapitujt për vetitë e opsioneve dhe put--call parity.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson: baza e paketës \Rkey{derivmkts}.
+    \item Dokumentacioni i paketës \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}

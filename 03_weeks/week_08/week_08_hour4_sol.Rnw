@@ -1,0 +1,59 @@
+% ============================================================
+%  Java 8 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $-20$: shitësi i put-it paguan $(K-S_T)^+=20$.
+  \begin{itemize}
+    \item A) është payoff-i i blerësit (long put).
+    \item Fitimi i shitësit është $-20+P\,e^{rT}$: prima e marrë sot e zbut humbjen.
+  \end{itemize}
+  \vfill\kthehu{w8mc4}
+\end{frame}
+
+\begin{frame}[label=w8zgjPar4]{Zgjidhja: Parashiko}
+  \begin{center}
+    \small
+    \begin{tabular}{lcc}
+      \toprule
+      Veprimi & Sot & Në $T$ \\
+      \midrule
+      Bli forward me 101 & 0 & $S_T-101$ \\
+      Shit aksionin (short) & $+100$ & $-S_T$ \\
+      Depozito 100 & $-100$ & $+103.045$ \\
+      \midrule
+      \textbf{Gjithsej} & \textbf{0} & $\mathbf{+2.045}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \small Forward-i është i lirë: e blejmë, dhe shesim aksionin e ``shtrenjtë''.
+  \vfill\kthehu{w8par4}
+\end{frame}
+
+\begin{frame}[label=w8zgjGab4]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item Gabime: (a) $S_0$ dhe $K$ janë ngatërruar; (b) skontohet $S_0$ në vend të $K$. E sakta: $C-P=S_0-Ke^{-rT}$.
+    \item Studenti: $100-110\cdot0.970446=-6.749<0$. E sakta: $110-97.045=+12.955$.
+      Një call thellë ``në para'' vlen më shumë se put-i: formula e tij jep shenjën e gabuar.
+  \end{enumerate}
+  \vfill\kthehu{w8gab4}
+\end{frame}
+
+\begin{frame}[label=w8zgjUsh4]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $Ke^{-rT}=55\cdot0.980199=53.9109$; \; $P=2.10-50+53.9109=6.0109$.
+    \item $C$: $0\le2.10\le50$ \textcolor{okgreen}{$\checkmark$}; \; $P$: $3.9109\le6.0109\le53.9109$ \textcolor{okgreen}{$\checkmark$}.
+    \item $P=5.50$ është i lirë: bli put ($-5.50$), bli aksionin ($-50$), shit call ($+2.10$), merr hua $53.9109$.
+      Fitimi sot: $+0.5109$; në $T$ pozicioni vlen $K=55$ dhe shlyen huanë.
+  \end{enumerate}
+  \vfill\kthehu{w8ush4}
+\end{frame}
+
+\begin{frame}[label=w8zgjTps4]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Parity vlen për çdo shpërndarje të $S_T$: nuk ka ``rrezik modeli''. Është kontrolli i parë i çdo çmimi opsioni.
+    \item Me $r_b$ (huamarrje) $>r_l$ (depozitë), arbitrazhi kërkon një nga dy normat, dhe parity bëhet një brez:
+      \[ S_0-Ke^{-r_lT}\le C-P\le S_0-Ke^{-r_bT}. \]
+  \end{enumerate}
+  \vfill\kthehu{w8tps4}
+\end{frame}
