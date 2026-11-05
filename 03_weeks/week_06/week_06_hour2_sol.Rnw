@@ -1,0 +1,46 @@
+% ============================================================
+%  Java 6 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w6zgjMC2a]{Zgjidhja: zgjedhja e shumëfishtë ($a_{x:\overline n|}$)}
+  \textbf{B)} Pagesat në kohët $1,\dots,n$: \;
+  $a_{x:\overline n|}=\sum_{k=1}^{n}\dfrac{D_{x+k}}{D_x}=\dfrac{N_{x+1}-N_{x+n+1}}{D_x}$.
+  \begin{itemize}
+    \item A) është $\ddot a_{x:\overline n|}$ (pagesat në $0,\dots,n-1$).
+    \item C) ka vetëm $n-1$ pagesa. \; D) emëruesi duhet të jetë $D_x$.
+  \end{itemize}
+  \vfill\kthehu{w6mc2a}
+\end{frame}
+
+\begin{frame}[label=w6zgjUsh2]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item ${}_2E_{100}=D_{102}/D_{100}=0.272109$; \; $\ddot a_{100:\overline2|}=(1\,929.921-358.493)/1\,000=1.571428$.
+    \item $A^1_{100:\overline2|}=(908.099-255.038)/1\,000=0.653061$; \; $A_{100:\overline2|}=0.653061+0.272109=0.925170$.
+    \item ${}_{1|}\ddot a_{100}=N_{101}/D_{100}=0.929922=a_{100}$: anuiteti i shtyrë 1 vit = anuiteti i menjëhershëm.
+  \end{enumerate}
+  \small Të gjitha përputhen me Javën 5 (Ora 4). \textcolor{okgreen}{$\checkmark$}
+  \vfill\kthehu{w6ush2}
+\end{frame}
+
+\begin{frame}[label=w6zgjGab2]{Zgjidhja: Gjej gabimin (indeksi i $N$)}
+  \begin{enumerate}
+    \item Duhet zbritur $N_{x+n}=N_{102}$, jo $N_{101}$.
+    \item $(N_{100}-N_{101})/D_{100}=D_{100}/D_{100}=1=\ddot a_{100:\overline1|}$: vetëm pagesa e parë.
+    \item Rregulli: ``indeksi i parë që \textbf{nuk} paguhet''. Pagesat janë në $x,\dots,x+n-1$, ndaj zbritet $N_{x+n}$.
+  \end{enumerate}
+  \vfill\kthehu{w6gab2}
+\end{frame}
+
+\begin{frame}[label=w6zgjTps2]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Arsye:
+      \begin{itemize}
+        \item kontroll i shpejtë dhe transparent në shënimet teknike të tarifave;
+        \item provimet profesionale dhe universitare;
+        \item rezervat e të gjitha moshave dhe kontratave dalin nga të njëjtat kolona.
+      \end{itemize}
+    \item Nuk vlejnë kur norma ndryshon me kohën (kurbë normash, Java 4 Ora 6), ose kur tabela ndryshon me vitin kalendarik (tabela kohorte, Ora 6).
+          Komutimet supozojnë një $i$ të vetëm dhe një tabelë të vetme.
+  \end{enumerate}
+  \vfill\kthehu{w6tps2}
+\end{frame}

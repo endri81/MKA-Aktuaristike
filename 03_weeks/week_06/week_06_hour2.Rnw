@@ -1,0 +1,299 @@
+% ============================================================
+%  Java 6 · Ora 2 — Teoria I: numrat e komutimit
+% ============================================================
+\section{Teoria I: komutimet}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përkufizimet}
+% ------------------------------------------------------------
+
+\begin{frame}{Kolonat e mbijetesës: $D_x$, $N_x$, $S_x$}
+  \begin{Definicion}[(numrat e komutimit për mbijetesën)]
+    \[
+      D_x=v^x\,l_x,\qquad N_x=\sum_{k\ge0}D_{x+k},\qquad S_x=\sum_{k\ge0}N_{x+k}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $D_x$: numri i të mbijetuarve në moshën $x$, i \textbf{skontuar} në moshën 0.
+    \item $N_x$: shuma e $D$-ve nga $x$ deri në fund.
+    \item $S_x$: shuma e $N$-ve nga $x$ deri në fund (për pagesat rritëse).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Kolonat e vdekjes: $C_x$, $M_x$, $R_x$}
+  \begin{Definicion}[(numrat e komutimit për vdekjen)]
+    \[
+      C_x=v^{x+1}\,d_x,\qquad M_x=\sum_{k\ge0}C_{x+k},\qquad R_x=\sum_{k\ge0}M_{x+k}.
+    \]
+  \end{Definicion}
+  \pause
+  \begin{itemize}
+    \item $C_x$: vdekjet midis $x$ dhe $x+1$, të skontuara nga \textbf{fundi} i vitit ($x+1$).
+    \item $M_x$, $R_x$: shumat nga $x$ deri në fund.
+  \end{itemize}
+  \pause
+  \begin{Gabim}$C_x=v^x\,d_x$. Përfitimi i vdekjes paguhet në fund të vitit të vdekjes: fuqia është $x+1$.\end{Gabim}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Formulat}
+% ------------------------------------------------------------
+
+\begin{frame}{Dota e pastër dhe anuitetet}
+  \begin{align*}
+    {}_nE_x &= v^n\frac{l_{x+n}}{l_x}=\frac{v^{x+n}l_{x+n}}{v^xl_x}=\frac{D_{x+n}}{D_x} \\
+    \onslide<2->{\ddot a_x &= \sum_{k\ge0}{}_kE_x=\sum_{k\ge0}\frac{D_{x+k}}{D_x}=\frac{N_x}{D_x}} \\
+    \onslide<3->{\ddot a_{x:\overline n|} &= \frac{N_x-N_{x+n}}{D_x},\qquad
+    {}_{m|}\ddot a_x=\frac{N_{x+m}}{D_x},\qquad a_x=\frac{N_{x+1}}{D_x}}
+  \end{align*}
+  \onslide<4->{\small Truku: ${}_kp_xv^k$ bëhet raport i dy $D$-ve, dhe shuma e $D$-ve është $N$.}
+\end{frame}
+
+\begin{frame}{Sigurimet}
+  \begin{align*}
+    A_x &= \sum_{k\ge0}v^{k+1}\frac{d_{x+k}}{l_x}=\sum_{k\ge0}\frac{v^{x+k+1}d_{x+k}}{v^xl_x}=\frac{M_x}{D_x} \\
+    \onslide<2->{A^1_{x:\overline n|} &= \frac{M_x-M_{x+n}}{D_x}} \\
+    \onslide<3->{A_{x:\overline n|} &= \frac{M_x-M_{x+n}+D_{x+n}}{D_x}}
+  \end{align*}
+  \onslide<4->{\small I përzieri = me afat ($M$) + dota e pastër ($D$), si në Javën 5.}
+\end{frame}
+
+\begin{frame}{Sigurimi dhe anuiteti rritës}
+  \begin{Definicion}[(rritëse, \emph{increasing})]
+    Sigurimi $(IA)_x$ paguan $k+1$ nëse vdekja ndodh në vitin $k+1$; anuiteti $(I\ddot a)_x$ paguan $k+1$ në kohën $k$.
+  \end{Definicion}
+  \pause
+  \[
+    (IA)_x=\frac{R_x}{D_x},\qquad (I\ddot a)_x=\frac{S_x}{D_x}.
+  \]
+  \pause
+  \begin{itemize}
+    \item $R_x=M_x+M_{x+1}+\dots$: çdo $M_{x+j}$ ``shton'' 1 për vdekjet pas moshës $x+j$.
+    \item Java 7: sigurimet rritëse/zbritëse me afat, $(IA)^1_{x:\overline n|}$ dhe $(DA)^1_{x:\overline n|}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Tabela e formulave}
+  \centering
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{ll|ll}
+    \toprule
+    Mbijetesa & & Vdekja & \\
+    \midrule
+    ${}_nE_x$ & $D_{x+n}/D_x$ & $A_x$ & $M_x/D_x$ \\
+    $\ddot a_x$ & $N_x/D_x$ & $A^1_{x:\overline n|}$ & $(M_x-M_{x+n})/D_x$ \\
+    $\ddot a_{x:\overline n|}$ & $(N_x-N_{x+n})/D_x$ & $A_{x:\overline n|}$ & $(M_x-M_{x+n}+D_{x+n})/D_x$ \\
+    ${}_{m|}\ddot a_x$ & $N_{x+m}/D_x$ & ${}_{m|}A_x$ & $M_{x+m}/D_x$ \\
+    $(I\ddot a)_x$ & $S_x/D_x$ & $(IA)_x$ & $R_x/D_x$ \\
+    \bottomrule
+  \end{tabular}\par
+  \vspace{6pt}
+  \small Emëruesi është gjithmonë $D_x$: mosha në fillim të kontratës.
+\end{frame}
+
+\begin{frame}[label=w6mc2a]{Zgjedhje e shumëfishtë}
+  Cila formulë jep anuitetin e menjëhershëm $a_{x:\overline n|}$ (pagesa në fund të viteve $1,\dots,n$)?
+  \begin{enumerate}[A)]
+    \item $(N_x-N_{x+n})/D_x$
+    \item $(N_{x+1}-N_{x+n+1})/D_x$
+    \item $(N_{x+1}-N_{x+n})/D_x$
+    \item $(N_x-N_{x+n+1})/D_{x+1}$
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjMC2a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Lidhjet midis kolonave}
+% ------------------------------------------------------------
+
+\begin{frame}{$C_x$ nga $D_x$}
+  \begin{align*}
+    C_x &= v^{x+1}\,d_x=v^{x+1}\,(l_x-l_{x+1}) \\
+    \onslide<2->{&= v\cdot v^xl_x-v^{x+1}l_{x+1}} \\
+    \onslide<3->{&= v\,D_x-D_{x+1}.}
+  \end{align*}
+  \onslide<4->{\small Pra kolonat e vdekjes llogariten nga kolonat e mbijetesës: tabela ka vetëm dy kolona ``të pavarura'', $l_x$ dhe $v$.}
+\end{frame}
+
+\begin{frame}{$M_x=D_x-d\,N_x$}
+  Mbledhim $C_{x+k}=vD_{x+k}-D_{x+k+1}$ për $k\ge0$:
+  \begin{align*}
+    M_x &= v\sum_{k\ge0}D_{x+k}-\sum_{k\ge0}D_{x+k+1} \\
+    \onslide<2->{&= v\,N_x-(N_x-D_x)} \\
+    \onslide<3->{&= D_x-(1-v)\,N_x=D_x-d\,N_x.}
+  \end{align*}
+  \onslide<4->{
+  \begin{Teoreme}
+    Pjesëtuar me $D_x$: \; $A_x=1-d\,\ddot a_x$ (Java 5, tani me komutime).
+    Në të njëjtën mënyrë: $R_x=N_x-d\,S_x$, pra $(IA)_x=\ddot a_x-d\,(I\ddot a)_x$.
+  \end{Teoreme}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Një truk për llogaritjet}
+  \begin{itemize}
+    \item<1-> Me $x=100$, $v^{100}=1.05^{-100}\approx0.0076$: numra shumë të vegjël.
+    \item<2-> Çdo formulë është \textbf{raport} $D$-sh, $N$-sh, $M$-sh: faktori $v^{100}$ thjeshtohet.
+    \item<3-> Pra mund të përdorim $D_x=v^{x-100}l_x$ (moshë baze 100), pa ndryshuar asnjë rezultat.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Në tabelat e vjetra mosha bazë zgjidhej e tillë që numrat të mos bëheshin shumë të vegjël. Në R kjo nuk ka rëndësi.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{$D_x$ dhe $N_x$}
+  Tabela e vogël ($l_{100..104}=1\,000,600,300,100,0$), $i=5\%$, moshë baze 100:
+  \begin{center}
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 100 & 101 & 102 & 103 \\
+      \midrule
+      $D_x=v^{x-100}l_x$ & 1\,000 & 571.429 & 272.109 & 86.384 \\
+      \pause $N_x$ & 1\,929.921 & 929.922 & 358.493 & 86.384 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small $N_x$ llogaritet \textbf{nga poshtë lart}: $N_{103}=D_{103}$, $N_{102}=D_{102}+N_{103}$, \dots
+\end{frame}
+
+\begin{frame}{$C_x$ dhe $M_x$}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 100 & 101 & 102 & 103 \\
+      \midrule
+      $d_x$ & 400 & 300 & 200 & 100 \\
+      $C_x=v^{x+1-100}d_x$ & 380.952 & 272.109 & 172.768 & 82.270 \\
+      \pause $M_x$ & 908.099 & 527.147 & 255.038 & 82.270 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item $\ddot a_{100}=N_{100}/D_{100}=1.929921$; \; $A_{100}=M_{100}/D_{100}=0.908099$. Si në Javën 5. \textcolor{okgreen}{$\checkmark$}
+    \item Kontroll: $D_{100}-dN_{100}=1\,000-0.047619\times1\,929.921=908.099=M_{100}$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{$R_x$, $S_x$ dhe pagesat rritëse}
+  \begin{itemize}
+    \item<1-> $R_{100}=908.099+527.147+255.038+82.270=1\,772.554$ \; $\Rightarrow$ \; $(IA)_{100}=1.772554$.
+    \item<2-> Direkt: $1\cdot0.380952+2\cdot0.272109+3\cdot0.172768+4\cdot0.082270=1.772554$. \textcolor{okgreen}{$\checkmark$}
+    \item<3-> $S_{100}=1\,929.921+929.922+358.493+86.384=3\,304.720$ \; $\Rightarrow$ \; $(I\ddot a)_{100}=3.304720$.
+    \item<4-> Kontroll: $\ddot a_{100}-d\,(I\ddot a)_{100}=1.929921-0.047619\times3.304720=1.772554=(IA)_{100}$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6ush2]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    Vetëm me kolonat $D$, $N$, $M$ të tabelës së vogël:
+    \begin{enumerate}
+      \item ${}_2E_{100}$ dhe $\ddot a_{100:\overline2|}$;
+      \item $A^1_{100:\overline2|}$ dhe $A_{100:\overline2|}$;
+      \item ${}_{1|}\ddot a_{100}$; me çfarë është e barabartë?
+    \end{enumerate}
+    Krahasoji me vlerat e Javës 5.
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w6gab2]{Gjej gabimin}
+  Një student shkruan për anuitetin me afat 2 vite:
+  \[
+    \ddot a_{100:\overline2|}=\frac{N_{100}-N_{101}}{D_{100}}=\frac{1\,929.921-929.922}{1\,000}=1.0.
+  \]
+  \begin{enumerate}
+    \item Ku është gabimi?
+    \item Çfarë llogariti në të vërtetë?
+    \item Jep një rregull të thjeshtë për indeksin e $N$ që zbritet.
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjGab2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Primat dhe rezervat me komutime}
+% ------------------------------------------------------------
+
+\begin{frame}{Primat neto}
+  Me parimin e ekuivalencës, $D_x$ thjeshtohet:
+  \[
+    P_x=\frac{A_x}{\ddot a_x}=\frac{M_x}{N_x},\qquad
+    P^1_{x:\overline n|}=\frac{M_x-M_{x+n}}{N_x-N_{x+n}}.
+  \]
+  \pause
+  \begin{itemize}
+    \item Gjithë jeta, me prima për $t$ vite: \; ${}_tP_x=\dfrac{M_x}{N_x-N_{x+t}}$.
+    \item<3-> Shembull: $P_{100}=908.099/1\,929.921=0.470537$. Si në Javën 5. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Rezerva matematike: një parashikim}
+  \begin{Definicion}[(rezerva prospektive, Java 7)]
+    Pas $t$ vitesh, rezerva = EPV e përfitimeve të ardhshme $-$ EPV e primave të ardhshme:
+    \[ {}_tV_x=A_{x+t}-P_x\,\ddot a_{x+t}=\frac{M_{x+t}-P_x\,N_{x+t}}{D_{x+t}}. \]
+  \end{Definicion}
+  \pause
+  \begin{block}{Shembull pa ndihmën e PC}
+    ${}_1V_{100}=\dfrac{527.147-0.470537\times929.922}{571.429}=\dfrac{89.584}{571.429}=0.1568$.
+  \end{block}
+  \pause
+  \small Për çdo 1 lek të siguruar, kompania mban 0.157 lekë pas vitit të parë: teprica e primave të nivelit (Java 5, Ora 4).
+\end{frame}
+
+\begin{frame}[label=w6tps2]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    Me R, çdo funksion llogaritet direkt në pak milisekonda.
+    \begin{enumerate}
+      \item Jep dy arsye pse numrat e komutimit janë ende të dobishëm.
+      \item Në cilin rast \textbf{nuk} mund të përdoren (udhëzim: norma e interesit)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjTps2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj $A^1_{x:\overline n|}$ dhe $\ddot a_{x:\overline n|}$ me komutime.
+    \item Nxirr $C_x=vD_x-D_{x+1}$.
+    \item Si shkruhet prima neto e sigurimit me afat me komutime?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $(M_x-M_{x+n})/D_x$, $(N_x-N_{x+n})/D_x$; (2) $v^{x+1}(l_x-l_{x+1})=v\,v^xl_x-v^{x+1}l_{x+1}$;
+  (3) $(M_x-M_{x+n})/(N_x-N_{x+n})$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item $D_x=v^xl_x$, $N_x=\sum D$, $S_x=\sum N$; \; $C_x=v^{x+1}d_x$, $M_x=\sum C$, $R_x=\sum M$.
+    \item Çdo funksion = raport komutimesh me emërues $D_x$.
+    \item $C_x=vD_x-D_{x+1}$, \; $M_x=D_x-dN_x$, \; $R_x=N_x-dS_x$.
+    \item Primat: $P=M/N$; rezerva: ${}_tV=(M_{x+t}-PN_{x+t})/D_{x+t}$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator: tabela aktuariale e plotë nga zero, krahasimi me \texttt{soa08Act} dhe me Shqipërinë 2011.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015 (kapitulli për sigurimet e jetës).
+    \item G.~A.~Spedicato, vinjeta e paketës \Rkey{lifecontingencies} (kolonat e komutimit të \texttt{actuarialtable}).
+    \item Programi i lëndës MFM2SII09: tabelat aktuariale.
+  \end{itemize}
+\end{frame}
