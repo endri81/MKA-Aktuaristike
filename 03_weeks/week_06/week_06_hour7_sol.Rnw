@@ -1,0 +1,136 @@
+% ============================================================
+%  Java 6 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+<<w6s7-setup, include=FALSE>>=
+lq <- c(1000, 800, 500, 200, 0); lyq <- c(1000, 900, 600, 300, 0)
+vq <- 1 / 1.04; dq <- 0.04 / 1.04; kq <- 0:3
+@
+
+\begin{frame}[label=w6sT1]{Zgjidhja T1}
+  \textbf{B)} $M_x=\sum_{k\ge0}C_{x+k}$, me $C_x=v^{x+1}d_x$ (pagesa në fund të vitit të vdekjes).
+  \begin{itemize}
+    \item A) është $N_x$. \; C) është $C_x$ me $v^x$ (gabim). \; D) është $S_x$.
+  \end{itemize}
+  \vfill\kthehu{w6qT1}
+\end{frame}
+
+\begin{frame}[label=w6sT2]{Zgjidhja T2}
+  \textbf{B)} Vetëm ${}_tp_{xy}={}_tp_x\,{}_tp_y$ kërkon pavarësi.
+  \begin{itemize}
+    \item A), D): $v^{\min}+v^{\max}=v^{T_x}+v^{T_y}$ për çdo shpërndarje të përbashkët.
+    \item C): $v^{K+1}=1-d\,\ddot a_{\overline{K+1}|}$ për çdo status.
+  \end{itemize}
+  \vfill\kthehu{w6qT2}
+\end{frame}
+
+\begin{frame}[label=w6sU1]{Zgjidhja U1}
+  \begin{center}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $x$ & 90 & 91 & 92 & 93 \\
+      \midrule
+      $D_x$ & 1000 & 769.231 & 462.278 & 177.799 \\
+      $N_x$ & 2409.308 & 1409.308 & 640.077 & 177.799 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item $\ddot a_{90}=2409.308/1000=2.409308$; \; $\ddot a_{91}=1409.308/769.231=1.832100$.
+  \end{itemize}
+  \vfill\kthehu{w6qU1}
+\end{frame}
+
+\begin{frame}[label=w6sU2]{Zgjidhja U2}
+  \begin{itemize}
+    \item $d_x=200,300,300,200$; \; $C_x=v^{k+1}d_x=192.308,\;277.367,\;266.699,\;170.961$.
+    \item $M_{90}=907.334$; \; $A_{90}=0.907334$.
+    \item Kontroll: $1-0.038462\cdot2.409308=0.907334$. \textcolor{okgreen}{$\checkmark$}
+    \item $P_{90}=10^6\cdot907.334/2409.308=\Sexpr{fmt(1e6 * 907.334 / 2409.308)}$ lekë në vit.
+  \end{itemize}
+  \vfill\kthehu{w6qU2}
+\end{frame}
+
+\begin{frame}[label=w6sU3]{Zgjidhja U3}
+  \begin{center}
+    \begin{tabular}{c|cccc}
+      \toprule
+      $t$ & 0 & 1 & 2 & 3 \\
+      \midrule
+      ${}_tp_{xy}$ & 1 & 0.72 & 0.30 & 0.06 \\
+      ${}_tp_{\overline{xy}}$ & 1 & 0.98 & 0.80 & 0.44 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item $\ddot a_y=1+0.9v+0.6v^2+0.3v^3=2.686817$.
+    \item $\ddot a_{xy}=2.023014$; \; $\ddot a_{\overline{xy}}=3.073111$.
+    \item $2.409308+2.686817-2.023014=3.073111$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \vfill\kthehu{w6qU3}
+\end{frame}
+
+\begin{frame}[label=w6sU4]{Zgjidhja U4}
+  \begin{itemize}
+    \item $A_{xy}=1-0.038462\cdot2.023014=0.922192$.
+    \item $A_{\overline{xy}}=1-0.038462\cdot3.073111=0.881803$
+      \; (ose $0.907334+0.896661-0.922192$).
+    \item $\ddot a_{x|y}=\ddot a_y-\ddot a_{xy}=2.686817-2.023014=0.663803$.
+    \item $P_{xy}=0.922192/2.023014=0.455850$ për 1 lek.
+  \end{itemize}
+  \vfill\kthehu{w6qU4}
+\end{frame}
+
+\begin{frame}[label=w6sU5]{Zgjidhja U5}
+  \begin{enumerate}
+    \item $\ddot a^{(60\%)}=0.6\,\ddot a_{\overline{xy}}+0.4\,\ddot a_{xy}=0.6\cdot3.073111+0.4\cdot2.023014=2.653072$.
+    \item $P=10^6/2.653072=\Sexpr{fmt(1e6 / 2.653072)}$ lekë në vit.
+    \item I mbijetuari: $0.6\,P=\Sexpr{fmt(0.6e6 / 2.653072)}$ lekë në vit.
+  \end{enumerate}
+  \vfill\kthehu{w6qU5}
+\end{frame}
+
+\begin{frame}[label=w6sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item ${}_tp^{\text{mix}}=1,\;0.85,\;0.55,\;0.25$; \;
+      $\ddot a^{\text{mix}}_{90}=\tfrac12(2.409308+2.686817)=2.548063$.
+    \item Saktë: $q^{\text{mix}}_{91}=1-0.55/0.85=0.352941$. \;
+      Mesatare: $\tfrac12(0.375+0.333333)=0.354167$.
+    \item Pas një viti, grupi $(y)$ ka më shumë të mbijetuar: pesha e tij nuk është më $\tfrac12$.
+  \end{enumerate}
+  \vfill\kthehu{w6qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=w6sU7]{Zgjidhja U7}
+<<w6s7-u7>>=
+tx <- new("actuarialtable", x = 90:94, lx = lq,  interest = 0.04)
+ty <- new("actuarialtable", x = 90:94, lx = lyq, interest = 0.04)
+Lq <- list(tx, ty); xq <- c(90, 90)
+round(rbind(
+  a       = c(joint = axyzn(Lq, x = xq, status = "joint"), last = axyzn(Lq, x = xq, status = "last")),
+  A_def   = c(Axyzn(Lq, x = xq, status = "joint"), Axyzn(Lq, x = xq, status = "last")),
+  A_n4    = c(Axyzn(Lq, x = xq, n = 4, status = "joint"), Axyzn(Lq, x = xq, n = 4, status = "last"))), 6)
+@
+  \small Pa \texttt{n}, \texttt{Axyzn()} merr vetëm 2 vite: vlerat janë shumë të vogla. Me \texttt{n = 4} përputhen me U4.
+  \vfill\kthehu{w6qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w6sU8]{Zgjidhja U8}
+<<w6s7-u8>>=
+c4 <- commute(soa08Act@x, soa08Act@lx, 0.04); r4 <- c4[c4$x == 65, ]
+rbind(i4 = c(a65 = r4$Nx / r4$Dx, A65 = r4$Mx / r4$Dx, IA65 = r4$Rx / r4$Dx),
+      package_i4 = c(axn(soa08Act, 65, i = 0.04), Axn(soa08Act, 65, i = 0.04),
+                     IAxn(soa08Act, 65, i = 0.04)),
+      i6 = c(axn(soa08Act, 65), Axn(soa08Act, 65), IAxn(soa08Act, 65)))
+@
+  \vfill\kthehu{w6qU8}
+\end{frame}
+
+\begin{frame}[label=w6sGab7]{Zgjidhja: raundi i shpejtë}
+  \begin{itemize}
+    \item (a) \textbf{e saktë}: \texttt{axyzn} me \texttt{status} të paracaktuar \texttt{"joint"}.
+    \item (b) gabim: duhet $d=0.04/1.04$, jo $i=0.04$.
+    \item (c) gabim: kjo është ${}_tp_{xy}$; për $(\overline{xy})$: \texttt{px + py - px * py}.
+  \end{itemize}
+  \vfill\kthehu{w6qGab7}
+\end{frame}

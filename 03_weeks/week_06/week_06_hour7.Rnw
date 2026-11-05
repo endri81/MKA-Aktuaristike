@@ -1,0 +1,300 @@
+% ============================================================
+%  Java 6 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Dy jetë 90-vjeçare, të pavarura, $i=4\%$:\\
+    $l^{(x)}_{90..94}=1000,\,800,\,500,\,200,\,0$; \quad $l^{(y)}_{90..94}=1000,\,900,\,600,\,300,\,0$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w6qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cili përkufizim i $M_x$ është i saktë?
+    \begin{enumerate}
+      \item[A)] $M_x=\sum_{k\ge0}D_{x+k}$
+      \item[B)] $M_x=\sum_{k\ge0}C_{x+k}$, me $C_x=v^{x+1}d_x$
+      \item[C)] $M_x=v^x\,d_x$
+      \item[D)] $M_x=\sum_{k\ge0}N_{x+k}$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w6sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cila lidhje \textbf{kërkon} pavarësinë e $T_x$ dhe $T_y$?
+    \begin{enumerate}
+      \item[A)] $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$
+      \item[B)] ${}_tp_{xy}={}_tp_x\cdot{}_tp_y$
+      \item[C)] $A_{xy}=1-d\,\ddot a_{xy}$
+      \item[D)] $A_{\overline{xy}}=A_x+A_y-A_{xy}$
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w6sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU1]{U1 · Komutimet pa ndihmën e PC}
+  \begin{Ushtrim}[(jeta $(x)$, baza e moshës 90)]
+    \begin{enumerate}
+      \item Llogarit $D_{90},\dots,D_{93}$ me $D_{90+k}=v^k\,l_{90+k}$.
+      \item Llogarit $N_{90},\dots,N_{93}$.
+      \item Llogarit $\ddot a_{90}=N_{90}/D_{90}$ dhe $\ddot a_{91}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU2]{U2 · $C_x$ dhe $M_x$}
+  \begin{Ushtrim}[(jeta $(x)$)]
+    \begin{enumerate}
+      \item Llogarit $C_{90},\dots,C_{93}$ dhe $M_{90}$.
+      \item Llogarit $A_{90}=M_{90}/D_{90}$ dhe kontrollo me $A=1-d\,\ddot a$.
+      \item Prima neto vjetore $P_{90}=M_{90}/N_{90}$ për 1\,000\,000 lekë.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU3]{U3 · Dy statuse}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Llogarit ${}_tp_{xy}$ dhe ${}_tp_{\overline{xy}}$ për $t=0,\dots,3$.
+      \item Llogarit $\ddot a_y$, $\ddot a_{xy}$ dhe $\ddot a_{\overline{xy}}$.
+      \item Kontrollo $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU4]{U4 · Sigurimet dhe anuiteti i të vesë}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Llogarit $A_{xy}$ dhe $A_{\overline{xy}}$.
+      \item Llogarit $\ddot a_{x|y}$: pagesa për $(y)$ pas vdekjes së $(x)$.
+      \item Prima neto vjetore $P_{xy}=A_{xy}/\ddot a_{xy}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU5]{U5 · Opsioni 60\%}
+  \begin{Ushtrim}
+    Çifti ka 1\,000\,000 lekë kursim dhe zgjedh: 100\% sa janë të dy gjallë, 60\% për të mbijetuarin.
+    \begin{enumerate}
+      \item Shkruaj vlerën e anuitetit me $\ddot a_{xy}$ dhe $\ddot a_{\overline{xy}}$.
+      \item Llogarit pensionin vjetor $P$ në fillim të vitit.
+      \item Sa merr i mbijetuari në vit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU6]{U6 · Tabela e përzier}
+  \begin{Ushtrim}
+    Një portofol 90-vjeçarësh ka gjysmën me tabelën e $(x)$ dhe gjysmën me tabelën e $(y)$.
+    \begin{enumerate}
+      \item Llogarit ${}_tp^{\text{mix}}$ dhe $\ddot a^{\text{mix}}_{90}$.
+      \item Llogarit $q^{\text{mix}}_{91}$ saktë dhe me mesataren e $q$-ve.
+      \item Shpjego me një fjali diferencën.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU7]{U7 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Krijo dy objekte \texttt{actuarialtable} për $(x)$ dhe $(y)$, moshat 90--94, \texttt{interest = 0.04}.
+      \item Kontrollo U3 me \texttt{axyzn()} për \texttt{"joint"} dhe \texttt{"last"}.
+      \item Kontrollo U4 me \texttt{Axyzn()}, një herë pa \texttt{n} dhe një herë me \texttt{n = 4}. Çfarë vëren?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w6qU8]{U8 · Në R}
+  \begin{Ushtrim}
+    \begin{enumerate}
+      \item Përdor \texttt{commute()} (Ora 3) mbi \texttt{soa08Act} me $i=4\%$.
+      \item Llogarit $\ddot a_{65}$, $A_{65}$ dhe $(IA)_{65}$ nga kolonat.
+      \item Krahasoji me \texttt{axn(soa08Act, 65, i = 0.04)} dhe me vlerat për 6\%.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w6sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): komutimet}
+  \begin{enumerate}
+    \item $C_x=v^x d_x$ në vend të $v^{x+1}d_x$: çdo $A$ del $(1+i)$ herë më i madh.
+    \item $N_{x+n+1}$ në vend të $N_{x+n}$ për $\ddot a_{x:\overline n|}$: indeksi i parë që \textbf{nuk} paguhet.
+    \item $D_x$ me 6\% dhe $M_x$ me 3\%: një tabelë komutimi vlen për \textbf{një} normë.
+    \item Krahasim absolut i kolonave në moshat e larta: përdor diferencën \textbf{relative}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): disa jetë}
+  \begin{enumerate}
+    \item $\ddot a_{x|y}=\ddot a_y-\ddot a_x$: e sakta është $\ddot a_y-\ddot a_{xy}$.
+    \item $q_{xy}=q_x+q_y$: harron $-q_xq_y$.
+    \item Vektorë mbijetese me gjatësi të ndryshme: R \textbf{ricikloi} pa gabim.
+    \item \texttt{Axyzn()} pa \texttt{n}: horizonti i paracaktuar mund të jetë i shkurtër (U7).
+    \item Tabela e përzier me mesataren e $q$-ve: përziej ${}_tp$.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w6qGab7]{Gjej gabimin: raundi i shpejtë}
+  Tre studentë, tri rreshta. Cili është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{a\_last <- axn(tx, 90) + axn(ty, 90) - axyzn(list(tx, ty), x = c(90, 90))}
+    \item[(b)] \texttt{A\_joint <- 1 - 0.04 * axyzn(list(tx, ty), x = c(90, 90))}
+    \item[(c)] \texttt{p\_last <- px * py}
+  \end{enumerate}
+  \vfill\shkoTe{w6sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): \Rkey{lifecontingencies}}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Funksioni & Çfarë jep \\
+      \midrule
+      \texttt{as(act, "data.frame")} & kolonat $D, N, C, M, R$ \\
+      \texttt{axn}, \texttt{Axn}, \texttt{IAxn}, \texttt{DAxn} & një jetë \\
+      \texttt{axyzn(L, x, status)} & $\ddot a_{xy}$, $\ddot a_{\overline{xy}}$ \\
+      \texttt{Axyzn(L, x, n, status)} & $A_{xy}$, $A_{\overline{xy}}$ \\
+      \texttt{exyzt}, \texttt{pxyzt} & jetëgjatësia, mbijetesa e statusit \\
+      \texttt{rLifexyz(n, L, x, type = "Kx")} & simulim i jetëve \\
+      \texttt{data(soa08Act)} & tabela ilustruese e SOA, $i=6\%$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      $\ddot a_x=N_x/D_x$ & $A_x=M_x/D_x$ \\
+      $(IA)_x=R_x/D_x$ & $P_x=M_x/N_x$ \\
+      $M_x=D_x-d\,N_x$ & $R_x=N_x-d\,S_x$ \\
+      $q_{xy}=q_x+q_y-q_xq_y$ & $A_u=1-d\,\ddot a_u$ \\
+      $\ddot a_{\overline{xy}}=\ddot a_x+\ddot a_y-\ddot a_{xy}$ & $\ddot a_{x|y}=\ddot a_y-\ddot a_{xy}$ \\
+      $\ddot a^{(60\%)}=0.6\,\ddot a_{\overline{xy}}+0.4\,\ddot a_{xy}$ & ${}_tp^{\text{mix}}=w\,{}_tp^{(1)}+(1-w)\,{}_tp^{(2)}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w6h7-cheat, eval=FALSE>>=
+commute <- function(x, lx, i) {          # Hour 3
+  v <- 1 / (1 + i); dx <- lx - c(lx[-1], 0)
+  D <- v^x * lx;       N <- rev(cumsum(rev(D)))
+  C <- v^(x + 1) * dx; M <- rev(cumsum(rev(C)))
+  data.frame(x, Dx = D, Nx = N, Cx = C, Mx = M)
+}
+L <- list(tM, tF)                        # one table per life
+axyzn(L, x = c(65, 62), status = "last")
+Axyzn(L, x = c(65, 62), n = 49, status = "last")
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 7)}
+  \begin{enumerate}
+    \item Ndërto tabelën aktuariale të plotë (0--110, $D$ deri $R$) për \textbf{gratë} e Shqipërisë 2011 me $i=3\%$ dhe ruaje në CSV.
+    \item Llogarit tarifën e Orës 6 (60--70) me tabelat e Shqipërisë 2011 për \textbf{të dy} bashkëshortët.
+    \item Simulo 10\,000 çifte me \texttt{rLifexyz()} dhe vlerëso $P(\text{gruaja mbijeton burrin})$ për diferencat 0, 3, 6 vjet.
+  \end{enumerate}
+  \small Dorëzim: një skript R i riprodhueshëm (\texttt{set.seed}) dhe një faqe me interpretim.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 7}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 7: sigurime rritëse, zbritëse dhe rezerva}
+  \begin{itemize}
+    \item<1-> $(IA)_x$ dhe $(DA)^1_{x:\overline n|}$: \texttt{IAxn()} dhe \texttt{DAxn()} (sot i pamë me $R_x$).
+    \item<2-> Anuitetet e menjëhershme, të shtyra dhe me afat: $a_x$, $\ddot a_x$, ${}_{m|}\ddot a_x$.
+    \item<3-> Primat neto dhe \textbf{rezervat matematike prospektive}.
+    \item<4-> Krahasimi Shqipëria / sintetike / SOA për çdo produkt.
+  \end{itemize}
+  \onslide<5->{\vfill\LO{C2}\;\LO{C3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Me cilat dy kolona llogaritet $P_x$, dhe pse $D_x$ nuk duhet?
+    \item Pse $\ddot a_{\overline{xy}}$ i Petritit dhe Dritës është më afër $\ddot a_y$ se $\ddot a_x$?
+    \item Si e ndërtojmë tabelën e portofolit nga përvoja e kompanisë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $M_x/N_x$, $D_x$ thjeshtohet; (2) Drita jeton më gjatë;
+  (3) $\hat q_x=D_x/E_x$, zbutja me Makeham (MLE), mbyllja në 110.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 6}
+  \begin{itemize}
+    \item Numrat e komutimit: çdo funksion = raport kolonash; identikë me \texttt{soa08Act}. \LO{C1}
+    \item ``Funksionet e përziera'': (1) disa jetë, (2) tabela të përziera. \LO{K2}
+    \item Petriti dhe Drita: $\ddot a_{xy}$, $\ddot a_{\overline{xy}}$, opsioni 60\%, simulimi. \LO{S2}
+    \item Rasti i portofolit: Makeham MLE, tarifa, rezerva në tri gjendje. \LO{C2}\;\LO{C3}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (red.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10), dhe vinjeta e \Rkey{lifecontingencies}.
+    \item Human Life-Table Database: Shqipëria 2011.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}

@@ -149,7 +149,7 @@ sapply(c(46, 47, 48, 49), function(nn) Axyzn(L, x = xy, n = nn, status = "last")
     \item<3-> Me $n=49$ (Drita deri në 110) përputhet me $1-d\,\ddot a_{\overline{xy}}$. \textcolor{okgreen}{$\checkmark$}
   \end{itemize}
   \onslide<4->{
-  \begin{Gabim}Mos i beso paracaktimeve për statusin \texttt{"last"}: jep \texttt{n} në mënyrë eksplicite dhe kontrollo me $A_u=1-d\,\ddot a_u$. (E testuar në \Rkey{lifecontingencies} 1.3.12.)\end{Gabim}}
+  \begin{Gabim}Mos i beso vlerës së paracaktuar të \texttt{n} në \texttt{Axyzn()}, sidomos për \texttt{"last"}: jep \texttt{n} në mënyrë eksplicite dhe kontrollo me $A_u=1-d\,\ddot a_u$. (E testuar në \Rkey{lifecontingencies} 1.3.12.)\end{Gabim}}
 \end{frame}
 
 \begin{frame}[fragile]{Jetëgjatësia e statuseve}
