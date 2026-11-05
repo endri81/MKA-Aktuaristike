@@ -1,0 +1,317 @@
+% ============================================================
+%  Java 6 · Ora 6 — Rast studimi: tabela e portofolit dhe tarifa e pensioneve
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w6h6-setup, include=FALSE>>=
+suppressMessages({library(lifecontingencies); library(MASS)})
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+mt  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+gm_q <- function(x, A, B, c) 1 - exp(-A - B * c^x * (c - 1) / log(c))
+@
+
+\begin{frame}{Detyra e aktuarit}
+  \begin{Shembull}[(AutoSig Jetë, kompani fiktive)]
+    Kompania nis një produkt pensioni për çifte. Bordi kërkon:
+    \begin{enumerate}
+      \item tabelën e vdekshmërisë së \textbf{portofolit} të vet, jo të popullsisë;
+      \item tarifën për moshat 60--70, me normën teknike 3\%;
+      \item rezervën e një kontrate pas 5 vitesh;
+      \item sa i sigurt është vlerësimi.
+    \end{enumerate}
+  \end{Shembull}
+  \vfill\LO{S1}\;\LO{C1}\;\LO{C2}\;\LO{C3}
+\end{frame}
+
+\begin{frame}{Rruga e punës}
+  \centering
+  \begin{tikzpicture}[b/.style={draw,rounded corners,fill=uptlight,align=center,font=\small,minimum height=1cm,text width=2.1cm},>=Stealth]
+    \node[b] (a) at (0,0) {Përvoja\\$E_x$, $D_x$};
+    \node[b] (b) at (2.7,0) {$\hat q_x$\\bruto};
+    \node[b] (c) at (5.4,0) {Makeham\\MLE};
+    \node[b] (d) at (8.1,0) {Tabela\\30--110};
+    \node[b] (e) at (2.7,-1.8) {Tarifa\\60--70};
+    \node[b] (f) at (5.4,-1.8) {Rezerva\\$t=5$};
+    \node[b] (g) at (8.1,-1.8) {Pasiguria\\e parametrave};
+    \draw[->] (a)--(b); \draw[->] (b)--(c); \draw[->] (c)--(d);
+    \draw[->] (d.south) |- ++(0,-0.4) -| (e.north); \draw[->] (e)--(f); \draw[->] (f)--(g);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përvoja e portofolit}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Të dhënat e përvojës (sintetike)}
+<<w6h6-data>>=
+set.seed(606)
+x <- 30:95
+E <- round(3 * 4000 * mt$lx_male[x + 1] / mt$lx_male[31])  # life-years in 3 years
+D <- rbinom(length(x), E, mt$qx_male[x + 1])               # observed deaths
+exper <- data.frame(x, E, D, qhat = D / E)
+exper[c(1, 21, 36, 66), ]
+c(life_years = sum(E), deaths = sum(D))
+@
+  \small \textbf{Sintetike}: vdekjet janë simuluar nga Makeham me $A=0.0005$, $B=0.000022$, $c=1.105$ (README).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> 3 vite përvojë, \Sexpr{fmt(sum(E))} vite-jetë, \Sexpr{fmt(sum(D))} vdekje: portofol i madh.
+    \item<2-> $\hat q_x=D_x/E_x$ është vlerësimi \textbf{bruto} (\emph{crude}): ka zhurmë, sidomos në moshat e reja ku $D_x$ është i vogël.
+    \item<3-> Hapi tjetër: \termi{zbutja}{graduation} me një model parametrik.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w6gab6]{Gjej gabimin}
+<<w6h6-bug>>=
+N_policies <- round(E / 3)               # policyholders at the start
+q_bad <- D / N_policies
+round(rbind(q_bad = q_bad[c(1, 36)], q_true = mt$qx_male[x[c(1, 36)] + 1]), 5)
+@
+  \begin{enumerate}
+    \item Pse \texttt{q\_bad} është rreth 3 herë më i madh?
+    \item Çfarë do të ndodhte me tarifën e pensioneve nëse e përdorim?
+  \end{enumerate}
+  \vfill\shkoTe{w6zgjGab6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Zbutja me Makeham}
+% ------------------------------------------------------------
+
+\begin{frame}{Verosimësia binomiale}
+  \begin{itemize}
+    \item<1-> Modeli: $D_x\sim\text{Bin}\big(E_x,\;q_x(A,B,c)\big)$, me $q_x$ të Makeham (Java 5).
+    \item<2-> Log-verosimësia: \;
+      $\ell(A,B,c)=\sum_x\big[D_x\log q_x+(E_x-D_x)\log(1-q_x)\big]+\text{konst}$.
+    \item<3-> Parametrizim pa kufizime: $A=e^{\theta_1}$, $B=e^{\theta_2}$, $c=1+e^{\theta_3}$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Me $\theta$ të lirë, \texttt{optim()} nuk del kurrë jashtë hapësirës $A,B>0$, $c>1$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w6par6]{Parashiko}
+  \begin{Parashiko}
+    Kemi të dhëna për moshat 30--95.
+    \begin{enumerate}
+      \item Cili parametër do të vlerësohet më \textbf{keq} (gabim relativ më i madh): $A$, $B$ apo $c$?
+      \item Pse? Në cilat mosha ``shihet'' $A$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w6zgjPar6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{MLE me \texttt{optim()}}
+<<w6h6-fit>>=
+nll <- function(th) {
+  q <- gm_q(x, exp(th[1]), exp(th[2]), 1 + exp(th[3]))
+  -sum(dbinom(D, E, q, log = TRUE))
+}
+g  <- lm(log(-log(1 - exper$qhat)) ~ x)                       # Gompertz start
+st <- c(log(1e-4), coef(g)[[1]], log(exp(coef(g)[[2]]) - 1))
+fit <- optim(st, nll, method = "BFGS", hessian = TRUE)
+est <- c(A = exp(fit$par[1]), B = exp(fit$par[2]), c = 1 + exp(fit$par[3]))
+c(convergence = fit$convergence)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi kundrejt së vërtetës}
+<<w6h6-ci>>=
+se <- sqrt(diag(solve(fit$hessian)))                 # SE on the theta scale
+ci <- rbind(lower = fit$par - 1.96 * se, upper = fit$par + 1.96 * se)
+ci <- cbind(exp(ci[, 1:2]), 1 + exp(ci[, 3]))
+signif(rbind(estimate = est, ci, truth = c(0.0005, 0.000022, 1.105)), 4)
+@
+  \pause
+  \small Të tri intervalet 95\% përmbajnë vlerën e vërtetë. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{$\hat q_x$ bruto dhe i zbutur}
+<<w6h6-plot, echo=FALSE, fig.height=3.1>>=
+dd <- data.frame(x, qhat = exper$qhat, fit = gm_q(x, est[1], est[2], est[3]),
+                 truth = gm_q(x, 0.0005, 0.000022, 1.105))
+ggplot(dd, aes(x)) + geom_point(aes(y = qhat, colour = "bruto D/E"), size = 1.6) +
+  geom_line(aes(y = fit, colour = "Makeham MLE"), linewidth = 1) +
+  geom_line(aes(y = truth, colour = "e verteta"), linetype = 2, linewidth = 0.8) +
+  scale_y_log10() + scale_colour_manual(values = c("#7F8C8D", "#E67E22", "#2C5AA0")) +
+  labs(x = "mosha", y = "q(x), shkalla log", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kurba e zbutur dhe e vërteta nuk dallohen me sy në 30--95.
+    \item<2-> Pikat bruto luhaten më shumë në moshat 30--45: pak vdekje, gabim relativ i madh.
+    \item<3-> $A$ ka intervalin më të gjerë: ndikon vetëm në moshat e reja, ku $q_x$ është i vogël.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tabela dhe tarifa}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Tabela aktuariale e portofolit}
+<<w6h6-table>>=
+mk_lx <- function(par, ages = 30:110) {
+  q <- gm_q(ages, par[1], par[2], par[3]); q[length(q)] <- 1      # close at 110
+  1e5 * c(1, cumprod(1 - q))[seq_along(ages)]
+}
+port  <- new("actuarialtable", x = 30:110, lx = mk_lx(est), interest = 0.03)
+truth <- new("actuarialtable", x = 30:110, lx = mk_lx(c(0.0005, 0.000022, 1.105)), interest = 0.03)
+round(sapply(c(60, 65, 70), function(z) c(age = z, fitted = axn(port, z), truth = axn(truth, z))), 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Tarifa: 1 lek pension në vit, $i=3\%$}
+<<w6h6-tariff>>=
+aF3 <- new("actuarialtable", x = mt$age, lx = mt$lx_female, interest = 0.03)
+tariff <- t(sapply(60:70, function(z) {
+  L3 <- list(port, aF3); y <- z - 3                       # wife 3 years younger
+  j <- axyzn(L3, x = c(z, y), status = "joint"); l <- axyzn(L3, x = c(z, y), status = "last")
+  c(age = z, single = axn(port, z), last100 = l, option60 = 0.6 * l + 0.4 * j)
+}))
+round(tariff[c(1, 6, 11), ], 3)
+@
+  \small Burri: tabela e portofolit; gruaja: tabela sintetike F (popullsia).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Për 65 vjeç, opsioni 60\% kushton \Sexpr{fmt(100 * (tariff[6, "option60"] / tariff[6, "single"] - 1))}\% më shumë se pensioni individual.
+    \item<2-> Me 10 milionë lekë: \Sexpr{fmt(1e7 / tariff[6, "single"])} lekë/vit (individual) kundrejt \Sexpr{fmt(1e7 / tariff[6, "option60"])} lekë/vit (60\%).
+    \item<3-> Me $i=3\%$ anuitetet janë shumë më të shtrenjta se me 5\% (Ora 5).
+  \end{itemize}
+  \onslide<4->{
+  \begin{Gabim}Gruaja me tabelën e popullsisë, burri me tabelën e portofolit: një përzierje bazash që duhet shkruar qartë në shënimin teknik.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[fragile]{Krahasim me Shqipërinë 2011}
+<<w6h6-al>>=
+hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
+h  <- subset(hld, Year1 == 2011 & TypeLT == 4 & Sex == 1)
+lA <- expand(h$Age, h$l.x.)                             # function from Hour 3
+alb <- new("actuarialtable", x = 0:110, lx = lA, interest = 0.03)
+round(c(portfolio = axn(port, 65), Albania2011 = axn(alb, 65),
+        ratio = axn(port, 65) / axn(alb, 65)), 3)
+@
+  \small Shqipëria 2011: \textbf{reale} (HLD), e rindërtuar në Orën 3.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rezerva pas 5 vitesh}
+% ------------------------------------------------------------
+
+\begin{frame}{Tri gjendje pas 5 vitesh}
+  Kontrata 100\% / 60\%, Petriti 65, Drita 62. Rezerva prospektive në $t=5$ varet nga \textbf{kush është gjallë}:
+  \begin{align*}
+    \onslide<2->{{}_5V^{\text{të dy}} &= 0.6\,\ddot a_{\overline{70:67}}+0.4\,\ddot a_{70:67},} \\
+    \onslide<3->{{}_5V^{\text{vetëm Drita}} &= 0.6\,\ddot a_{67},} \\
+    \onslide<4->{{}_5V^{\text{vetëm Petriti}} &= 0.6\,\ddot a_{70}.}
+  \end{align*}
+  \onslide<5->{\small Nëse të dy kanë vdekur, rezerva është 0.}
+\end{frame}
+
+\begin{frame}[fragile]{Rezervat në R}
+<<w6h6-res>>=
+L3 <- list(port, aF3)
+a60 <- function(x, y) 0.6 * axyzn(L3, x = c(x, y), status = "last") +
+                      0.4 * axyzn(L3, x = c(x, y), status = "joint")
+V5 <- c(both = a60(70, 67), only_Drita = 0.6 * axn(aF3, 67), only_Petrit = 0.6 * axn(port, 70))
+pP <- pxt(port, 65, 5); pD <- pxt(aF3, 62, 5)
+prob <- c(both = pP * pD, only_Drita = (1 - pP) * pD, only_Petrit = pP * (1 - pD))
+round(rbind(V5, prob), 4)
+@
+\end{frame}
+
+\begin{frame}[label=w6ush6]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta)]
+    Me \texttt{V5} dhe \texttt{prob}:
+    \begin{enumerate}
+      \item Llogarit rezervën e \textbf{pritur} në $t=5$, $\sum_s p_s\,{}_5V^{s}$.
+      \item Pse rezerva ``vetëm Drita'' është më e madhe se ``vetëm Petriti''?
+      \item Për 1\,000 kontrata, secila me 10 milionë lekë kursim në $t=0$, sa rezervë pritet në $t=5$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjUsh6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pasiguria e parametrave \Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{2\,000 tabela të mundshme \Zgj}
+<<w6h6-unc>>=
+set.seed(1)
+th_sim <- mvrnorm(2000, fit$par, solve(fit$hessian))       # asymptotic normal
+a65 <- apply(th_sim, 1, function(p) {
+  lx <- mk_lx(c(exp(p[1]), exp(p[2]), 1 + exp(p[3])))
+  axn(new("actuarialtable", x = 30:110, lx = lx, interest = 0.03), 65)
+})
+round(c(point = axn(port, 65), truth = axn(truth, 65), sd = sd(a65),
+        quantile(a65, c(0.005, 0.995))), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Devijimi standard i $\ddot a_{65}$ nga parametrat: \Sexpr{fmt(sd(a65), 3)}, rreth \Sexpr{fmt(100 * sd(a65) / axn(port, 65), 2)}\% e vlerës.
+    \item<2-> Me 3 vite përvojë dhe \Sexpr{fmt(sum(E))} vite-jetë, pasiguria e parametrave është e vogël.
+    \item<3-> Rreziku më i madh është \textbf{trendi}: vdekshmëria e ardhshme mund të bjerë (Lee--Carter, zgjerim).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w6tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Një kompani e vogël ka vetëm 1/16 e këtij portofoli.
+    \begin{enumerate}
+      \item Sa afërsisht do të jetë devijimi standard i $\ddot a_{65}$? (Ndihmë: $\text{SE}\propto1/\sqrt{n}$.)
+      \item Çfarë do t'i rekomandoje: tabela e vet, tabela e popullsisë, apo një kombinim (kredibilitet, Java 4)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w6zgjTps6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse $\hat q_x$ bruto duhet zbutur para tarifimit?
+    \item Pse rezerva e një pensioni për çift varet nga gjendja?
+    \item Cili rrezik nuk matet nga simulimi i parametrave?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) zhurma e rastit, sidomos ku ka pak vdekje; (2) pagesat e ardhshme varen nga kush jeton;
+  (3) rreziku i trendit të vdekshmërisë.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item Përvoja $\to$ $\hat q_x$ bruto $\to$ Makeham me MLE: vlerësimi brenda intervaleve 95\%.
+    \item Tabela e portofolit 30--110 $\to$ tarifa 60--70 me $i=3\%$.
+    \item Rezerva në $t=5$: tri gjendje, tri vlera.
+    \item Pasiguria e parametrave: e vogël për portofol të madh.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz, ushtrime të tipit provim, gabimet e zakonshme, tabela e funksioneve R.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item A.~Charpentier (red.), \emph{Computational Actuarial Science with R}, CRC Press, 2015: kapitujt për tabelat e jetës dhe sigurimet e jetës.
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike, parametrat e vërtetë).
+    \item Human Life-Table Database: Shqipëria 2011 (reale).
+  \end{itemize}
+\end{frame}

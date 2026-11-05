@@ -1,0 +1,44 @@
+% ============================================================
+%  Java 6 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w6zgjGab6]{Zgjidhja: Gjej gabimin (ekspozimi)}
+  \begin{enumerate}
+    \item $E_x$ janë \textbf{vite-jetë} në 3 vite. Çdo person kontribuon deri në 3 vite ekspozim, por vdekjet numërohen për të 3 vitet.
+      Duke pjesëtuar me numrin e personave, $q$ del rreth 3 herë më i madh.
+    \item Vdekshmëri 3 herë më e lartë $\Rightarrow$ $\ddot a$ shumë më i vogël $\Rightarrow$ pensione të \textbf{nënçmuara}: humbje e madhe për kompaninë.
+  \end{enumerate}
+  \vfill\kthehu{w6gab6}
+\end{frame}
+
+\begin{frame}[label=w6zgjPar6]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $A$: intervali i tij është më i gjeri në shkallë relative
+      ($\Sexpr{signif(ci[1, 1], 2)}$--$\Sexpr{signif(ci[2, 1], 2)}$ rreth $\Sexpr{signif(est[1], 2)}$).
+    \item $q_x\approx A+Bc^x$: në 30--45 vjeç, $A$ është pjesa kryesore, por atje ka pak vdekje.
+      Në moshat e larta $Bc^x$ dominon dhe $A$ ``zhduket''.
+  \end{enumerate}
+  \small Nëse përdorim vetëm moshat 50--95, $A$ bëhet pothuajse i pavlerësueshëm.
+  \vfill\kthehu{w6par6}
+\end{frame}
+
+\begin{frame}[fragile,label=w6zgjUsh6]{Zgjidhja: Radha jote!}
+<<w6h6-sol-ush>>=
+EV5 <- sum(prob * V5)                       # per 1 lek of annual pension
+pension <- 1e7 / a60(65, 62)                # lek per year per contract
+c(EV5 = EV5, pension = pension, reserve_1000 = 1000 * pension * EV5)
+@
+  \begin{enumerate}
+    \item[2.] Drita është më e re (67 kundrejt 70) dhe grua: $\ddot a_{67}^F>\ddot a_{70}^M$.
+  \end{enumerate}
+  \vfill\kthehu{w6ush6}
+\end{frame}
+
+\begin{frame}[label=w6zgjTps6]{Zgjidhja: kompania e vogël}
+  \begin{enumerate}
+    \item Me $1/16$ e të dhënave, SE rritet $\sqrt{16}=4$ herë: rreth $\Sexpr{fmt(4 * sd(a65), 2)}$, ose \Sexpr{fmt(400 * sd(a65) / axn(port, 65), 1)}\% e $\ddot a_{65}$.
+    \item Një kombinim: $\hat q_x=Z\,\hat q_x^{\text{kompania}}+(1-Z)\,q_x^{\text{popullsia}}$, me $Z$ që rritet me volumin e përvojës.
+      Kjo është ideja e kredibilitetit të Javës 4.
+  \end{enumerate}
+  \vfill\kthehu{w6tps6}
+\end{frame}
