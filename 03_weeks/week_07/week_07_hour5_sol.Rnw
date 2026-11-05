@@ -1,0 +1,42 @@
+% ============================================================
+%  Java 7 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w7zgjPar5]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item I përjetshmi: prima bie me \Sexpr{fmt(-100 * (p6["whole"] / prm["whole"] - 1))}\%.
+    \item Pensioni i shtyrë: prima bie me \Sexpr{fmt(-100 * (p6["deferred"] / prm["deferred"] - 1))}\%: ndryshon më shumë.
+  \end{enumerate}
+  \small Pse? Pagesat e pensionit janë 25--70 vjet larg; skontimi me 6\% i zvogëlon shumë. Për sigurimin, edhe primat skontohen, dhe dy efektet pjesërisht anulohen.
+  \vfill\kthehu{w7par5}
+\end{frame}
+
+\begin{frame}[label=w7zgjGab5]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item Mungon $p_{x+t}$: funksioni shkruan \texttt{V[t + 1]} në vend të \texttt{(1 - q[t]) * V[t + 1]}.
+    \item Rezerva e të vdekurve ``mbetet'' në portofol: kompania mban rezervë për persona që nuk jetojnë më.
+    \item Prandaj ${}_0V>0$: primat nuk mjaftojnë për detyrimet e (gabuara).
+  \end{itemize}
+  \vfill\kthehu{w7gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w7zgjUsh5]{Zgjidhja: Radha jote!}
+<<w7h5-sol-ush>>=
+v5 <- S * Axn(aM3, 45, 15) - prm["term20"] * axn(aM3, 45, 15)
+P20 <- S * Axn(aM3, x) / axn(aM3, x, 20)                  # whole life, 20 premiums
+V20 <- reserve(aM3, x, rep(S, N), rep(0, N), z(20, P20))
+c(formula_5V = unname(v5), recursion_5V = V$term20[6], P20 = P20,
+  V_20 = V20[21], S_A60 = S * Axn(aM3, 60))
+@
+  \small (3) Pas 60 nuk ka më prima: rezerva = vlera e përfitimeve të ardhshme $=S\,A_{60}$.
+  \vfill\kthehu{w7ush5}
+\end{frame}
+
+\begin{frame}[label=w7zgjNdr5]{Zgjidhja: Ndrysho parametrin}
+  \begin{itemize}
+    \item Me 6\%, rezerva në 65 është \Sexpr{fmt(max(V6) / 1e6, 2)} milionë, jo \Sexpr{fmt(max(V$deferred) / 1e6, 2)}: anuiteti $\ddot a_{65}$ është më i vogël.
+    \item Primat me 6\% janë rreth gjysma: interesi bën një pjesë të madhe të punës së akumulimit.
+    \item Mësim: një normë teknike e lartë e ul rezervën; nëse kthimet reale janë më të ulëta, kompania ka mungesë.
+  \end{itemize}
+  \vfill\kthehu{w7ndr5}
+\end{frame}

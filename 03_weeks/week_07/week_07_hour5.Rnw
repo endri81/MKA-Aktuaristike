@@ -1,0 +1,263 @@
+% ============================================================
+%  Java 7 · Ora 5 — Laborator R II: primat dhe kurbat e rezervës
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Pesë produkte për Arbenin (40 vjeç)}
+  \begin{center}
+    \small
+    \begin{tabular}{lll}
+      \toprule
+      Produkti & Përfitimi & Primat \\
+      \midrule
+      I përjetshëm & 1\,000\,000 lekë në vdekje & gjithë jetën \\
+      Me afat 20 & 1\,000\,000 lekë në vdekje para 60 & 20 vjet \\
+      I përzier 20 & 1\,000\,000 në vdekje ose në 60 & 20 vjet \\
+      Kredia (DA) & mbetja reale e kredisë (Ora 3) & 15 vjet \\
+      Pension i shtyrë & 600\,000 lekë/vit nga 65 & 25 vjet (40--64) \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small Tabela sintetike M, norma teknike $i=3\%$, të gjitha pagesat vjetore.
+  \vfill\LO{C2}\;\LO{C3}\;\LO{S2}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Primat}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Primat neto me \Rkey{lifecontingencies}}
+<<w7h5-prem>>=
+x <- 40; S <- 1e6; pen <- 6e5
+prm <- c(
+  whole     = S * Axn(aM3, x) / axn(aM3, x),
+  term20    = S * Axn(aM3, x, 20) / axn(aM3, x, 20),
+  endow20   = S * AExn(aM3, x, 20) / axn(aM3, x, 20),
+  loan_DA   = varA(aM3, x, B) / axn(aM3, x, 15),
+  deferred  = pen * axn(aM3, x, m = 25) / axn(aM3, x, 25))
+round(prm)
+@
+  \small \texttt{AExn()}: sigurimi i përzier; \texttt{axn(..., m = 25)}: anuiteti i shtyrë 25 vjet.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Sigurimi me afat është më i liri: mbulon vetëm rrezikun e vdekjes deri në 60.
+    \item<2-> I përziri kushton \Sexpr{fmt(prm["endow20"] / prm["term20"], 1)} herë më shumë: pjesa më e madhe është \textbf{kursim}.
+    \item<3-> Pensioni: \Sexpr{fmt(prm["deferred"])} lekë/vit për 25 vjet, për \Sexpr{fmt(pen)} lekë/vit nga 65.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w7par5]{Parashiko para se ta ekzekutosh}
+  \begin{Parashiko}
+    Ngrijmë normën teknike nga 3\% në 6\%.
+    \begin{enumerate}
+      \item Si ndryshon prima e sigurimit të përjetshëm? Me rreth sa \%?
+      \item Si ndryshon prima e pensionit të shtyrë? Cila ndryshon më shumë? Pse?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w7zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Norma 6\%}
+<<w7h5-six>>=
+aM6 <- new("actuarialtable", x = mt$age, lx = mt$lx_male, interest = 0.06)
+p6 <- c(whole = S * Axn(aM6, x) / axn(aM6, x),
+        deferred = pen * axn(aM6, x, m = 25) / axn(aM6, x, 25))
+round(rbind(i3 = prm[c("whole", "deferred")], i6 = p6,
+            change_pct = 100 * (p6 / prm[c("whole", "deferred")] - 1)))
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rezerva me rekursion}
+% ------------------------------------------------------------
+
+\begin{frame}{Një funksion për çdo kontratë}
+  Për $t=N-1,\dots,0$, me ${}_NV=0$ (Ora 4, rekursioni):
+  \[
+    {}_tV=c_t-P_t+v\big[q_{x+t}\,b_{t+1}+p_{x+t}\;{}_{t+1}V\big].
+  \]
+  \pause
+  \begin{itemize}
+    \item $b_{t+1}$: shuma në vdekje gjatë vitit $t+1$.
+    \item $c_t$: pagesa për të mbijetuarin në kohën $t$ (pension, maturim).
+    \item $P_t$: prima në kohën $t$.
+  \end{itemize}
+  \pause
+  \small ${}_tV$ këtu është rezerva në kohën $t$, \textbf{para} primës dhe pagesës së kohës $t$.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{reserve()}}
+<<w7h5-fun>>=
+reserve <- function(act, x, b, c, prem, i = act@interest) {
+  N <- length(b); v <- 1 / (1 + i)
+  l <- act@lx[match(x + 0:N, act@x)]; l[is.na(l)] <- 0     # beyond the table: 0
+  q <- 1 - l[2:(N + 1)] / l[1:N]
+  V <- numeric(N + 1)                                     # V[N + 1] = 0
+  for (t in N:1) V[t] <- c[t] - prem[t] + v * (q[t] * b[t] + (1 - q[t]) * V[t + 1])
+  V[1:N]                                                  # times 0, ..., N - 1
+}
+N <- 110 - x + 1                                          # ages 40, ..., 110
+z <- function(n, val) c(rep(val, n), rep(0, N - n))       # val for n years, then 0
+@
+\end{frame}
+
+\begin{frame}[fragile]{Pesë kontrata}
+<<w7h5-res>>=
+V <- list(
+  whole    = reserve(aM3, x, rep(S, N), rep(0, N), rep(prm["whole"], N)),
+  term20   = reserve(aM3, x, z(20, S), rep(0, N), z(20, prm["term20"])),
+  endow20  = reserve(aM3, x, z(20, S), c(rep(0, 20), S, rep(0, N - 21)), z(20, prm["endow20"])),
+  loan_DA  = reserve(aM3, x, c(B, rep(0, N - 20)), rep(0, N), z(15, prm["loan_DA"])),
+  deferred = reserve(aM3, x, rep(0, N), c(rep(0, 25), rep(pen, N - 25)), z(25, prm["deferred"])))
+round(sapply(V, function(v) v[1]), 6)                     # 0V must be 0
+@
+  \small ${}_0V=0$ për të pesë: primat e Orës 5 plotësojnë parimin e ekuivalencës. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Vlerësimi kundrejt formulës prospektive}
+<<w7h5-check>>=
+c(whole_t10 = V$whole[11],
+  formula   = S * Axn(aM3, 50) - prm["whole"] * axn(aM3, 50),
+  endow_t10 = V$endow20[11],
+  formula   = S * AExn(aM3, 50, 10) - prm["endow20"] * axn(aM3, 50, 10),
+  defer_t25 = V$deferred[26],
+  formula   = pen * axn(aM3, 65))
+@
+  \small Rekursioni dhe formula prospektive japin të njëjtën rezervë. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile,label=w7gab5]{Gjej gabimin}
+<<w7h5-bug>>=
+reserve_bad <- function(act, x, b, c, prem, i = act@interest) {
+  N <- length(b); v <- 1 / (1 + i)
+  l <- act@lx[match(x + 0:N, act@x)]; l[is.na(l)] <- 0
+  q <- 1 - l[2:(N + 1)] / l[1:N]
+  V <- numeric(N + 1)
+  for (t in N:1) V[t] <- c[t] - prem[t] + v * (q[t] * b[t] + V[t + 1])
+  V[1:N]
+}
+reserve_bad(aM3, x, rep(S, N), rep(0, N), rep(prm["whole"], N))[1]
+@
+  Pse ${}_0V\neq0$? Çfarë ka ``harruar'' funksioni?
+  \vfill\shkoTe{w7zgjGab5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kurbat e rezervës}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Pesë kurba}
+<<w7h5-plot, echo=FALSE, fig.height=3.8>>=
+dv <- do.call(rbind, lapply(names(V), function(p)
+  data.frame(age = x + 0:(N - 1), V = V[[p]] / 1e6, product = p)))
+dv <- subset(dv, age <= 100)
+ggplot(dv, aes(age, V)) + geom_line(linewidth = 1, colour = "#2C5AA0") +
+  facet_wrap(~ product, scales = "free_y", nrow = 2) +
+  labs(x = "mosha", y = "rezerva (milione leke)") + th +
+  theme(strip.text = element_text(face = "bold"), axis.text.x = element_text(size = 8))
+@
+  \small Rezerva para primës së kohës $t$; shkallë të ndryshme në boshtin vertikal.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \textbf{I përjetshëm}: rritet ngadalë drejt 1 milion.
+    \item<2-> \textbf{Me afat}: e vogël (maksimumi \Sexpr{fmt(max(V$term20))} lekë), bie në 0 në 60.
+    \item<3-> \textbf{I përzier}: rritet drejt 1 milion në 60: pjesa e kursimit.
+    \item<4-> \textbf{Kredia}: rritet deri sa mbarojnë primat (55), pastaj bie bashkë me mbetjen.
+    \item<5-> \textbf{Pensioni}: rritet deri në \Sexpr{fmt(V$deferred[26] / 1e6, 2)} milionë në 65, pastaj ``harxhohet''.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Krahaso me skicat e Orës 4}
+  \begin{itemize}
+    \item<1-> A e parashikuat që rezerva e kredisë arrin maksimumin pikërisht në 55, kur mbarojnë primat?
+    \item<2-> Pse? Deri në 55, primat mbledhin edhe për vitet 16--20. Pas 55, rezerva harxhohet për rrezikun pa prima të reja dhe bie në 0 në 60.
+    \item<3-> Rezerva e pensionit është më e madhja: \Sexpr{fmt(max(V$deferred) / 1e6, 1)} milionë për një kontratë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Për çdo produkt të ri: vizato kurbën e rezervës para se ta shesësh. Një kurbë negative ose me kërcime është shenjë problemi.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w7ush5]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Llogarit ${}_5V$ e sigurimit me afat 20 me formulën prospektive dhe krahasoje me \texttt{V\$term20[6]}.
+      \item Ndërto rezervën e sigurimit të përjetshëm me prima vetëm për 20 vjet (\texttt{z(20, P)}). Gjej $P$ dhe ${}_{20}V$.
+      \item Pse ${}_{20}V$ e këtij produkti është e barabartë me $S\,A_{60}$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w7zgjUsh5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ndjeshmëria}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile,label=w7ndr5]{Ndrysho parametrin: rezerva e pensionit me 3\% dhe 6\%}
+<<w7h5-def6, echo=FALSE, fig.height=2.9>>=
+V6 <- reserve(aM6, x, rep(0, N), c(rep(0, 25), rep(pen, N - 25)), z(25, p6["deferred"]))
+dd <- data.frame(age = rep(x + 0:(N - 1), 2), V = c(V$deferred, V6) / 1e6,
+                 rate = rep(c("i = 3%", "i = 6%"), each = N))
+ggplot(subset(dd, age <= 100), aes(age, V, colour = rate)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#2C5AA0", "#E67E22")) +
+  labs(x = "mosha", y = "rezerva (milione leke)", colour = NULL) + th + theme(legend.position = "top")
+@
+  \small Maksimumi në 65: \Sexpr{fmt(max(V$deferred) / 1e6, 2)} milionë (3\%) kundrejt \Sexpr{fmt(max(V6) / 1e6, 2)} milionë (6\%).
+  \hfill\shkoTe{w7zgjNdr5}{Pyetje}
+\end{frame}
+
+\begin{frame}[fragile]{Pagesat mujore në 65 \Zgj}
+<<w7h5-k12>>=
+c(annual = axn(aM3, 65), monthly_pkg = axn(aM3, 65, k = 12),
+  woolhouse = axn(aM3, 65) - 11 / 24)
+@
+  \begin{itemize}
+    \item<2-> Në 65 vjeç, paketa dhe Woolhouse ndryshojnë vetëm në decimalin e 3-të.
+    \item<3-> Pensioni mujor kushton më pak se ai vjetor: pagesat vijnë mesatarisht më vonë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse ${}_0V=0$ është kontroll i mirë i kodit të rezervës?
+    \item Çfarë do të thotë $c_t$ në \texttt{reserve()} për sigurimin e përzier?
+    \item Pse rezerva e pensionit është më e ndjeshme ndaj normës teknike?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) parimi i ekuivalencës; (2) pagesa e maturimit në $t=20$;
+  (3) pagesat janë shumë larg në kohë.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item Primat e pesë produkteve me \texttt{Axn}, \texttt{AExn}, \texttt{axn(..., m)}, \texttt{varA}.
+    \item \texttt{reserve()}: rekursioni prapa, një funksion për çdo kontratë.
+    \item Rekursioni = formula prospektive; ${}_0V=0$.
+    \item Format e kurbave: kursim (i përzier, pension) kundrejt rrezikut (me afat, kredi).
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: portofoli i kredive dhe i pensioneve; rezervat me tri tabela.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato (2013), \emph{Journal of Statistical Software} 55(10): \texttt{Axn}, \texttt{AExn}, \texttt{axn}.
+    \item A.~Charpentier (red.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
