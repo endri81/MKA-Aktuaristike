@@ -1,0 +1,207 @@
+% ============================================================
+%  Java 8 · Ora 5 — Laborator R II: payoff, parity, arbitrazh
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{call\_pay()} dhe \texttt{put\_pay()}: dy funksione për çdo strategji opsionesh.
+    \item<2-> Katër strategji në ggplot: call, put, straddle, put mbrojtës.
+    \item<3-> Parity me \texttt{bscall()} dhe \texttt{bsput()} në një rrjetë $(K,T)$.
+    \item<4-> Arbitrazhi i simuluar në 10\,000 skenarë.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{K3}\;\LO{S2}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Payoff dhe fitimi}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksionet bazë}
+<<w8h5-pay>>=
+call_pay <- function(ST, K) pmax(ST - K, 0)
+put_pay  <- function(ST, K) pmax(K - ST, 0)
+ST <- seq(50, 150, by = 1); K <- 100; r <- 0.03; Tm <- 1
+C0 <- bscall(100, K, 0.25, r, Tm, 0)       # derivmkts: s, k, v, r, tt, d
+P0 <- bsput(100, K, 0.25, r, Tm, 0)
+round(c(call = C0, put = P0), 4)
+@
+  \small Çmimet vijnë nga Black--Scholes me $\sigma=25\%$: formula në Javën 10. Sot janë ``çmimet e tregut''.
+\end{frame}
+
+\begin{frame}[fragile]{Katër strategji}
+<<w8h5-strat>>=
+strat <- data.frame(
+  ST = rep(ST, 4),
+  name = rep(c("long call", "long put", "straddle", "put mbrojtes"), each = length(ST)),
+  payoff = c(call_pay(ST, K), put_pay(ST, K),
+             call_pay(ST, K) + put_pay(ST, K), ST + put_pay(ST, K)),
+  cost = rep(c(C0, P0, C0 + P0, 100 + P0), each = length(ST)))
+strat$profit <- strat$payoff - strat$cost * exp(r * Tm)   # profit at T
+@
+  \small Straddle = call + put me të njëjtin $K$. Put mbrojtës = aksion + put (fondi i Orës 1).
+\end{frame}
+
+\begin{frame}[fragile]{Fitimi në $T$}
+<<w8h5-plot, echo=FALSE, fig.height=3.2>>=
+ggplot(strat, aes(ST, profit)) + geom_hline(yintercept = 0, colour = "gray50") +
+  geom_line(colour = "#2C5AA0", linewidth = 1) + geom_vline(xintercept = K, linetype = 2, colour = "#E67E22") +
+  facet_wrap(~ name, nrow = 1, scales = "free_y") +
+  labs(x = "S(T)", y = "fitimi ne T") + th + theme(strip.text = element_text(face = "bold"))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Call: humbja maksimale është prima (\Sexpr{fmt(C0 * exp(r * Tm), 2)} në $T$); fitimi i pakufizuar.
+    \item<2-> Straddle: fiton nëse çmimi lëviz \textbf{shumë}, në çdo drejtim. Është ``bast'' për volatilitetin.
+    \item<3-> Put mbrojtës: humbja është e kufizuar në \Sexpr{fmt((100 + P0) * exp(r * Tm) - K, 2)}; ky është çmimi i garancisë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8par5]{Parashiko}
+  \begin{Parashiko}
+    Për straddle-in me $K=100$:
+    \begin{enumerate}
+      \item Për cilat vlera të $S_T$ fitimi është pozitiv? (Dy pika barazimi.)
+      \item Nëse $\sigma$ rritet nga 25\% në 40\%, a bëhet straddle-i më i shtrenjtë?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w8zgjPar5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Parity në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Parity në një rrjetë $(K,T)$}
+<<w8h5-grid>>=
+g <- expand.grid(K = c(80, 100, 120), T = c(0.25, 1, 5))
+g$C <- bscall(100, g$K, 0.25, r, g$T, 0)
+g$P <- bsput(100, g$K, 0.25, r, g$T, 0)
+g$residual <- (g$C - g$P) - (100 - g$K * exp(-r * g$T))
+cbind(round(g[, 1:4], 4), residual = signif(g$residual, 2))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mbetja maksimale është \Sexpr{signif(max(abs(g$residual)), 2)}: gabim rrumbullakimi. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Parity vlen për çdo $K$ dhe $T$: Black--Scholes e respekton, siç duhet çdo model pa arbitrazh.
+    \item<3-> Me $K=80$ call-i është ``në para'' dhe i shtrenjtë; me $K=120$ e kundërta.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w8gab5]{Gjej gabimin}
+<<w8h5-bug>>=
+P_bad <- C0 - 100 + K * exp(r * Tm)          # put from parity
+c(P_bad = P_bad, P_market = P0)
+@
+  \begin{enumerate}
+    \item Ku është gabimi?
+    \item Sa del diferenca, dhe pse është afër $2rK$ për $T=1$?
+  \end{enumerate}
+  \vfill\shkoTe{w8zgjGab5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w8ndr5]{Ndrysho parametrin: norma pa rrezik}
+<<w8h5-rate, echo=FALSE, fig.height=2.8>>=
+rr <- seq(0, 0.08, by = 0.005)
+dr <- data.frame(r = rep(100 * rr, 2),
+                 price = c(bscall(100, K, 0.25, rr, 1, 0), bsput(100, K, 0.25, rr, 1, 0)),
+                 option = rep(c("call", "put"), each = length(rr)))
+ggplot(dr, aes(r, price, colour = option)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#2C5AA0", "#E67E22")) +
+  labs(x = "r (%)", y = "cmimi (K = 100, T = 1)", colour = NULL) + th + theme(legend.position = "top")
+@
+  \small Me $r=0$, call = put. Pse?\hfill\shkoTe{w8zgjNdr5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Arbitrazhi i simuluar}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Put-i i lirë: 7.50 në vend të \Sexpr{fmt(P0, 2)}}
+<<w8h5-arb>>=
+P_quote <- 7.50; C_quote <- 11.35
+cash0 <- -P_quote - 100 + C_quote + K * exp(-r * Tm)    # buy put, buy stock, sell call, borrow
+set.seed(858)
+S_T <- 100 * exp((0.07 - 0.25^2 / 2) * Tm + 0.25 * sqrt(Tm) * rnorm(1e4))   # real world
+pl  <- put_pay(S_T, K) + S_T - call_pay(S_T, K) - K + cash0 * exp(r * Tm)
+round(c(cash_today = cash0, summary(pl)), 4)
+@
+  \small Skenarët me $\mu=7\%$ (bota reale): rezultati nuk varet nga $\mu$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në \textbf{çdo} skenar fitimi në $T$ është \Sexpr{fmt(mean(pl), 4)} $=0.8946\,e^{0.03}$. \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Min = maks: rreziku është zero. Kjo është arbitrazh.
+    \item<3-> Nuk na duhej as $\mu$, as $\sigma$: vetëm çmimet e tregut dhe $r$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Krahasim: vetëm ``bli put-in e lirë''}
+<<w8h5-naive>>=
+naive <- put_pay(S_T, K) - P_quote * exp(r * Tm)
+round(c(mean = mean(naive), sd = sd(naive), prob_loss = mean(naive < 0)), 4)
+@
+  \pause
+  \begin{itemize}
+    \item Blerja e put-it ``të lirë'' vetëm, pa mbrojtje: humbet në \Sexpr{fmt(100 * mean(naive < 0))}\% të skenarëve.
+    \item Arbitrazhi kërkon \textbf{portofolin e plotë}: put + aksion $-$ call $-$ hua.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w8ush5]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Tani tregu kuoton call-in \textbf{shtrenjtë}: $C=13.00$, ndërsa $P=\Sexpr{fmt(P0, 2)}$.
+    \begin{enumerate}
+      \item Cili është arbitrazhi? Shkruaj katër veprimet.
+      \item Llogarit fitimin sot dhe kontrolloje në 10\,000 skenarë me kodin e mësipërm.
+      \item Si ndryshon fitimi nëse $\mu=-20\%$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w8zgjUsh5}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si llogaritet fitimi në $T$ i një strategjie me opsione?
+    \item Pse mbetja e parity me \texttt{bscall()}/\texttt{bsput()} është $\approx10^{-15}$?
+    \item Pse fitimi i arbitrazhit nuk varet nga $\mu$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) payoff $-$ kostoja $\times e^{rT}$; (2) BS nuk lejon arbitrazh, mbetja është rrumbullakim;
+  (3) portofoli ka të njëjtin payoff $K$ në çdo skenar.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{call\_pay()}, \texttt{put\_pay()}: çdo strategji në një rresht; fitimi me $e^{rT}$.
+    \item Straddle = bast për volatilitetin; put mbrojtës = garancia.
+    \item Parity në rrjetë: mbetja $\approx10^{-15}$.
+    \item Arbitrazhi: fitim konstant \Sexpr{fmt(mean(pl), 4)} në 10\,000 skenarë.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: kostoja e garancisë së fondit ``Pensioni Plus'' dhe pasiguria e $\hat\sigma$.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts} (versioni \Sexpr{as.character(packageVersion("derivmkts"))}): \texttt{bscall()}, \texttt{bsput()}.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+  \end{itemize}
+\end{frame}

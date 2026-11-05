@@ -1,0 +1,42 @@
+% ============================================================
+%  Java 8 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w8zgjPar5]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Kostoja në $T$: $(C_0+P_0)e^{rT}=\Sexpr{fmt((C0 + P0) * exp(r * Tm), 2)}$. Fitim nëse
+      $S_T<\Sexpr{fmt(K - (C0 + P0) * exp(r * Tm), 2)}$ ose $S_T>\Sexpr{fmt(K + (C0 + P0) * exp(r * Tm), 2)}$.
+    \item Po: me $\sigma=40\%$, $C_0+P_0=\Sexpr{fmt(bscall(100, K, 0.4, r, Tm, 0) + bsput(100, K, 0.4, r, Tm, 0), 2)}$
+      (kundrejt \Sexpr{fmt(C0 + P0, 2)}). Të dy opsionet shtrenjtohen kur rritet $\sigma$.
+  \end{enumerate}
+  \vfill\kthehu{w8par5}
+\end{frame}
+
+\begin{frame}[label=w8zgjGab5]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item \texttt{exp(r * Tm)} në vend të \texttt{exp(-r * Tm)}: $K$ duhet \textbf{skontuar}, jo kapitalizuar.
+    \item Diferenca: $K(e^{rT}-e^{-rT})=\Sexpr{fmt(P_bad - P0, 4)}\approx2rKT=6$, sepse $e^{x}-e^{-x}\approx2x$ për $x$ të vogël.
+  \end{enumerate}
+  \vfill\kthehu{w8gab5}
+\end{frame}
+
+\begin{frame}[label=w8zgjNdr5]{Zgjidhja: Ndrysho parametrin}
+  \begin{itemize}
+    \item Me $r=0$: $C-P=S_0-K=100-100=0$, pra call = put.
+    \item Kur $r$ rritet, $Ke^{-rT}$ bie: $C-P$ rritet. Call-i shtrenjtohet, put-i lirohet.
+    \item Intuita: blerësi i call-it e ``shtyn'' pagesën e $K$; me $r$ të lartë, kjo vlen më shumë.
+  \end{itemize}
+  \vfill\kthehu{w8ndr5}
+\end{frame}
+
+\begin{frame}[fragile,label=w8zgjUsh5]{Zgjidhja: Radha jote!}
+<<w8h5-sol-ush>>=
+cash_c <- 13.00 - P0 - 100 + K * exp(-r * Tm)     # sell call, buy put, buy stock, borrow
+pl_c <- -call_pay(S_T, K) + put_pay(S_T, K) + S_T - K + cash_c * exp(r * Tm)
+S_T2 <- 100 * exp((-0.20 - 0.25^2 / 2) * Tm + 0.25 * sqrt(Tm) * rnorm(1e4))
+pl_c2 <- -call_pay(S_T2, K) + put_pay(S_T2, K) + S_T2 - K + cash_c * exp(r * Tm)
+round(c(cash_today = cash_c, range_mu7 = range(pl_c), range_mu_neg20 = range(pl_c2)), 4)
+@
+  \small Fitimi është i njëjtë me çdo $\mu$: portofoli është pa rrezik.
+  \vfill\kthehu{w8ush5}
+\end{frame}
