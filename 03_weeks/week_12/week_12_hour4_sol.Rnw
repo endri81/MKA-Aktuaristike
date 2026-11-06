@@ -1,0 +1,68 @@
+% ============================================================
+%  Java 12 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12zgj4a]{Zgjidhja: Ushtrim 1}
+  \begin{enumerate}
+    \item $q_{60}=50/1000=0.05$; \; $_2p_{60}=880/1000=0.88$; \; $e_{60}=(950+880+0)/1000=\mathbf{1.83}$ vjet.
+    \item $A_{60}=\big(50v+70v^2+880v^3\big)/1000=(47.619+63.492+760.177)/1000=\mathbf{0.87129}$.\\
+      $\ddot a_{60}=1+0.95v+0.88v^2=1+0.90476+0.79819=\mathbf{2.70295}$.
+    \item $d=0.05/1.05=0.047619$; \; $(1-0.87129)/0.047619=2.7029$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small R: \texttt{toy <- new("actuarialtable", x = 60:63, lx = c(1000, 950, 880, 0), interest = 0.05)};
+  \texttt{Axn(toy, 60)} $=0.871288$.
+  \vfill\kthehu{w12q4a}
+\end{frame}
+
+\begin{frame}[label=w12zgj4b]{Zgjidhja: Ushtrim 2}
+  \begin{enumerate}
+    \item Të dy: $0.90\cdot0.95=\mathbf{0.855}$.
+    \item Të paktën njëri: $0.90+0.95-0.855=\mathbf{0.995}$.
+    \item Saktësisht njëri: $0.995-0.855=\mathbf{0.140}$ \; (ose $0.90\cdot0.05+0.10\cdot0.95=0.045+0.095$).
+  \end{enumerate}
+  \vfill\kthehu{w12q4b}
+\end{frame}
+
+\begin{frame}[label=w12zgj4c]{Zgjidhja: Ushtrim 3}
+  \begin{enumerate}
+    \item $\ddot a_{65}=14\,000/1200=\mathbf{11.667}$; \; $A_{65}=520/1200=\mathbf{0.4333}$.
+    \item $_{10}E_{65}=550/1200=\mathbf{0.4583}$.
+    \item $\ddot a_{65:\overline{10}|}=(14\,000-4800)/1200=\mathbf{7.667}$.
+  \end{enumerate}
+  \small Kontroll: $\ddot a_{65:\overline{10}|}<\ddot a_{65}$, dhe $\ddot a_{65}=\ddot a_{65:\overline{10}|}+{}_{10}E_{65}\,\ddot a_{75}=7.667+0.4583\cdot\frac{4800}{550}=11.667$. \textcolor{okgreen}{$\checkmark$}
+  \vfill\kthehu{w12q4c}
+\end{frame}
+
+\begin{frame}[label=w12zgj4d]{Zgjidhja: Ushtrim 4}
+  \textbf{B)} Anuiteti i përkohshëm paguan vetëm $n$ vjet, pjesë e anuitetit të përjetshëm.
+  \begin{itemize}
+    \item A) e kundërta: $A_x\ge A^1_{x:\overline n|}$. \; C) varet nga mosha dhe $n$; për të moshuarit mund të jetë e kundërta.
+    \item D) $\mathring e_x\approx e_x+0.5>e_x$.
+  \end{itemize}
+  \vfill\kthehu{w12q4d}
+\end{frame}
+
+\begin{frame}[label=w12zgj4e]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item Vektorët në R fillojnë nga 1, por tabela fillon nga mosha 0: \texttt{qx\_male[65]} është $q_{64}$.
+    \item Rregulli: zgjidh me emër, jo me pozicion: \texttt{qx\_male[age == 65]} ose \texttt{match(65, age)};
+      ose përdor funksionet e paketës (\texttt{qxt(tM4, 65, 1)}).
+  \end{itemize}
+  \small I njëjti gabim prish edhe $_tp_x$ dhe pagesat e vdekjes në pemët e Javës 11.
+  \vfill\kthehu{w12q4e}
+\end{frame}
+
+<<w12h4-sol-f, include=FALSE>>=
+tM6 <- new("actuarialtable", x = mt4$age, lx = mt4$lx_male, interest = 0.06)
+@
+
+\begin{frame}[label=w12zgj4f]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item Me $i=6\%$: $\ddot a_{65}=\Sexpr{fmt(axn(tM6, 65), 4)}$ (sintetike) kundrejt \Sexpr{fmt(axn(soa08Act, 65), 4)} (SOA).
+    \item Tabela sintetike: anuitet më i madh $\Rightarrow$ klientët jetojnë më gjatë. Edhe
+      $e_{65}=\Sexpr{fmt(exn(tM6, 65), 2)}$ kundrejt \Sexpr{fmt(exn(soa08Act, 65), 2)}.
+    \item $1\,000\,000\cdot\ddot a_{\overline{65:62}}=\Sexpr{fmt(1e6 * axyzn(list(tM4, tF4), c(65, 62), status = "last"))}$ lekë
+      (\texttt{axyzn(..., status = "last")}, $i=5\%$).
+  \end{enumerate}
+  \vfill\kthehu{w12q4f}
+\end{frame}
