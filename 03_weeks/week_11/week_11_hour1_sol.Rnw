@@ -1,0 +1,46 @@
+% ============================================================
+%  Java 11 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w11zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $d<e^{r\Delta t}<u$: përndryshe njëri nga aktivet (banka ose aksioni) dominon tjetrin.
+  \begin{itemize}
+    \item A) nuk mjafton: me $u=1.02$, $d=1.01$ dhe $e^{r\Delta t}=1.05$ ka arbitrazh.
+    \item C) $ud=1$ është zgjedhje e CRR, jo kusht i domosdoshëm. \; D) $q$ varet nga $u$, $d$, $r$.
+  \end{itemize}
+  \vfill\kthehu{w11mc1}
+\end{frame}
+
+<<w11h1-sol-par, include=FALSE>>=
+err1 <- sapply(1:600, crr) - C0
+n_first <- min(which(abs(err1) < 0.01))
+n_all   <- max(which(abs(err1) >= 0.01)) + 1
+@
+
+\begin{frame}[label=w11zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Më shumë: \Sexpr{fmt(cr1[1], 2)}. Me 1 hap ka vetëm dy skenarë, shumë larg njëri-tjetrit.
+    \item Gabimi bie nën 0.01 për herë të parë me $n=\Sexpr{n_first}$, por mbetet nën 0.01 për çdo $n$ vetëm nga $n=\Sexpr{n_all}$.
+    \item \textbf{Jo}: gabimi luhatet midis $n$ çift dhe tek. Prandaj nuk mjafton të shohësh një $n$ të vetëm.
+  \end{enumerate}
+  \vfill\kthehu{w11par1}
+\end{frame}
+
+\begin{frame}[label=w11zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $\Delta t=1/3$; \; $\sigma\sqrt{\Delta t}=0.25\cdot0.57735=0.144338$; \; $u=1.155274$; \; $d=1/u=0.865596$.
+    \item $q=\dfrac{1.010050-0.865596}{1.155274-0.865596}=\dfrac{0.144454}{0.289678}=0.4987$: pak nën 0.5.
+    \item \texttt{returnparams}: \texttt{up} $=1.155274$, \texttt{dn} $=0.865596$, \texttt{p} $=0.498672$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w11ush1}
+\end{frame}
+
+\begin{frame}[label=w11zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Me 3 hapa, $\Delta t\approx3.3$ vjet: vetëm 4 vlera në maturim dhe 3 data vendimi. Gabimi i pemës është i madh.
+    \item Kompania i ka shitur opsionin klientit: ushtrimi optimal jep vlerën \textbf{maksimale} të opsionit, pra detyrimin më të madh.
+      Çdo sjellje tjetër i kushton kompanisë më pak.
+    \item Të dhëna historike të anulimeve (p.sh.\ \texttt{lapse\_policies\_synthetic}), sipas moshës, kanalit, vjetërsisë dhe nivelit të normave.
+  \end{enumerate}
+  \vfill\kthehu{w11tps1}
+\end{frame}

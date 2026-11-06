@@ -1,0 +1,283 @@
+% ============================================================
+%  Java 11 · Ora 1 — Motivimi: kur nuk ka formulë
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w11h1-setup, include=FALSE>>=
+suppressMessages(library(derivmkts))
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+st  <- read.csv(file.path(DATA, "stock_prices_gbm_synthetic.csv"))
+sig_hat <- sd(diff(log(st$close))) * sqrt(252)                 # Week 8
+C0 <- bscall(100, 100, 0.25, 0.03, 1, 0); P0 <- bsput(100, 100, 0.25, 0.03, 1, 0)
+crr <- function(n, put = FALSE, am = FALSE)                     # CRR price (derivmkts)
+  unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = n, american = am, putopt = put, crr = TRUE))
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e javës}
+% ------------------------------------------------------------
+
+\begin{frame}{Rikthim te ``Kursimi Plus''}
+  \begin{itemize}
+    \item<1-> Java 9: klienti mund ta anulojë kontratën \textbf{në çdo moment}: një put \textbf{amerikan}.
+    \item<2-> Java 10: Black--Scholes jep një formulë, por vetëm për opsionet \textbf{europiane}.
+    \item<3-> Për put-in amerikan nuk ka formulë të mbyllur.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja e javës)]
+    ``Si e vlerësojmë një opsion që mund të ushtrohet në çdo kohë? Dhe si e dimë që përgjigjja është e saktë?''
+  \end{Shembull}}
+  \onslide<5->{\small Shembull ilustrues: kompania dhe kontrata janë fiktive.}
+\end{frame}
+
+\begin{frame}[fragile]{Kutia e zezë e Javëve 9--10}
+<<w11h1-box>>=
+binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 3, american = TRUE, putopt = TRUE,
+         crr = TRUE, returnparams = TRUE)[c("price", "up", "dn", "p", "h")]
+@
+  \begin{itemize}
+    \item<2-> \texttt{up}, \texttt{dn}: sa rritet ose bie aksioni në një hap; \texttt{p}: probabiliteti neutral $q$; \texttt{h}: gjatësia e hapit $\Delta t$.
+    \item<3-> Sot e hapim këtë kuti: si ndërtohet pema dhe si llogaritet çmimi.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pema me tre hapa}
+  \centering
+  \begin{tikzpicture}[>=Stealth,x=2.4cm,y=0.75cm,
+      n/.style={draw=uptblue,fill=uptlight,rounded corners=2pt,font=\scriptsize,inner sep=2pt}]
+    \node[n] (a) at (0,0) {100};
+    \node[n] (b1) at (1,1) {115.53}; \node[n] (b0) at (1,-1) {86.56};
+    \node[n] (c2) at (2,2) {133.47}; \node[n] (c1) at (2,0) {100}; \node[n] (c0) at (2,-2) {74.93};
+    \node[n] (d3) at (3,3) {154.19}; \node[n] (d2) at (3,1) {115.53};
+    \node[n] (d1) at (3,-1) {86.56}; \node[n] (d0) at (3,-3) {64.86};
+    \foreach \x/\y in {a/b1,a/b0,b1/c2,b1/c1,b0/c1,b0/c0,c2/d3,c2/d2,c1/d2,c1/d1,c0/d1,c0/d0}
+      \draw[->,uptmid] (\x) -- (\y);
+    \node[font=\scriptsize,gray] at (0,-3.6) {$t=0$};
+    \node[font=\scriptsize,gray] at (3,-3.9) {$t=T=1$};
+  \end{tikzpicture}\par
+  \small $\sigma=25\%$, $\Delta t=1/3$: \; $u=e^{\sigma\sqrt{\Delta t}}=1.1553$, \; $d=1/u=0.8656$. Pema \textbf{rikombinohet}: $ud=du$.
+\end{frame}
+
+\begin{frame}{Ideja: induksioni prapa}
+  \begin{enumerate}
+    \item<1-> Në maturim (kolona e fundit): vlera $=$ payoff-i.
+    \item<2-> Një hap prapa: vlera $=$ mesatarja e skontuar me $q$ e dy pasardhësve.
+    \item<3-> Për opsionin amerikan: krahaso me vlerën intrinsike; merr më të madhen.
+    \item<4-> Përsërit deri në $t=0$.
+  \end{enumerate}
+  \onslide<5->{
+  \begin{Keshille}E njëjta ide si rezerva matematike e Javës 7: llogaritet nga fundi drejt fillimit.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 11}
+  \begin{enumerate}
+    \item Të ndërtojmë pemën CRR dhe të nxjerrim probabilitetin neutral $q$. \LO{K3}
+    \item Të vlerësojmë opsione europiane dhe amerikane me induksion prapa. \LO{K3}
+    \item Ta programojmë pemën nga zero dhe ta krahasojmë me \Rkey{derivmkts}. \LO{S2}
+    \item Të tregojmë konvergjencën e CRR te Black--Scholes. \LO{K3}
+    \item Të vlerësojmë një garanci me të drejtë anulimi në një kontratë jete. \LO{C3}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t1) at (0,0) {\textbf{Pema CRR}\\teori, Ora 2};
+    \node[b] (l1) at (3.6,0) {\textbf{Pema nga zero}\\R, Ora 3};
+    \node[b] (t2) at (0,-2) {\textbf{Amerikani}\\teori, Ora 4};
+    \node[b] (l2) at (3.6,-2) {\textbf{Konvergjenca}\\R, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (c) at (7.6,-1) {\textbf{Anulimi}\\i kontratës, Ora 6};
+    \draw[->,thick,uptmid] (t1) -- (l1); \draw[->,thick,uptmid] (t2) -- (l2);
+    \draw[->,thick,uptmid] (l1) -- (c); \draw[->,thick,uptmid] (l2) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga Java 10: lodra me një hap}
+  \begin{itemize}
+    \item $S_0=100$; \; $S_u=120$, $S_d=90$; \; 1 lek $\to1.05$; \; call me $K=100$.
+    \item Riprodhimi: $\Delta=2/3$, $B=-57.14$, $C=9.52$.
+    \item Probabiliteti neutral: $q=\dfrac{1.05-0.90}{1.20-0.90}=0.5$; \; $C=\dfrac{0.5\cdot20}{1.05}=9.52$.
+    \item Probabiliteti real $p$ nuk hyn.
+  \end{itemize}
+  \pause
+  \begin{Keshille}Sot: e njëjta lodër, por me \textbf{shumë} hapa dhe me $u$, $d$ të zgjedhur nga $\sigma$.\end{Keshille}
+\end{frame}
+
+\begin{frame}[label=w11mc1]{Zgjedhje e shumëfishtë}
+  Në një pemë me një hap, me $u$, $d$ dhe normë $e^{r\Delta t}$, çfarë duhet të vlejë që të mos ketë arbitrazh?
+  \begin{enumerate}[A)]
+    \item $u>d>0$, pa kusht tjetër.
+    \item $d<e^{r\Delta t}<u$.
+    \item $u\cdot d=1$.
+    \item $q=0.5$.
+  \end{enumerate}
+  \vfill\shkoTe{w11zgjMC1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Pse $d<e^{r\Delta t}<u$?}
+  \begin{itemize}
+    \item<1-> Nëse $e^{r\Delta t}\ge u$: banka jep gjithmonë të paktën sa aksioni.
+      Shit aksionin, vendos paratë në bankë: fitim pa rrezik.
+    \item<2-> Nëse $e^{r\Delta t}\le d$: aksioni jep gjithmonë të paktën sa banka. Merr hua, bli aksionin.
+    \item<3-> Pra $q=\dfrac{e^{r\Delta t}-d}{u-d}\in(0,1)$: një probabilitet i vërtetë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pema dhe Black--Scholes}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w11par1]{Parashiko}
+  \begin{Parashiko}
+    Call ATM: $S_0=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$; Black--Scholes: $C=11.3485$.
+    \begin{enumerate}
+      \item Me 1 hap, pema jep më shumë apo më pak se 11.35?
+      \item Sa hapa duhen që gabimi të jetë nën 0.01?
+      \item A bie gabimi gjithmonë kur shtojmë një hap?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w11zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Numrat e parë}
+<<w11h1-first>>=
+n1 <- c(1, 2, 3, 10, 50, 100, 500)
+cr1 <- sapply(n1, crr)
+round(rbind(steps = n1, crr = cr1, error = cr1 - C0), 4)
+@
+  \small \texttt{crr()}: mbështjellës i \texttt{binomopt(..., crr = TRUE)} (kodi në kutinë e setup-it).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me 1 hap gabimi është i madh (\Sexpr{fmt(cr1[1] - C0, 2)}); me 500 hapa është \Sexpr{fmt(cr1[7] - C0, 4)}.
+    \item<2-> Gabimi ndryshon \textbf{shenjë}: pema ``lëkundet'' rreth Black--Scholes.
+    \item<3-> Black--Scholes është kufiri i pemës CRR kur $n\to\infty$. Prova: Ora 4.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Konvergjenca në grafik}
+<<w11h1-conv, echo=FALSE, fig.height=2.8>>=
+nn1 <- 1:150
+ggplot(data.frame(n = nn1, C = sapply(nn1, crr)), aes(n, C)) +
+  geom_hline(yintercept = C0, colour = "#E67E22", linetype = 2) +
+  geom_line(colour = "#2C5AA0") + geom_point(colour = "#2C5AA0", size = 0.7) +
+  coord_cartesian(ylim = c(10.5, 12.5)) + labs(x = "numri i hapave n", y = "cmimi CRR i call-it") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Ku është vlera e pemës: amerikani}
+<<w11h1-am>>=
+round(c(european_put_BS = P0, european_put_CRR = crr(500, put = TRUE),
+        american_put_CRR = crr(500, put = TRUE, am = TRUE),
+        premium = crr(500, put = TRUE, am = TRUE) - crr(500, put = TRUE)), 4)
+@
+  \pause
+  \small Për europianin, pema vetëm përsërit Black--Scholes. Për amerikanin, pema është \textbf{mjeti i vetëm} i thjeshtë:
+  prima e ushtrimit të hershëm është \Sexpr{fmt(crr(500, put = TRUE, am = TRUE) - crr(500, put = TRUE), 3)}.
+\end{frame}
+
+\begin{frame}[fragile]{Gabim i zakonshëm: cila pemë?}
+<<w11h1-fwd>>=
+c(default_tree = unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 3, american = FALSE)),
+  crr_tree     = crr(3), black_scholes = C0)
+@
+  \begin{Gabim}\texttt{binomopt()} si parazgjedhje \textbf{nuk} ndërton pemën CRR, por një ``forward tree''
+  ($u=e^{r\Delta t+\sigma\sqrt{\Delta t}}$). Për CRR shkruaj \texttt{crr = TRUE}. Me shumë hapa, të dyja konvergjojnë te Black--Scholes.\end{Gabim}
+\end{frame}
+
+\begin{frame}[label=w11ush1]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    $\sigma=25\%$, $r=3\%$, $T=1$, $n=3$ hapa; \; $\sqrt{1/3}=0.57735$, \; $e^{0.144338}=1.155274$, \; $e^{0.01}=1.010050$.
+    \begin{enumerate}
+      \item Llogarit $\Delta t$, $u$ dhe $d=1/u$.
+      \item Llogarit $q$. A është afër 0.5?
+      \item Kontrollo me rezultatin e \texttt{returnparams = TRUE} të slide-it ``Kutia e zezë''.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pemët në sigurime}
+% ------------------------------------------------------------
+
+\begin{frame}{Ku përdoren pemët?}
+  \begin{itemize}
+    \item \textbf{Anulimi} me vlerë të garantuar: put amerikan ose bermudian (Java 9).
+    \item \textbf{Opsioni i konvertimit} (p.sh.\ nga kapital në anuitet): vendim në data të caktuara.
+    \item \textbf{Obligacione} me opsion riblerjeje në portofolin e kompanisë.
+    \item Çdo produkt ku mbajtësi \textbf{vendos} gjatë jetës së kontratës.
+  \end{itemize}
+  \pause
+  \small Pema e bën vendimin optimal ``të dukshëm'': në çdo nyje dimë nëse ushtrohet apo jo.
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item \textbf{Solvency II}: Best Estimate duhet të përfshijë opsionet e mbajtësve të policave, përfshirë anulimin.
+    \item \textbf{IFRS 17}: flukset e ardhshme varen nga sjellja e klientit; opsionet vlerësohen në mënyrë konsistente me tregun.
+    \item Pema binomiale: mjet transparent për ta shpjeguar këtë vlerë para një auditori.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item Pse pema me 3 hapa nuk mjafton për një garanci 10-vjeçare?
+      \item Pema supozon që klienti anulon \textbf{optimalisht}. Pse kjo jep një vlerë maksimale (konservative) për kompaninë?
+      \item Çfarë informacioni shtesë do t'ju duhej për sjelljen reale të klientëve?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjTps1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si zgjidhen $u$ dhe $d$ në modelin CRR?
+    \item Cili kusht siguron mungesën e arbitrazhit në një hap?
+    \item Pse na duhet pema, kur kemi formulën Black--Scholes?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $u=e^{\sigma\sqrt{\Delta t}}$, $d=1/u$; (2) $d<e^{r\Delta t}<u$;
+  (3) për opsionet amerikane (dhe ato me vendime gjatë jetës), që nuk kanë formulë të mbyllur.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item ``Kursimi Plus'': anulimi është opsion amerikan; Black--Scholes nuk mjafton.
+    \item Pema CRR: $u=e^{\sigma\sqrt{\Delta t}}$, $d=1/u$, $q=(e^{r\Delta t}-d)/(u-d)$.
+    \item Me $n=500$: gabimi kundrejt Black--Scholes \Sexpr{fmt(cr1[7] - C0, 4)}, me luhatje.
+    \item \texttt{binomopt()}: kujdes me \texttt{crr = TRUE}.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria I: riprodhimi në një hap, parametrat CRR, pema me shumë hapa, formula binomiale.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Cox, S.~A.~Ross, M.~Rubinstein (1979), ``Option Pricing: A Simplified Approach'', \emph{Journal of Financial Economics}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: pemët binomiale.
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{binomopt()}.
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
