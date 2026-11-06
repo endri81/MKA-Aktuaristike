@@ -1,0 +1,108 @@
+% ============================================================
+%  Java 10 · Ora 7 — Zgjidhjet e kuizit (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10sT1]{Zgjidhja T1}
+  \textbf{C)} $\mu$ nuk hyn: opsioni riprodhohet me aksion + obligacion, dhe $S_0$ e përmban tashmë $\mu$ (Ora 2).
+  \begin{itemize}
+    \item A), B), D) janë hyrje të formulës, bashkë me $S_0$ dhe $K$.
+  \end{itemize}
+  \vfill\kthehu{w10qT1}
+\end{frame}
+
+\begin{frame}[label=w10sT2]{Zgjidhja T2}
+  \textbf{B)} $\mathbb{Q}(S_T>K)=\Phi(d_2)$ (Ora 2, Hapi 1).
+  \begin{itemize}
+    \item A) probabiliteti real përdor $\mu$. \; C) delta është $\Phi(d_1)$. \; D) vlera e skontuar është $Ke^{-rT}$.
+  \end{itemize}
+  \vfill\kthehu{w10qT2}
+\end{frame}
+
+\begin{frame}[label=w10sU1]{Zgjidhja U1}
+  \begin{enumerate}
+    \item $\sigma\sqrt T=0.3\cdot0.5=0.15$; \;
+      $d_1=\dfrac{0+(0.04+0.045)\cdot0.25}{0.15}=\dfrac{0.02125}{0.15}=0.1417$; \; $d_2=0.1417-0.15=-0.0083$.
+    \item $Ke^{-rT}=50\cdot0.990050=49.5025$; \;
+      $C=50\cdot0.5563-49.5025\cdot0.4967=27.815-24.588=\mathbf{3.227}$.
+  \end{enumerate}
+  \small R: \texttt{bscall(50, 50, 0.3, 0.04, 0.25, 0)} $=\Sexpr{fmt(bscall(50, 50, 0.3, 0.04, 0.25, 0), 4)}$.
+  \vfill\kthehu{w10qU1}
+\end{frame}
+
+\begin{frame}[label=w10sU2]{Zgjidhja U2}
+  \begin{enumerate}
+    \item $P=C-S_0+Ke^{-rT}=3.227-50+49.5025=\mathbf{2.730}$.
+    \item $P=49.5025\cdot(1-0.4967)-50\cdot(1-0.5563)=24.915-22.185=2.730$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small R: \texttt{bsput(50, 50, 0.3, 0.04, 0.25, 0)} $=\Sexpr{fmt(bsput(50, 50, 0.3, 0.04, 0.25, 0), 4)}$.
+  \vfill\kthehu{w10qU2}
+\end{frame}
+
+\begin{frame}[label=w10sU3]{Zgjidhja U3}
+  \begin{enumerate}
+    \item $\Delta_C=0.5563$; \; $\Delta_P=0.5563-1=-0.4437$; \;
+      $\Gamma=\dfrac{0.3950}{50\cdot0.3\cdot0.5}=\dfrac{0.3950}{7.5}=0.0527$.
+    \item Pozicioni: $-100\,\Delta_C=-55.63$. Për ta neutralizuar: \textbf{bli} rreth 55.6 aksione.
+  \end{enumerate}
+  \vfill\kthehu{w10qU3}
+\end{frame}
+
+\begin{frame}[label=w10sU4]{Zgjidhja U4}
+  \begin{enumerate}
+    \item Vetëm $\Delta$: $\delta C\approx0.5563\cdot1=0.5563$.
+    \item $\Delta+\Gamma$: $\delta C\approx0.5563+\tfrac12\cdot0.0527\cdot1^2=0.5826$.
+    \item E saktë: $C(51)-C(50)=\Sexpr{fmt(bscall(51, 50, 0.3, 0.04, 0.25, 0) - bscall(50, 50, 0.3, 0.04, 0.25, 0), 4)}$:
+      përafrimi me $\Gamma$ është shumë më i mirë.
+  \end{enumerate}
+  \vfill\kthehu{w10qU4}
+\end{frame}
+
+\begin{frame}[label=w10sU5]{Zgjidhja U5}
+  Payoff-et e put-it: $S_u=100\to0$, \; $S_d=70\to10$.
+  \begin{enumerate}
+    \item $100\Delta+1.04B=0$, \; $70\Delta+1.04B=10$ $\Rightarrow$ $30\Delta=-10$, \; $\Delta=-1/3$; \; $B=33.333/1.04=32.05$.
+    \item $P=80\cdot(-1/3)+32.05=-26.67+32.05=\mathbf{5.385}$.
+    \item $q=\dfrac{1.04\cdot80-70}{100-70}=\dfrac{13.2}{30}=0.44$; \; $P=\dfrac{0.56\cdot10}{1.04}=5.385$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small $\Delta<0$: put-i riprodhohet me shitje të shkurtër të aksionit dhe depozitë.
+  \vfill\kthehu{w10qU5}
+\end{frame}
+
+\begin{frame}[label=w10sU6]{Zgjidhja U6}
+  \begin{enumerate}
+    \item $U=2\,000\,000/100=20\,000$ njësi; \; $V=0.95\cdot12.00\cdot20\,000=\mathbf{228\,000}$ lekë.
+    \item $0.95\cdot0.7408\cdot12\cdot20\,000=168\,902$ lekë: \textbf{skontim i dyfishtë}.
+      Çmimi 12.00 i put-it është tashmë vlera sot; mjafton probabiliteti i mbijetesës $_{10}p_x$.
+  \end{enumerate}
+  \vfill\kthehu{w10qU6}
+\end{frame}
+
+\begin{frame}[fragile,label=w10sU7]{Zgjidhja U7}
+<<w10h7-sol-iv>>=
+iv7 <- uniroot(function(s) bscall(100, 100, s, 0.03, 0.5, 0) - 8, c(1e-4, 3), tol = 1e-10)$root
+g7 <- greeks(bscall(100, 100, iv7, 0.03, 0.5, 0))
+round(c(iv_uniroot = iv7, iv_derivmkts = bscallimpvol(100, 100, 0.03, 0.5, 0, 8),
+        Delta = g7["Delta", 1], Vega_pct = g7["Vega", 1]), 4)
+@
+  \small $\sigma_{\text{imp}}\approx\Sexpr{fmt(100 * iv7, 1)}\%$. Vega: çmimi ndryshon rreth \Sexpr{fmt(g7["Vega", 1], 2)} për 1 pikë përqindjeje të $\sigma$.
+  \vfill\kthehu{w10qU7}
+\end{frame}
+
+\begin{frame}[fragile,label=w10sU8]{Zgjidhja U8}
+<<w10h7-sol-hedge>>=
+e8 <- hedge_sim(52, sig = 0.30, sig_h = 0.25)
+round(c(mean = mean(e8), sd = sd(e8),
+        price_gap = bscall(100, 100, 0.25, 0.03, 1, 0) - bscall(100, 100, 0.30, 0.03, 1, 0)), 3)
+@
+  \small Humbja mesatare $\approx C_{25\%}-C_{30\%}$: kush nënvlerëson $\sigma$, shet lirë dhe paguan diferencën gjatë mbrojtjes.
+  \vfill\kthehu{w10qU8}
+\end{frame}
+
+\begin{frame}[label=w10sGab7]{Zgjidhja: raundi i shpejtë}
+  \textbf{(b)} është i saktë: \texttt{greeks()} e jep Vega-n tashmë për 1 pikë përqindjeje.
+  \begin{itemize}
+    \item (a) Për çmimin e opsionit duhet $r$, jo $\mu$ (Ora 3).
+    \item (c) \texttt{greeks()} e jep Theta-n \textbf{për ditë}: për vit duhet shumëzuar me 365.
+  \end{itemize}
+  \vfill\kthehu{w10qGab7}
+\end{frame}

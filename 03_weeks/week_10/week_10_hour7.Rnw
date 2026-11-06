@@ -1,0 +1,290 @@
+% ============================================================
+%  Java 10 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Vlerat e nevojshme: $e^{-0.01}=0.990050$; \; $\Phi(0.1417)=0.5563$, \; $\Phi(-0.0083)=0.4967$, \; $\varphi(0.1417)=0.3950$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w10qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Cili parametër \textbf{nuk} hyn në formulën Black--Scholes?
+    \begin{enumerate}
+      \item[A)] volatiliteti $\sigma$;
+      \item[B)] norma pa rrezik $r$;
+      \item[C)] kthimi i pritur i aksionit $\mu$;
+      \item[D)] koha deri në maturim $T$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w10sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Në formulën $C=S_0\Phi(d_1)-Ke^{-rT}\Phi(d_2)$, madhësia $\Phi(d_2)$ është:
+    \begin{enumerate}
+      \item[A)] probabiliteti real që call-i të ushtrohet;
+      \item[B)] probabiliteti neutral ndaj rrezikut që call-i të ushtrohet;
+      \item[C)] delta e call-it;
+      \item[D)] vlera e skontuar e $K$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w10sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU1]{U1 · Çmimi i call-it}
+  \begin{Ushtrim}[($S_0=K=50$, $\sigma=30\%$, $r=4\%$, $T=0.25$)]
+    \begin{enumerate}
+      \item Llogarit $d_1$ dhe $d_2$.
+      \item Llogarit $C$ (përdor vlerat e kutisë ``Këshillë'').
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU2]{U2 · Put-i}
+  \begin{Ushtrim}[(të dhënat e U1)]
+    \begin{enumerate}
+      \item Llogarit $P$ me put--call parity.
+      \item Llogarit $P$ me formulën e put-it dhe krahaso.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU3]{U3 · Greeks}
+  \begin{Ushtrim}[(të dhënat e U1)]
+    \begin{enumerate}
+      \item Llogarit $\Delta_C$, $\Delta_P$ dhe $\Gamma$.
+      \item Një bankë ka shitur 100 call. Sa aksione duhet të mbajë për të qenë delta-neutrale?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU4]{U4 · Përafrimi Delta--Gamma}
+  \begin{Ushtrim}[(të dhënat e U1)]
+    \begin{enumerate}
+      \item Aksioni rritet nga 50 në 51. Përafro ndryshimin e $C$ me $\Delta$ vetëm.
+      \item Përafroje me $\Delta$ dhe $\Gamma$.
+      \item Cili përafrim është më afër vlerës së saktë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU5]{U5 · Riprodhimi në një hap}
+  \begin{Ushtrim}[($S_0=80$; $S_u=100$, $S_d=70$; 1 lek $\to$ 1.04)]
+    \begin{enumerate}
+      \item Ndërto portofolin që riprodhon një put me $K=80$: gjej $\Delta$ dhe $B$.
+      \item Llogarit çmimin e put-it.
+      \item Kontrollo me probabilitetin neutral $q$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU6]{U6 · Garancia unit-linked}
+  \begin{Ushtrim}[($P=2\,000\,000$ lekë, $S_0=100$, $T=10$)]
+    Put-i Black--Scholes për një njësi ($K=100$) kushton 12.00; \; $_{10}p_{x}=0.95$; \; $e^{-0.3}=0.7408$.
+    \begin{enumerate}
+      \item Sa njësi blen primi? Sa vlen garancia në maturim (GMMB)?
+      \item Një koleg e shumëzon me $_{10}E_x={}_{10}p_x\,e^{-0.3}$. Sa merr dhe pse gabon?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU7]{U7 · Në R}
+  \begin{Ushtrim}
+    Një call ATM me $S_0=K=100$, $T=0.5$, $r=3\%$ kuotohet 8.00.
+    \begin{enumerate}
+      \item Gjej volatilitetin e nënkuptuar me \texttt{uniroot()} dhe me \texttt{bscallimpvol()}.
+      \item Llogarit Delta dhe Vega (për 1\%) me atë $\sigma$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w10qU8]{U8 · Në R}
+  \begin{Ushtrim}
+    Me \texttt{hedge\_sim()} të Orës 5 dhe $N=52$:
+    \begin{enumerate}
+      \item Volatiliteti i vërtetë është 30\%, por mbrojtësi përdor 25\%. Sa është gabimi mesatar?
+      \item Krahasoje me $C_{25\%}-C_{30\%}$. Çfarë konkludon?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w10sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): teoria}
+  \begin{enumerate}
+    \item $\mu$ në vend të $r$ në formulë ose në simulim: çmimi del i gabuar.
+    \item $\Phi(d_2)$ si probabilitet real: është probabilitet nën $\mathbb{Q}$.
+    \item $d_2=d_1-\sigma T$: duhet $\sigma\sqrt T$.
+    \item ``Mbrojtja delta eliminon gjithë rrezikun'': vetëm me rebalancim të vazhdueshëm dhe $\sigma$ të saktë.
+    \item $_TE_x\times$put: skontim i dyfishtë. Duhet $_Tp_x\times$put.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): R}
+  \begin{enumerate}
+    \item Radha e argumenteve: \texttt{bscall(s, k, v, r, tt, d)}; përdor emrat.
+    \item \texttt{log10()} në vend të \texttt{log()}.
+    \item \texttt{ifelse()} me një kusht të vetëm: kthen një vlerë.
+    \item Njësitë e \texttt{greeks()}: Vega dhe Rho për 1\%, Theta për ditë.
+    \item $h$ shumë i vogël në diferenca të fundme; \texttt{uniroot()} për çmime nën kufirin e poshtëm.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w10qGab7]{Gjej gabimin: raundi i shpejtë}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{ST <- S0 * exp((mu - sig\^{}2 / 2) * T + sig * sqrt(T) * Z)} \;(për çmimin e opsionit)
+    \item[(b)] \texttt{vega\_pct <- greeks(bscall(100, 100, 0.25, 0.03, 1, 0))["Vega", 1]}
+    \item[(c)] \texttt{theta\_year <- greeks(bscall(100, 100, 0.25, 0.03, 1, 0))["Theta", 1]}
+  \end{enumerate}
+  \vfill\shkoTe{w10sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): R}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Funksioni & Çfarë jep \\
+      \midrule
+      \texttt{bscall(s, k, v, r, tt, d)}, \texttt{bsput(...)} & çmimet Black--Scholes(--Merton) \\
+      \texttt{greeks(bscall(...))} & Greeks (Vega, Rho për 1\%; Theta për ditë) \\
+      \texttt{bscallimpvol(s, k, r, tt, d, price)} & volatiliteti i nënkuptuar \\
+      \texttt{uniroot(f, c(a, b))\$root} & zgjidhja e $f(x)=0$ \\
+      \texttt{pnorm()}, \texttt{dnorm()} & $\Phi$, $\varphi$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): formula}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      $C=S_0\Phi(d_1)-Ke^{-rT}\Phi(d_2)$ & $P=Ke^{-rT}\Phi(-d_2)-S_0\Phi(-d_1)$ \\
+      $d_1=\dfrac{\ln(S_0/K)+(r+\frac12\sigma^2)T}{\sigma\sqrt T}$ & $d_2=d_1-\sigma\sqrt T$ \\
+      $\Delta_C=\Phi(d_1)$, \; $\Delta_P=\Phi(d_1)-1$ & $\Gamma=\dfrac{\varphi(d_1)}{S\sigma\sqrt T}$, \; $\nu=S\varphi(d_1)\sqrt T$ \\
+      $\Theta+rS\Delta+\frac12\sigma^2S^2\Gamma=rV$ & GMMB $={}_Tp_x\times P^{\text{put}}(\delta=m)$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w10h7-cheat, eval=FALSE>>=
+d1 <- (log(S / K) + (r + sig^2 / 2) * T) / (sig * sqrt(T)); d2 <- d1 - sig * sqrt(T)
+C  <- S * pnorm(d1) - K * exp(-r * T) * pnorm(d2)
+ST <- S * exp((r - sig^2 / 2) * T + sig * sqrt(T) * rnorm(1e5))     # risk-neutral MC
+iv <- uniroot(function(s) bscall(S, K, s, r, T, 0) - price, c(1e-4, 3))$root
+V  <- tpx * U * bsput(100, 100, sig, r, T, m)                       # GMMB
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 11)}
+  \begin{enumerate}
+    \item Vizato $\Gamma$ dhe $\nu$ të put-it të ``Fondi Jetë'' si funksione të $S$ (nga 50 në 150) për $T=1,5,10$ dhe komento.
+    \item Simulo mbrojtjen delta të garancisë GMMB (Ora 6) me rebalancim mujor. Sa është devijimi standard i gabimit, si \% e vlerës?
+    \item Përsërit Orën 6 për një grua 60 vjeçe me $T=5$ (HLD 2011). Si ndryshon pesha e vdekshmërisë?
+  \end{enumerate}
+  \small Dorëzim: një skript R i riprodhueshëm dhe një faqe me interpretim.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 11}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 11: modeli Cox--Ross--Rubinstein}
+  \begin{itemize}
+    \item<1-> Pema binomiale me një hap dhe shumë hapa: $u$, $d$, probabiliteti neutral $q$.
+    \item<2-> Çmimi europian dhe amerikan me induksion prapa.
+    \item<3-> Konvergjenca te Black--Scholes kur $n\to\infty$ (pamja paraprake e Orës 3).
+    \item<4-> Pema nga zero në R dhe me \Rkey{derivmkts}.
+  \end{itemize}
+  \onslide<5->{\vfill\LO{K3}\;\LO{C3}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Pse çmimi Black--Scholes nuk varet nga $\mu$?
+    \item Cila Greek mat ndjeshmërinë ndaj $\sigma$, dhe pse është kaq e rëndësishme për garancitë afatgjata?
+    \item Si llogaritet vlera e garancisë GMMB?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) opsioni riprodhohet me aksion + obligacion; (2) vega, rritet me $\sqrt T$;
+  (3) $_Tp_x\times$ put Black--Scholes, me tarifën si dividend.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 10}
+  \begin{itemize}
+    \item Supozimet, riprodhimi dhe bota neutrale ndaj rrezikut; nxjerrja e formulës. \LO{K3}
+    \item Black--Scholes nga zero; Monte Carlo neutral; konvergjenca e pemës. \LO{S2}
+    \item Greeks, mbrojtja delta, PDE; simulimi i mbrojtjes. \LO{K3}
+    \item Volatiliteti i nënkuptuar; $\hat\sigma$ nga të dhënat. \LO{K3}
+    \item ``Fondi Jetë'': GMMB dhe GMDB me tabelën HLD 2011. \LO{C3}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+    \item M.~R.~Hardy, \emph{Investment Guarantees}, Wiley.
+    \item Të dhënat: \texttt{stock\_prices\_gbm\_synthetic.csv}, \texttt{mortality\_table\_synthetic.csv} (sintetike);
+      \texttt{albania\_lifetables\_HLD\_1950\_2011.csv} (reale, HLD).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}
