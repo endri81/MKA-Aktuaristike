@@ -1,0 +1,343 @@
+% ============================================================
+%  Java 10 · Ora 4 — Teoria II: Greeks dhe mbrojtja delta
+% ============================================================
+\section{Teoria II: Greeks}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w10h4-setup, include=FALSE>>=
+d1f <- function(S, K, sig, r, T) (log(S / K) + (r + sig^2 / 2) * T) / (sig * sqrt(T))
+Sg4 <- seq(50, 150, by = 0.5)
+@
+
+% ------------------------------------------------------------
+\subsection{Çfarë janë Greeks?}
+% ------------------------------------------------------------
+
+\begin{frame}{Pyetja e menaxherit të rrezikut}
+  \begin{itemize}
+    \item Kompania ka shitur garancinë e ``Pensioni Plus'': një put me vlerë 1.40 milionë lekë.
+    \item Nesër aksioni bie 1\%. Sa rritet detyrimi?
+    \item Volatiliteti rritet nga 25\% në 26\%. Po tani?
+    \item Kalon një muaj pa asnjë lëvizje. Po tani?
+  \end{itemize}
+  
+  \begin{Keshille}Çdo pyetje është një \textbf{derivat i pjesshëm} i çmimit. Këto derivate quhen Greeks (germat greke).\end{Keshille}
+\end{frame}
+
+\begin{frame}{Pesë Greeks}
+  \begin{center}
+    \begin{tabular}{llll}
+      \toprule
+      Emri & Simboli & Përkufizimi & Mat ndjeshmërinë ndaj \\
+      \midrule
+      Delta & $\Delta$ & $\partial V/\partial S$ & çmimit të aksionit \\
+      Gamma & $\Gamma$ & $\partial^2V/\partial S^2$ & ndryshimit të $\Delta$ \\
+      Vega & $\nu$ & $\partial V/\partial\sigma$ & volatilitetit \\
+      Theta & $\Theta$ & $\partial V/\partial t$ & kalimit të kohës \\
+      Rho & $\rho$ & $\partial V/\partial r$ & normës së interesit \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \small $V$: vlera e opsionit. ``Vega'' nuk është germë greke, por emri u ngul. Theta: derivati sipas kohës kalendarike $t$, pra $\Theta=-\partial V/\partial T$.
+\end{frame}
+
+\begin{frame}{Seria e Taylor-it}
+  Për ndryshime të vogla $\delta S$, $\delta\sigma$, $\delta t$, $\delta r$:
+  \[
+    \delta V\approx \Delta\,\delta S+\tfrac12\Gamma\,(\delta S)^2+\nu\,\delta\sigma+\Theta\,\delta t+\rho\,\delta r.
+  \]
+  \pause
+  \begin{itemize}
+    \item Greeks janë ``çelësi'' që përkthen lëvizjet e tregut në lëvizje të vlerës.
+    \item $\Gamma$ hyn me $(\delta S)^2$: rëndësia e saj rritet kur tregu lëviz shumë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Delta}
+% ------------------------------------------------------------
+
+\begin{frame}{Delta e call-it}
+  \[ C=S\Phi(d_1)-Ke^{-rT}\Phi(d_2)\quad\Rightarrow\quad
+     \frac{\partial C}{\partial S}=\Phi(d_1)+\underbrace{S\varphi(d_1)\frac{\partial d_1}{\partial S}-Ke^{-rT}\varphi(d_2)\frac{\partial d_2}{\partial S}}_{=\,0\ ?} \]
+  \begin{itemize}
+    \item<2-> $\varphi$: dendësia normale standarde (\texttt{dnorm()}); \; $\partial d_1/\partial S=\partial d_2/\partial S=\dfrac{1}{S\sigma\sqrt T}$.
+    \item<3-> Identiteti kyç: $S\varphi(d_1)=Ke^{-rT}\varphi(d_2)$ (Radha jote! më poshtë).
+    \item<4-> Pra kllapa është 0 dhe: \quad $\boxed{\Delta_C=\Phi(d_1)}$, \quad $\Delta_P=\Delta_C-1=\Phi(d_1)-1$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10ush4a]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta, pa ndihmën e PC)]
+    \begin{enumerate}
+      \item Vërteto: $\dfrac{\varphi(d_2)}{\varphi(d_1)}=e^{(d_1^2-d_2^2)/2}$.
+      \item Me $d_1-d_2=\sigma\sqrt T$, trego që $\tfrac12(d_1^2-d_2^2)=\ln(S/K)+rT$.
+      \item Përfundo: $S\varphi(d_1)=Ke^{-rT}\varphi(d_2)$.
+    \end{enumerate}
+    Ndihmë: $d_1^2-d_2^2=(d_1-d_2)(d_1+d_2)$.
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh4a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Delta si funksion i $S$}
+<<w10h4-delta, echo=FALSE, fig.height=2.9>>=
+dd4 <- do.call(rbind, lapply(c(0.1, 1, 3), function(TT)
+  data.frame(S = Sg4, Delta = pnorm(d1f(Sg4, 100, 0.25, 0.03, TT)), T = paste("T =", TT))))
+ggplot(dd4, aes(S, Delta, colour = T)) + geom_line(linewidth = 1) +
+  geom_vline(xintercept = 100, linetype = 3, colour = "grey50") +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0", "#15803D")) +
+  labs(x = "S", y = "Delta e call-it", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item $\Delta_C\in(0,1)$: call-i lëviz në të njëjtin drejtim me aksionin, por më pak se një për një.
+    \item Thellë në para: $\Delta\to1$ (call-i sillet si aksioni). Jashtë parasë: $\Delta\to0$.
+    \item Për $T$ të vogël, kalimi nga 0 në 1 bëhet \textbf{i pjerrët} rreth $K$.
+    \item $\Delta_P=\Delta_C-1\in(-1,0)$: put-i fiton kur aksioni bie.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10par4]{Parashiko}
+  \begin{Parashiko}
+    $K=100$. Sa bëhet $\Delta_C$ kur $T\to0$ (maturimi afër), nëse:
+    \begin{enumerate}
+      \item $S=105$?
+      \item $S=95$?
+      \item $S=100$ saktësisht?
+    \end{enumerate}
+    Ndihmë: shiko kufirin e $d_1$ kur $\sigma\sqrt T\to0$.
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gamma, Vega, Theta, Rho}
+% ------------------------------------------------------------
+
+\begin{frame}{Gamma}
+  \[ \Gamma=\frac{\partial\Delta}{\partial S}=\frac{\varphi(d_1)}{S\sigma\sqrt T}\qquad\text{(e njëjtë për call dhe put)} \]
+  \begin{itemize}
+    \item $\Gamma>0$: vlera e opsionit është \textbf{konvekse} në $S$.
+    \item Maksimale afër $S\approx K$; rritet shumë kur $T\to0$.
+    \item E njëjtë për call dhe put: nga parity, $C-P=S-Ke^{-rT}$ ka derivatin e dytë 0.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Gamma si funksion i $S$}
+<<w10h4-gamma, echo=FALSE, fig.height=2.9>>=
+dg4 <- do.call(rbind, lapply(c(0.1, 1, 3), function(TT)
+  data.frame(S = Sg4, Gamma = dnorm(d1f(Sg4, 100, 0.25, 0.03, TT)) / (Sg4 * 0.25 * sqrt(TT)),
+             T = paste("T =", TT))))
+ggplot(dg4, aes(S, Gamma, colour = T)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0", "#15803D")) +
+  labs(x = "S", y = "Gamma", colour = NULL) + th + theme(legend.position = "top")
+@
+  \small Gamma e lartë $=$ Delta ndryshon shpejt $=$ mbrojtja duhet rregulluar shpesh.
+\end{frame}
+
+\begin{frame}{Vega}
+  \[ \nu=\frac{\partial C}{\partial\sigma}=\frac{\partial P}{\partial\sigma}=S\,\varphi(d_1)\sqrt T \]
+  \begin{itemize}
+    \item $\nu>0$: më shumë volatilitet, opsion më i vlefshëm (Ora 1).
+    \item Rritet me $\sqrt T$: garancitë afatgjata janë shumë të ndjeshme ndaj $\sigma$.
+    \item E njëjtë për call dhe put (përsëri nga parity).
+  \end{itemize}
+  
+  \begin{Gabim}$\nu$ matet për njësi $\sigma$ (100 pikë përqindjeje). \Rkey{derivmkts} e jep për \textbf{1 pikë përqindjeje}: $\nu/100$.\end{Gabim}
+\end{frame}
+
+\begin{frame}{Theta}
+  \[
+    \Theta_C=-\frac{S\varphi(d_1)\sigma}{2\sqrt T}-rKe^{-rT}\Phi(d_2),\qquad
+    \Theta_P=-\frac{S\varphi(d_1)\sigma}{2\sqrt T}+rKe^{-rT}\Phi(-d_2)
+  \]
+  \begin{itemize}
+    \item Zakonisht $\Theta<0$: opsioni humbet vlerë kohore çdo ditë (\emph{time decay}).
+    \item Put-i thellë në para mund të ketë $\Theta_P>0$: lidhje me ushtrimin e hershëm (Java 9).
+  \end{itemize}
+  
+  \begin{Gabim}$\Theta$ e formulës është \textbf{për vit}. \Rkey{derivmkts} e jep \textbf{për ditë}: $\Theta/365$.\end{Gabim}
+\end{frame}
+
+\begin{frame}{Rho}
+  \[ \rho_C=KTe^{-rT}\Phi(d_2)>0,\qquad \rho_P=-KTe^{-rT}\Phi(-d_2)<0 \]
+  \begin{itemize}
+    \item $r$ më e lartë: pagesa e ardhshme $K$ vlen më pak sot; call-i fiton, put-i humbet.
+    \item Për garanci 20-vjeçare, $\rho$ është e madhe: rreziku i normave nuk mund të injorohet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Tabela e shenjave (pozicion i blerë)}
+  \begin{center}
+    \begin{tabular}{lccccc}
+      \toprule
+      & $\Delta$ & $\Gamma$ & $\nu$ & $\Theta$ & $\rho$ \\
+      \midrule
+      Call & $+$ & $+$ & $+$ & zakonisht $-$ & $+$ \\
+      Put & $-$ & $+$ & $+$ & zakonisht $-$ & $-$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \begin{itemize}
+    \item Shitësi i opsionit ka të gjitha shenjat e kundërta.
+    \item Kompania që shet garanci (put) ka $\Gamma<0$ dhe $\nu<0$: humbet kur tregu luhatet shumë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10mc4]{Zgjedhje e shumëfishtë}
+  Kompania ka \textbf{shitur} 100\,000 put (garancia). Cila është e vërtetë për pozicionin e saj?
+  \begin{enumerate}[A)]
+    \item $\Delta<0$, \; $\nu>0$.
+    \item $\Delta>0$, \; $\nu<0$.
+    \item $\Delta>0$, \; $\nu>0$.
+    \item $\Delta<0$, \; $\Gamma>0$.
+  \end{enumerate}
+  \vfill\shkoTe{w10zgjMC4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Greeks e call-it ATM}
+  $S=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$; \; $d_1=0.245$, $d_2=-0.005$; \; $\varphi(0.245)=0.3871$.
+  \begin{itemize}
+    \item<2-> $\Delta=\Phi(0.245)=0.5968$.
+    \item<3-> $\Gamma=0.3871/(100\cdot0.25\cdot1)=0.01548$.
+    \item<4-> $\nu=100\cdot0.3871\cdot1=38.71$ \; (për 1\%: $0.387$).
+    \item<5-> $\Theta=-\dfrac{100\cdot0.3871\cdot0.25}{2}-0.03\cdot97.04\cdot0.4980=-4.84-1.45=-6.29$ në vit.
+    \item<6-> $\rho=100\cdot1\cdot0.9704\cdot0.4980=48.33$ \; (për 1\%: $0.483$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli me \texttt{greeks()}}
+<<w10h4-greeks>>=
+gk4 <- greeks(bscall(100, 100, 0.25, 0.03, 1, 0))
+round(cbind(derivmkts = gk4[c("Delta", "Gamma", "Vega", "Theta", "Rho"), 1],
+            per_year_unit = gk4[c("Delta", "Gamma", "Vega", "Theta", "Rho"), 1] *
+                            c(1, 1, 100, 365, 100)), 5)
+@
+  \small \texttt{greeks()} përdor derivate numerike. Kolona e dytë: kthyer në njësitë e formulës. Përputhet me llogaritjen. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=w10ush4b]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta, pa ndihmën e PC)]
+    Opsioni i Orës 2: $S=110$, $K=100$, $\sigma=20\%$, $r=5\%$, $T=0.5$;
+    \; $d_1=0.9214$, \; $\Phi(d_1)=0.8216$, \; $\varphi(d_1)=0.2609$, \; $\sqrt{0.5}=0.7071$.
+    \begin{enumerate}
+      \item Llogarit $\Delta_C$, $\Delta_P$ dhe $\Gamma$.
+      \item Llogarit $\nu$ për 1 pikë përqindjeje.
+      \item Nëse $S$ rritet në 111, sa ndryshon $C$ afërsisht? (Përdor $\Delta$ dhe $\Gamma$.)
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh4b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Mbrojtja delta}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja e mbrojtjes delta}
+  \begin{itemize}
+    \item<1-> Kompania ka shitur një call: pozicioni $-C$.
+    \item<2-> Blen $\Delta$ aksione: portofoli $\Pi=-C+\Delta S$.
+    \item<3-> Për lëvizje të vogël $\delta S$: \; $\delta\Pi\approx-\Delta\,\delta S+\Delta\,\delta S=0$.
+    \item<4-> Portofoli është \termi{delta-neutral}{delta-neutral}: imun ndaj lëvizjeve të vogla të $S$.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Keshille}Ky është argumenti origjinal i Black--Scholes: me rebalancim të vazhdueshëm, portofoli është pa rrezik.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Pse rebalancim?}
+  \begin{itemize}
+    \item Kur $S$ lëviz, $\Delta$ ndryshon (sa shpejt? $\Gamma$).
+    \item Portofoli që ishte delta-neutral dje nuk është më sot.
+    \item Rregulli: çdo ditë (ose javë), bli/shit aksione deri sa të kesh sërish $\Delta$ e re.
+  \end{itemize}
+  
+  \[ \delta\Pi\approx-\tfrac12\Gamma\,(\delta S)^2-\Theta\,\delta t+r\,(\text{paratë})\,\delta t \]
+  \small Me $\Delta$ të neutralizuar, mbetet $\Gamma$: shitësi i opsionit humbet nga lëvizjet e mëdha dhe fiton nga koha.
+\end{frame}
+
+\begin{frame}[label=w10tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Kompania ka shitur garancinë (100\,000 put) me $\Delta_P=-0.40$ për put.
+    \begin{enumerate}
+      \item Sa aksione duhet të blejë ose të shesë për të qenë delta-neutral?
+      \item Aksioni bie. Si ndryshon pozicioni mbrojtës: duhet blerë apo shitur?
+      \item Pse kjo strategji mund ta përkeqësojë një rënie të tregut, kur shumë kompani bëjnë të njëjtën gjë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ekuacioni Black--Scholes\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga mbrojtja te PDE\Zgj}
+  \begin{itemize}
+    \item Portofoli delta-neutral me rebalancim të vazhdueshëm është pa rrezik: duhet të fitojë $r$.
+    \item Me lemën e Itô-s, $(dS)^2=\sigma^2S^2dt$, dhe kushti $d\Pi=r\Pi\,dt$ jep:
+  \end{itemize}
+  
+  \begin{Teoreme}[(PDE Black--Scholes)]
+    \[ \Theta+rS\Delta+\tfrac12\sigma^2S^2\Gamma=rV \]
+  \end{Teoreme}
+  \small Pa $\mu$! Çdo derivat europian mbi $S$ e plotëson; payoff-i jep kushtin në $T$.
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli numerik i PDE\Zgj}
+<<w10h4-pde>>=
+g4 <- gk4[, 1] * c(1, 1, 1, 100, 100, 365, 1, 1)        # per-year units
+lhs <- g4["Theta"] + 0.03 * 100 * g4["Delta"] + 0.5 * 0.25^2 * 100^2 * g4["Gamma"]
+round(c(Theta = unname(g4["Theta"]), rSDelta = 0.03 * 100 * unname(g4["Delta"]),
+        half_sig2S2Gamma = 0.5 * 0.25^2 * 100^2 * unname(g4["Gamma"]),
+        lhs = unname(lhs), rV = 0.03 * C0), 5)
+@
+  \small Ana e majtë $=$ ana e djathtë. \textcolor{okgreen}{$\checkmark$}
+  Në opsionin ATM, $\Theta$ dhe $\tfrac12\sigma^2S^2\Gamma$ pothuajse anulojnë njëra-tjetrën.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Sa është $\Delta$ e një put-i europian, në funksion të $\Phi(d_1)$?
+    \item Pse $\Gamma$ dhe $\nu$ janë të njëjta për call dhe put?
+    \item Si e jep \Rkey{derivmkts} theta-n: për vit apo për ditë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\Phi(d_1)-1$; (2) $C-P=S-Ke^{-rT}$ ka $\partial^2/\partial S^2=0$ dhe $\partial/\partial\sigma=0$;
+  (3) për ditë (ndaj për 365).}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item $\Delta_C=\Phi(d_1)$, \; $\Gamma=\varphi(d_1)/(S\sigma\sqrt T)$, \; $\nu=S\varphi(d_1)\sqrt T$.
+    \item $\Theta$ zakonisht negative; $\rho_C>0$, $\rho_P<0$.
+    \item Shitësi i garancisë: $\Gamma<0$, $\nu<0$; mbrojtja delta neutralizon vetëm $\Delta$.
+    \item PDE: $\Theta+rS\Delta+\tfrac12\sigma^2S^2\Gamma=rV$, e kontrolluar numerikisht.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator R II: Greeks me diferenca të fundme, volatiliteti i nënkuptuar, simulimi i mbrojtjes delta.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: Greeks dhe mbrojtja.
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{greeks()}.
+    \item F.~Black, M.~Scholes (1973), \emph{Journal of Political Economy}: argumenti i mbrojtjes.
+  \end{itemize}
+\end{frame}

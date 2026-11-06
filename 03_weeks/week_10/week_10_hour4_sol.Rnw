@@ -1,0 +1,56 @@
+% ============================================================
+%  Java 10 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10zgjUsh4a]{Zgjidhja: Radha jote! (identiteti)}
+  \begin{enumerate}
+    \item $\varphi(x)=e^{-x^2/2}/\sqrt{2\pi}$, pra $\dfrac{\varphi(d_2)}{\varphi(d_1)}=e^{-d_2^2/2+d_1^2/2}$.
+    \item $d_1+d_2=\dfrac{2\ln(S/K)+2rT}{\sigma\sqrt T}$, \; pra
+      $\tfrac12(d_1-d_2)(d_1+d_2)=\tfrac12\,\sigma\sqrt T\cdot\dfrac{2(\ln(S/K)+rT)}{\sigma\sqrt T}=\ln(S/K)+rT$.
+    \item $\varphi(d_2)=\varphi(d_1)\,\dfrac{S}{K}e^{rT}$ \; $\Rightarrow$ \; $Ke^{-rT}\varphi(d_2)=S\varphi(d_1)$.
+  \end{enumerate}
+  \small Kontroll në R: \texttt{100 * dnorm(0.245)} $=\Sexpr{fmt(100 * dnorm(0.245), 4)}$,
+  \texttt{100 * exp(-0.03) * dnorm(-0.005)} $=\Sexpr{fmt(100 * exp(-0.03) * dnorm(-0.005), 4)}$.
+  \vfill\kthehu{w10ush4a}
+\end{frame}
+
+\begin{frame}[label=w10zgjPar4]{Zgjidhja: Parashiko}
+  Kur $T\to0$: $d_1\approx\dfrac{\ln(S/K)}{\sigma\sqrt T}$.
+  \begin{enumerate}
+    \item $S=105$: $\ln(1.05)>0$, $d_1\to+\infty$, \; $\Delta\to1$.
+    \item $S=95$: $d_1\to-\infty$, \; $\Delta\to0$.
+    \item $S=100$: $d_1=\big(\tfrac r\sigma+\tfrac\sigma2\big)\sqrt T\to0$, \; $\Delta\to0.5$.
+  \end{enumerate}
+  \small Afër maturimit, Delta ``kërcen'' nga 0 në 1 rreth $K$: Gamma shumë e madhe. Mbrojtja bëhet e vështirë.
+  \vfill\kthehu{w10par4}
+\end{frame}
+
+\begin{frame}[label=w10zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Pozicioni i shitur ka shenjat e kundërta të put-it të blerë:
+  \begin{itemize}
+    \item $\Delta_P<0$ $\Rightarrow$ pozicioni $-\Delta_P>0$: kompania humbet kur aksioni bie.
+    \item $\nu_P>0$ $\Rightarrow$ pozicioni $-\nu_P<0$: kompania humbet kur volatiliteti rritet.
+    \item D) e gabuar: pozicioni ka $\Gamma<0$.
+  \end{itemize}
+  \vfill\kthehu{w10mc4}
+\end{frame}
+
+\begin{frame}[label=w10zgjUsh4b]{Zgjidhja: Radha jote! (Greeks)}
+  \begin{enumerate}
+    \item $\Delta_C=0.8216$, \; $\Delta_P=0.8216-1=-0.1784$, \;
+      $\Gamma=\dfrac{0.2609}{110\cdot0.2\cdot0.7071}=\dfrac{0.2609}{15.556}=0.01677$.
+    \item $\nu=110\cdot0.2609\cdot0.7071=20.29$ për njësi; \; $0.203$ për 1 pikë përqindjeje.
+    \item $\delta C\approx0.8216\cdot1+\tfrac12\cdot0.01677\cdot1^2=0.830$.
+  \end{enumerate}
+  \small R: \texttt{bscall(111, ...) - bscall(110, ...)} $=\Sexpr{fmt(bscall(111, 100, 0.2, 0.05, 0.5, 0) - bscall(110, 100, 0.2, 0.05, 0.5, 0), 4)}$.
+  \vfill\kthehu{w10ush4b}
+\end{frame}
+
+\begin{frame}[label=w10zgjTps4]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Delta e pozicionit: $-100\,000\cdot(-0.40)=+40\,000$. Për ta neutralizuar: \textbf{shit} (shkurt) 40\,000 aksione.
+    \item Aksioni bie $\Rightarrow$ $\Delta_P$ bëhet më negative (p.sh.\ $-0.50$) $\Rightarrow$ duhen shitur \textbf{edhe më shumë} aksione.
+    \item Shitje në një treg që bie: presion shtesë në rënie. Kështu ndodhi me ``portfolio insurance'' në krizën e tetorit 1987.
+  \end{enumerate}
+  \vfill\kthehu{w10tps4}
+\end{frame}
