@@ -1,0 +1,85 @@
+% ============================================================
+%  Java 12 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12zgj6a]{Zgjidhja: Ushtrim 1}
+  \begin{enumerate}
+    \item $P=C-S_0+Ke^{-rT}=10-100+105\cdot0.951229=10-100+99.879=\mathbf{9.879}$.
+    \item Put-i (8) është \textbf{i lirë}: bli put-in dhe aksionin, shit call-in, merr hua $Ke^{-rT}=99.879$.\\
+      Sot: $-8-100+10+99.879=+1.879$. Në $T$: portofoli vlen $K-K=0$ në çdo skenar. Fitim pa rrezik: \textbf{1.879}.
+  \end{enumerate}
+  \vfill\kthehu{w12q6a}
+\end{frame}
+
+\begin{frame}[label=w12zgj6b]{Zgjidhja: Ushtrim 2}
+  Kufijtë: $\max(50-45\cdot0.980199,\,0)=5.891\le C\le50$.
+  \begin{itemize}
+    \item (a) 5.50: \textbf{jo}, nën kufirin e poshtëm.
+    \item (b) 6.00 dhe (c) 12.00: \textbf{po}, brenda kufijve.
+    \item (d) 50.50: \textbf{jo}, mbi çmimin e aksionit.
+  \end{itemize}
+  \small Brenda kufijve $\ne$ ``i saktë'': kufijtë përjashtojnë vetëm arbitrazhin.
+  \vfill\kthehu{w12q6b}
+\end{frame}
+
+\begin{frame}[label=w12zgj6c]{Zgjidhja: Ushtrim 3}
+  \begin{enumerate}
+    \item $d_1=\dfrac{0+(0.02+0.02)\cdot1}{0.2}=0.2$, \; $d_2=0$; \;
+      $C=80\cdot0.57926-78.416\cdot0.5=46.341-39.208=\mathbf{7.133}$.
+    \item $P=7.133-80+78.416=\mathbf{5.549}$.
+    \item Pozicioni: $-500\cdot0.57926=-289.6$: \textbf{bli} rreth 290 aksione.
+  \end{enumerate}
+  \small R: \texttt{bscall(80, 80, 0.2, 0.02, 1, 0)} $=\Sexpr{fmt(bscall(80, 80, 0.2, 0.02, 1, 0), 4)}$, \;
+  \texttt{bsput(...)} $=\Sexpr{fmt(bsput(80, 80, 0.2, 0.02, 1, 0), 4)}$.
+  \vfill\kthehu{w12q6c}
+\end{frame}
+
+\begin{frame}[label=w12zgj6d]{Zgjidhja: Ushtrim 4}
+  \begin{enumerate}
+    \item $\hat\sigma=0.0158\cdot15.875=\mathbf{0.2508}$.
+    \item SE $=0.2508/\sqrt{1510}=0.2508/38.859=0.00645$; \; IB: $0.2508\pm1.96\cdot0.00645=[\mathbf{0.238},\,\mathbf{0.263}]$.
+    \item Vlera e garancisë rritet afërsisht linearisht me $\sigma$ (vega): pasiguria e $\hat\sigma$ kalon direkt në pasigurinë e rezervës.
+  \end{enumerate}
+  \vfill\kthehu{w12q6d}
+\end{frame}
+
+\begin{frame}[label=w12zgj6e]{Zgjidhja: Ushtrim 5}
+  \textbf{B)} Put-i i blerë ka vega pozitive; pozicioni i shitur ka vega negative.
+  \begin{itemize}
+    \item A) e kundërta: pozicioni ka $\Delta>0$, humbet kur fondi bie.
+    \item C) $\mu$ nuk hyn në çmim. \; D) rebalancimi diskret lë gabim $\propto1/\sqrt N$ (Java 10, Ora 5).
+  \end{itemize}
+  \vfill\kthehu{w12q6e}
+\end{frame}
+
+<<w12h6-sol-iv, include=FALSE>>=
+iv6 <- bscallimpvol(100, 100, 0.03, 0.5, 0, 7.5)
+g6 <- greeks(bscall(100, 100, iv6, 0.03, 0.5, 0))
+@
+
+\begin{frame}[label=w12zgj6f]{Zgjidhja: Radha jote! (IV)}
+  \begin{enumerate}
+    \item $\sigma_{\text{imp}}=\Sexpr{fmt(100 * iv6, 2)}\%$.
+    \item $\hat\sigma=\Sexpr{fmt(100 * s6, 2)}\%$: tregu ``pret'' volatilitet pak \textbf{më të vogël} se historia.
+      (Nëse $\sigma_{\text{imp}}>\hat\sigma$, çmimi do të përfshinte një primë për rrezikun e volatilitetit.)
+    \item Delta $=\Sexpr{fmt(g6["Delta", 1], 4)}$; \; Vega $=\Sexpr{fmt(g6["Vega", 1], 4)}$ për 1 pikë përqindjeje.
+  \end{enumerate}
+  \vfill\kthehu{w12q6f}
+\end{frame}
+
+<<w12h6-sol-sens, include=FALSE>>=
+gm6 <- function(sig, r) p10_55 * 1e4 * bsput(100, 100, sig, r, 10, 0.01)
+sens6 <- c(sig_low = gm6(s6 - 1.96 * se6[["sigma"]], 0.03), sig_high = gm6(s6 + 1.96 * se6[["sigma"]], 0.03),
+           r2 = gm6(s6, 0.02), r4 = gm6(s6, 0.04))
+@
+
+\begin{frame}[label=w12zgj6g]{Zgjidhja: Radha jote! (ndjeshmëria)}
+  \begin{enumerate}
+    \item IB i $\hat\sigma$: nga \Sexpr{fmt(sens6["sig_low"])} në \Sexpr{fmt(sens6["sig_high"])} lekë.
+    \item $r=2\%$: \Sexpr{fmt(sens6["r2"])} lekë; \; $r=4\%$: \Sexpr{fmt(sens6["r4"])} lekë.
+      Për garanci 10-vjeçare, ndryshimi i normës me $\pm1$ pikë ka efekt \textbf{më të madh} se pasiguria e $\hat\sigma$.
+    \item ``Vlera e garancisë është rreth \Sexpr{fmt(p10_55 * put55)} lekë për kontratë; ajo është e ndjeshme kryesisht ndaj normave dhe volatilitetit;
+      rekomandojmë ta rishikojmë çdo tremujor.''
+  \end{enumerate}
+  \vfill\kthehu{w12q6g}
+\end{frame}

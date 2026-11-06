@@ -1,0 +1,219 @@
+% ============================================================
+%  Java 12 · Ora 6 — Financa: Javët 8–11
+% ============================================================
+\section{Financa}
+
+\begin{frame}{Ora 6 · Financa}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w12h6-setup, include=FALSE>>=
+st6 <- read.csv(file.path(DATA, "stock_prices_gbm_synthetic.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Katër javë në një slide}
+  \begin{itemize}
+    \item<1-> \textbf{J8}: $\hat\sigma=s_r\sqrt{252}$, \; SE$(\hat\sigma)\approx\hat\sigma/\sqrt{2n}$; \; parity $C-P=S_0-Ke^{-rT}$.
+    \item<2-> \textbf{J9}: kufijtë $\max(S_0-Ke^{-rT},0)\le C\le S_0$; call amerikan pa dividendë $=$ europian.
+    \item<3-> \textbf{J10}: $C=S_0\Phi(d_1)-Ke^{-rT}\Phi(d_2)$; \; $\Delta_C=\Phi(d_1)$; \; volatiliteti i nënkuptuar.
+    \item<4-> \textbf{J11}: CRR: $u=e^{\sigma\sqrt{\Delta t}}$, $q=\frac{e^{r\Delta t}-d}{u-d}$; amerikani: $\max$ në çdo nyje.
+    \item<5-> \textbf{Garancitë}: $V={}_Tp_x\times$put (me tarifën si dividend); anulimi në pemë.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ushtrime pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w12q6a]{Ushtrim 1 · Parity dhe arbitrazhi}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $S_0=100$, $K=105$, $r=5\%$, $T=1$, $e^{-0.05}=0.951229$. Call-i kushton 10.
+    \begin{enumerate}
+      \item Sa duhet të kushtojë put-i europian?
+      \item Në treg, put-i kuotohet 8. Ndërto një strategji arbitrazhi dhe llogarit fitimin sot.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj6a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q6b]{Ushtrim 2 · Kufijtë}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Call europian: $S_0=50$, $K=45$, $r=4\%$, $T=0.5$, $e^{-0.02}=0.980199$.
+    Cilat nga këto çmime janë të mundshme pa arbitrazh?
+    \begin{center}(a) 5.50 \qquad (b) 6.00 \qquad (c) 12.00 \qquad (d) 50.50\end{center}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj6b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q6c]{Ushtrim 3 · Black--Scholes}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    $S_0=K=80$, $\sigma=20\%$, $r=2\%$, $T=1$; \; $\Phi(0.2)=0.57926$, $e^{-0.02}=0.980199$.
+    \begin{enumerate}
+      \item Llogarit $d_1$, $d_2$ dhe $C$.
+      \item Llogarit $P$ me parity.
+      \item Banka ka shitur 500 call. Sa aksione duhet të mbajë për mbrojtje delta?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj6c}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q6d]{Ushtrim 4 · Volatiliteti nga të dhënat}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Nga 755 kthime ditore logaritmike: devijimi standard $s_r=0.0158$; \; $\sqrt{252}=15.875$, $\sqrt{1510}=38.859$.
+    \begin{enumerate}
+      \item Llogarit $\hat\sigma$ vjetor.
+      \item Llogarit intervalin e besimit 95\% për $\sigma$.
+      \item Pse ky interval ka rëndësi për vlerësimin e një garancie?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj6d}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q6e]{Ushtrim 5 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Një kompani ka \textbf{shitur} garanci (put) mbi një fond. Cila deklaratë është e saktë?
+    \begin{enumerate}
+      \item[A)] Pozicioni ka $\Delta<0$: kompania fiton kur fondi bie.
+      \item[B)] Pozicioni ka vega negative: kompania humbet kur volatiliteti rritet.
+      \item[C)] Kthimi i pritur $\mu$ i fondit rrit vlerën e garancisë.
+      \item[D)] Me rebalancim ditor, mbrojtja delta nuk ka asnjë gabim.
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w12zgj6e}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ushtrime në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Ushtrim 6 · $\hat\mu$, $\hat\sigma$ kundrejt së vërtetës}
+<<w12h6-est>>=
+r6 <- diff(log(st6$close)); n6 <- length(r6); dt6 <- 1 / 252
+s6 <- sd(r6) / sqrt(dt6); m6 <- mean(r6) / dt6 + s6^2 / 2
+se6 <- c(mu = s6 / sqrt(n6 * dt6), sigma = s6 / sqrt(2 * n6))
+round(rbind(estimate = c(mu = m6, sigma = s6), lower = c(m6, s6) - 1.96 * se6,
+            upper = c(m6, s6) + 1.96 * se6, truth = c(0.07, 0.25)), 4)
+@
+  \small \textbf{Sintetike}: GBM me $\mu=7\%$, $\sigma=25\%$ (README).
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\hat\sigma$ është i saktë: intervali $\pm$\Sexpr{fmt(100 * 1.96 * se6["sigma"], 1)} pikë përqindjeje.
+    \item<2-> $\hat\mu$ është shumë i pasigurt: intervali përfshin edhe vlera negative.
+    \item<3-> Fat i mirë: çmimi i opsionit varet nga $\sigma$, jo nga $\mu$ (Java 10).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 7 · Tri metoda, një put}
+<<w12h6-three>>=
+crr6 <- function(n, am) unname(binomopt(100, 100, s6, 0.03, 2, 0, nstep = n, american = am,
+                                         putopt = TRUE, crr = TRUE))
+set.seed(2026)
+ST6 <- 100 * exp((0.03 - s6^2 / 2) * 2 + s6 * sqrt(2) * rnorm(1e5))
+Y6 <- exp(-0.06) * pmax(100 - ST6, 0)
+round(c(BS = bsput(100, 100, s6, 0.03, 2, 0), CRR_eu = (crr6(500, FALSE) + crr6(501, FALSE)) / 2,
+        MC = mean(Y6), MC_se = sd(Y6) / sqrt(1e5), CRR_am = (crr6(500, TRUE) + crr6(501, TRUE)) / 2), 4)
+@
+  \small Put me $S_0=K=100$, $\sigma=\hat\sigma$, $r=3\%$, $T=2$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Black--Scholes, pema CRR dhe Monte Carlo japin të njëjtin çmim europian (brenda gabimit numerik).
+    \item<2-> Vetëm pema jep edhe çmimin \textbf{amerikan}: prima e ushtrimit të hershëm $\approx\Sexpr{fmt((crr6(500, TRUE) + crr6(501, TRUE)) / 2 - bsput(100, 100, s6, 0.03, 2, 0), 3)}$.
+    \item<3-> Në provim: zgjidh metodën sipas opsionit, jo sipas zakonit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w12q6f]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Një call ATM me $T=0.5$, $r=3\%$ kuotohet 7.50 ($S_0=K=100$).
+    \begin{enumerate}
+      \item Gjej $\sigma_{\text{imp}}$ me \texttt{bscallimpvol()}.
+      \item A është më i madh apo më i vogël se $\hat\sigma$ nga të dhënat? Çfarë do të thotë?
+      \item Llogarit Delta dhe Vega (për 1\%) me \texttt{greeks()}.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj6f}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 8 · Garancia GMMB me HLD 2011}
+<<w12h6-gmmb>>=
+p10_55 <- pxt(tH5, 55, 10)                                 # HLD 2011, males (Hour 5)
+put55  <- 1e4 * bsput(100, 100, s6, 0.03, 10, 0.01)        # 1 mln lek premium, fee 1%
+round(c(p10_55 = p10_55, put_lek = put55, GMMB_lek = p10_55 * put55,
+        pct_premium = 100 * p10_55 * put55 / 1e6), 3)
+@
+  \small Burrë 55 vjeç, prim 1\,000\,000 lekë, garanci e primit pas 10 vjetësh, tarifë 1\% (Java 10, Ora 6).
+\end{frame}
+
+\begin{frame}[label=w12q6g]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Përsërit Ushtrimin 8 me kufijtë e intervalit të besimit të $\hat\sigma$ (Ushtrim 6). Sa lëviz vlera?
+      \item Përsërit me $r=2\%$ dhe $r=4\%$. Cili parametër ka efekt më të madh?
+      \item Çfarë do t'i shkruanit në raport menaxherit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj6g}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë: Javët 8--11}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Detyra & R (\Rkey{derivmkts}) \\
+      \midrule
+      Black--Scholes & \texttt{bscall(s, k, v, r, tt, d)}, \texttt{bsput(...)} \\
+      Greeks & \texttt{greeks(bscall(...))} (Vega, Rho për 1\%; Theta për ditë) \\
+      IV & \texttt{bscallimpvol(s, k, r, tt, d, price)} \\
+      CRR & \texttt{binomopt(..., american, putopt, crr = TRUE)}; \texttt{unname()} \\
+      Monte Carlo & \texttt{S0 * exp((r - sig\^{}2/2) * T + sig * sqrt(T) * rnorm(n))} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si gjendet një arbitrazh kur parity nuk vlen?
+    \item Pse $\hat\mu$ nuk na shqetëson për çmimin e opsionit?
+    \item Kur duhet pema dhe jo Black--Scholes?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) bli anën e lirë, shit anën e shtrenjtë; (2) çmimi nuk varet nga $\mu$;
+  (3) për opsionet amerikane/bermudiane, p.sh.\ anulimi.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item Parity, kufijtë dhe Black--Scholes pa ndihmën e PC.
+    \item $\hat\sigma=\Sexpr{fmt(100 * s6, 1)}\%$ i saktë; $\hat\mu$ i pasigurt (e vërteta 25\%, 7\%).
+    \item BS $=$ CRR $=$ MC për europianin; pema për amerikanin.
+    \item GMMB (55, HLD 2011): \Sexpr{fmt(p10_55 * put55)} lekë për 1 milion prim.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: klinika e gabimeve të semestrit, fletë-kujtesa e plotë, punëtori për projektin.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+    \item M.~R.~Hardy, \emph{Investment Guarantees}, Wiley.
+    \item Të dhënat: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike); HLD 2011 (\textbf{reale}).
+  \end{itemize}
+\end{frame}
