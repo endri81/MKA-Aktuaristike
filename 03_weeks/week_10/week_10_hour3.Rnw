@@ -1,0 +1,272 @@
+% ============================================================
+%  Java 10 · Ora 3 — Laborator R I: Black–Scholes nga zero
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{bs\_price()}: formula e Orës 2 në gjashtë rreshta R.
+    \item<2-> Krahasim me \Rkey{derivmkts} në 243 kombinime; kontrolli i kufijve.
+    \item<3-> Monte Carlo neutral ndaj rrezikut: çmimi si mesatare e simuluar.
+    \item<4-> Pamje paraprake: pema binomiale konvergjon te Black--Scholes.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{K3}\;\LO{S2}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Black--Scholes nga zero}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksioni \texttt{bs\_price()}}
+<<w10h3-fun>>=
+bs_price <- function(S, K, sig, r, T, type = "call") {
+  d1 <- (log(S / K) + (r + sig^2 / 2) * T) / (sig * sqrt(T))
+  d2 <- d1 - sig * sqrt(T)
+  if (type == "call") S * pnorm(d1) - K * exp(-r * T) * pnorm(d2) else
+    K * exp(-r * T) * pnorm(-d2) - S * pnorm(-d1)
+}
+c(call = bs_price(100, 100, 0.25, 0.03, 1), put = bs_price(100, 100, 0.25, 0.03, 1, "put"))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Të njëjtat numra si Ora 1: \Sexpr{fmt(C0, 4)} dhe \Sexpr{fmt(P0, 4)}.
+    \item<2-> \texttt{log()}, \texttt{pnorm()}, \texttt{exp()}, \texttt{sqrt()} janë të vektorizuara:
+      funksioni pranon vektorë për $S$, $K$, $\sigma$, $T$ pa asnjë cikël.
+    \item<3-> \texttt{type} duhet të jetë \textbf{një} vlerë: \texttt{if} pranon vetëm një kusht.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{243 kombinime}
+<<w10h3-grid>>=
+g3 <- expand.grid(S = seq(60, 140, by = 10), K = c(80, 100, 120),
+                  sig = c(0.10, 0.25, 0.50), T = c(0.1, 1, 5))
+g3$C <- bs_price(g3$S, g3$K, g3$sig, 0.03, g3$T)
+g3$P <- bs_price(g3$S, g3$K, g3$sig, 0.03, g3$T, "put")
+c(n = nrow(g3),
+  max_diff_call = max(abs(g3$C - bscall(g3$S, g3$K, g3$sig, 0.03, g3$T, 0))),
+  max_diff_put  = max(abs(g3$P - bsput(g3$S, g3$K, g3$sig, 0.03, g3$T, 0))))
+@
+  \small Diferenca $\approx10^{-14}$: vetëm gabim rrumbullakimi i kompjuterit. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile,label=w10gab3]{Gjej gabimin}
+<<w10h3-bug>>=
+bs_bad <- function(S, K, sig, r, T, type = "call") {
+  d1 <- (log(S / K) + (r + sig^2 / 2) * T) / (sig * sqrt(T)); d2 <- d1 - sig * sqrt(T)
+  ifelse(type == "call", S * pnorm(d1) - K * exp(-r * T) * pnorm(d2),
+                         K * exp(-r * T) * pnorm(-d2) - S * pnorm(-d1))
+}
+Cb <- bs_bad(g3$S, g3$K, g3$sig, 0.03, g3$T)
+c(length = length(Cb), max_diff = max(abs(Cb - g3$C)))
+@
+  \small Formula është e saktë. Pse del vetëm \textbf{një} numër dhe diferenca e madhe?
+  \hfill\shkoTe{w10zgjGab3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli i kufijve dhe i parity-t}
+<<w10h3-chk>>=
+chk3 <- with(g3, cbind(
+  C_low  = C >= pmax(S - K * exp(-0.03 * T), 0) - 1e-9,  C_up = C <= S,
+  P_low  = P >= pmax(K * exp(-0.03 * T) - S, 0) - 1e-9,  P_up = P <= K * exp(-0.03 * T),
+  parity = abs(C - P - (S - K * exp(-0.03 * T))) < 1e-9))
+colSums(!chk3)                                         # violations
+@
+  \small Zero shkelje: Black--Scholes respekton të gjithë kufijtë e Javës 9 dhe parity. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=w10ush3]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Shto në \texttt{bs\_price()} argumentin \texttt{d = 0} (dividend i vazhdueshëm, Ora 2):
+        $S\to Se^{-dT}$ në formulë.
+      \item Kontrollo: \texttt{bs\_price(100, 100, 0.25, 0.03, 1, d = 0.02)} duhet të japë
+        të njëjtën vlerë si \texttt{bscall(100, 100, 0.25, 0.03, 1, 0.02)}.
+      \item Pse mjafton të ndryshosh \textbf{vetëm} $S$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Monte Carlo neutral ndaj rrezikut}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja}
+  \begin{enumerate}
+    \item<1-> Simulo $Z_1,\dots,Z_n\sim N(0,1)$.
+    \item<2-> Llogarit $S_T^{(i)}=S_0\exp\!\big((r-\tfrac12\sigma^2)T+\sigma\sqrt T Z_i\big)$: me $r$, jo me $\mu$!
+    \item<3-> Skonto payoff-et: $Y_i=e^{-rT}(S_T^{(i)}-K)^+$.
+    \item<4-> Çmimi: $\hat C=\bar Y$; \; gabimi standard: $s_Y/\sqrt n$.
+  \end{enumerate}
+  \onslide<5->{
+  \begin{Keshille}Ligji i numrave të mëdhenj jep $\bar Y\to C$; teorema qendrore limite jep intervalin e besimit.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile]{Monte Carlo në R}
+<<w10h3-mc>>=
+set.seed(2026)
+n3 <- 1e5; Z3 <- rnorm(n3)
+ST3 <- 100 * exp((0.03 - 0.25^2 / 2) * 1 + 0.25 * Z3)   # risk-neutral: drift r
+Y3  <- exp(-0.03 * 1) * pmax(ST3 - 100, 0)                # discounted payoffs
+se3 <- sd(Y3) / sqrt(n3)
+round(c(mc = mean(Y3), se = se3, lower = mean(Y3) - 1.96 * se3,
+        upper = mean(Y3) + 1.96 * se3, bs = C0), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Intervali 95\% [\Sexpr{fmt(mean(Y3) - 1.96 * se3, 2)}, \Sexpr{fmt(mean(Y3) + 1.96 * se3, 2)}] përmban vlerën Black--Scholes \Sexpr{fmt(C0, 2)}.
+      \textcolor{okgreen}{$\checkmark$}
+    \item<2-> Me $10^5$ simulime, gabimi standard është rreth \Sexpr{fmt(se3, 2)}: saktësi rreth $\pm\Sexpr{fmt(1.96 * se3, 2)}$ (95\%).
+    \item<3-> Kontroll i shpejtë: $\bar S_T=\Sexpr{fmt(mean(ST3), 2)}$, afër $S_0e^{rT}=\Sexpr{fmt(100 * exp(0.03), 2)}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Konvergjenca e Monte Carlo}
+<<w10h3-conv, echo=FALSE, fig.height=2.9>>=
+k3 <- 1:n3
+m3 <- cumsum(Y3) / k3
+s3 <- sqrt(pmax(cumsum(Y3^2) / k3 - m3^2, 0) / k3)
+idx3 <- unique(round(10^seq(2, 5, length.out = 300)))
+dconv <- data.frame(n = idx3, m = m3[idx3], lo = m3[idx3] - 1.96 * s3[idx3], hi = m3[idx3] + 1.96 * s3[idx3])
+ggplot(dconv, aes(n, m)) + geom_ribbon(aes(ymin = lo, ymax = hi), fill = "#2C5AA0", alpha = 0.15) +
+  geom_line(colour = "#2C5AA0") + geom_hline(yintercept = C0, colour = "#E67E22", linetype = 2) +
+  scale_x_log10() + labs(x = "numri i simulimeve n (shkalle log)", y = "vlera MC e call-it") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Brezi blu ngushtohet me ritmin $1/\sqrt n$: për një shifër më shumë saktësi duhen \textbf{100 herë} më shumë simulime.
+    \item<2-> Për një call evropian, formula është shumë më e mirë: e saktë dhe e çastit.
+    \item<3-> Monte Carlo vlen kur \textbf{nuk ka formulë}: garanci që varen nga rruga, vdekshmëri e rastit, shumë fonde.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10par3]{Parashiko}
+  \begin{Parashiko}
+    Një student simulon $S_T$ me $\mu=7\%$ (kthimi i vërtetë i aksionit sintetik), në vend të $r=3\%$.
+    \begin{enumerate}
+      \item Çmimi Monte Carlo del më i madh apo më i vogël se 11.35?
+      \item Po nëse e skonton edhe me $\mu$, në vend të $r$: a e rregullon gabimin?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar3}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Simulimi me $\mu$: kontrolli}
+<<w10h3-mu>>=
+ST_mu <- 100 * exp((0.07 - 0.25^2 / 2) * 1 + 0.25 * Z3)   # real-world drift
+round(c(correct_rn  = mean(Y3),
+        mu_disc_r   = mean(exp(-0.03) * pmax(ST_mu - 100, 0)),
+        mu_disc_mu  = mean(exp(-0.07) * pmax(ST_mu - 100, 0)),
+        bs          = C0), 4)
+@
+  \pause
+  \begin{Gabim}Simulimi në botën reale me $\mu$ jep një çmim të gabuar, edhe nëse skontohet me $\mu$.
+  Skontimi me $\mu$ nuk korrigjon rrezikun e opsionit, i cili është shumë më i lartë se ai i aksionit.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile,label=w10ndr3]{Ndrysho parametrin: $n$}
+<<w10h3-n>>=
+mc_call <- function(n, seed = 1) {
+  set.seed(seed); Y <- exp(-0.03) * pmax(100 * exp((0.03 - 0.25^2 / 2) + 0.25 * rnorm(n)) - 100, 0)
+  c(n = n, estimate = mean(Y), se = sd(Y) / sqrt(n), error = mean(Y) - C0)
+}
+round(t(sapply(10^(2:6), mc_call)), 4)
+@
+  \hfill\shkoTe{w10zgjNdr3}{Interpretimi}
+\end{frame}
+
+\begin{frame}[fragile]{Variabla antitetike\Zgj}
+<<w10h3-anti>>=
+YA <- exp(-0.03) * (pmax(100 * exp((0.03 - 0.25^2 / 2) + 0.25 * Z3) - 100, 0) +
+                    pmax(100 * exp((0.03 - 0.25^2 / 2) - 0.25 * Z3) - 100, 0)) / 2
+round(c(plain_se = sd(Y3) / sqrt(n3), antithetic_se = sd(YA) / sqrt(n3),
+        antithetic_est = mean(YA), bs = C0), 4)
+@
+  \pause
+  \small Çdo $Z_i$ përdoret dy herë: $+Z_i$ dhe $-Z_i$. Me $2n$ vlerësime payoff-i, gabimi standard bie nga
+  \Sexpr{fmt(sd(Y3) / sqrt(n3), 3)} në \Sexpr{fmt(sd(YA) / sqrt(n3), 3)}.
+  Krahasimi i drejtë: $\Sexpr{fmt(sd(Y3) / sqrt(2 * n3), 3)}$ me $2n$ simulime të zakonshme. Përfitimi mbetet.
+\end{frame}
+
+\begin{frame}[label=w10ush3b]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta)]
+    Përdor të njëjtat \texttt{Z3}.
+    \begin{enumerate}
+      \item Llogarit çmimin Monte Carlo të put-it dhe intervalin 95\%. A e përmban \texttt{bsput()}?
+      \item Një \textbf{call dixhital} paguan 1 lek nëse $S_T>K$, përndryshe 0.
+        Llogarit çmimin me Monte Carlo dhe krahasoje me $e^{-rT}\Phi(d_2)$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh3b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pamje paraprake: pema}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Pema binomiale kundrejt Black--Scholes}
+<<w10h3-crr, echo=FALSE, fig.height=2.8>>=
+nst <- 1:200
+err3 <- sapply(nst, function(k) unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = k,
+                                               american = FALSE, putopt = FALSE))) - C0
+ggplot(data.frame(n = nst, e = err3), aes(n, e)) + geom_hline(yintercept = 0, colour = "#E67E22") +
+  geom_line(colour = "#2C5AA0") + geom_point(colour = "#2C5AA0", size = 0.6) +
+  coord_cartesian(ylim = c(-0.3, 0.3)) +
+  labs(x = "numri i hapave te pemes", y = "pema - Black-Scholes") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Gabimi i pemës shkon drejt 0: me 200 hapa, $|\text{gabimi}|=\Sexpr{fmt(abs(err3[200]), 4)}$.
+    \item<2-> Por \textbf{luhatet}: hapat çift dhe tek japin gabime me shenja të ndryshme.
+    \item<3-> Black--Scholes është limiti i pemës binomiale kur $n\to\infty$. Prova dhe ndërtimi: Java 11.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse \texttt{ifelse(type == "call", ...)} prish funksionin e vektorizuar?
+    \item Me çfarë norme rritet $S_T$ në simulimin për çmimin e opsionit?
+    \item Sa simulime duhen për ta përgjysmuar gabimin standard?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) kthen një vektor me gjatësinë e kushtit, pra 1; (2) me $r$, jo me $\mu$;
+  (3) katër herë më shumë.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item \texttt{bs\_price()} = \texttt{bscall()}/\texttt{bsput()} deri në $10^{-14}$, në 243 kombinime.
+    \item Kufijtë dhe parity: 0 shkelje.
+    \item Monte Carlo neutral: $\hat C=\Sexpr{fmt(mean(Y3), 2)}\pm\Sexpr{fmt(1.96 * se3, 2)}$; simulimi me $\mu$ është i gabuar.
+    \item Pema binomiale $\to$ Black--Scholes, me luhatje.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria II: Greeks, mbrojtja delta, ekuacioni Black--Scholes.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{bscall()}, \texttt{bsput()}, \texttt{binomopt()}.
+    \item P.~Glasserman, \emph{Monte Carlo Methods in Financial Engineering}, Springer: variablat antitetike.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+  \end{itemize}
+\end{frame}

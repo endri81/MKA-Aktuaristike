@@ -1,0 +1,58 @@
+% ============================================================
+%  Java 10 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10zgjGab3]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item \texttt{ifelse(test, yes, no)} kthen një vektor me \textbf{gjatësinë e \texttt{test}}.
+    \item \texttt{type == "call"} ka gjatësi 1: kthehet vetëm elementi i parë i 243 çmimeve.
+    \item Pastaj \texttt{Cb - g3\$C} riciklon këtë një vlerë për të 243 rreshtat: diferenca e madhe.
+  \end{itemize}
+  \small Rregulli: \texttt{if/else} për një kusht të vetëm; \texttt{ifelse()} kur kushti është vektor.
+  \vfill\kthehu{w10gab3}
+\end{frame}
+
+\begin{frame}[fragile,label=w10zgjUsh3]{Zgjidhja: Radha jote! (dividendi)}
+<<w10h3-sol-div>>=
+bs_price_d <- function(S, K, sig, r, T, type = "call", d = 0) {
+  Sd <- S * exp(-d * T)                                 # dividend-adjusted spot
+  bs_price(Sd, K, sig, r, T, type)
+}
+c(own = bs_price_d(100, 100, 0.25, 0.03, 1, d = 0.02), derivmkts = bscall(100, 100, 0.25, 0.03, 1, 0.02))
+@
+  \small Mjafton $S$: me $S_0e^{-\delta T}$ në vend të $S_0$, $\ln(S_0e^{-\delta T}/K)=\ln(S_0/K)-\delta T$,
+  pikërisht termi $-\delta$ te $d_1$ i Merton-it.
+  \vfill\kthehu{w10ush3}
+\end{frame}
+
+\begin{frame}[label=w10zgjPar3]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item \textbf{Më i madh}: me $\mu>r$, $S_T$ është më i lartë, payoff-i më i madh: \Sexpr{fmt(mean(exp(-0.03) * pmax(ST_mu - 100, 0)), 2)}.
+    \item \textbf{Jo}: \Sexpr{fmt(mean(exp(-0.07) * pmax(ST_mu - 100, 0)), 2)}, ende larg 11.35.
+      Norma e duhur e skontimit për opsionin nuk është $\mu$ (opsioni është më i rrezikshëm se aksioni)
+      dhe as nuk është konstante.
+  \end{enumerate}
+  \small Zgjidhja e vetme e thjeshtë: simulo nën $\mathbb{Q}$ (me $r$) dhe skonto me $r$.
+  \vfill\kthehu{w10par3}
+\end{frame}
+
+\begin{frame}[label=w10zgjNdr3]{Interpretimi: Ndrysho parametrin}
+  \begin{itemize}
+    \item Nga $n=10^2$ në $10^6$: gabimi standard bie rreth 10 herë për çdo 100 herë më shumë simulime.
+    \item Gabimi aktual (\texttt{error}) është zakonisht brenda $\pm2\,\text{se}$: siç pritet nga teorema qendrore limite.
+    \item Me $n=10^2$, gabimi standard është \Sexpr{fmt(mc_call(100)["se"], 2)} lekë: çmimi mund të ishte lehtësisht 3 lekë larg. Mos raporto kurrë një çmim MC pa gabimin standard.
+  \end{itemize}
+  \vfill\kthehu{w10ndr3}
+\end{frame}
+
+\begin{frame}[fragile,label=w10zgjUsh3b]{Zgjidhja: Radha jote! (put dhe dixhital)}
+<<w10h3-sol-mc>>=
+YP3 <- exp(-0.03) * pmax(100 - ST3, 0)                  # put
+YD3 <- exp(-0.03) * (ST3 > 100)                         # digital call
+d2_3 <- (log(1) + (0.03 - 0.25^2 / 2)) / 0.25
+round(rbind(put     = c(mc = mean(YP3), se = sd(YP3) / sqrt(n3), exact = P0),
+            digital = c(mean(YD3), sd(YD3) / sqrt(n3), exp(-0.03) * pnorm(d2_3))), 4)
+@
+  \small Të dy brenda $\pm1.96\,\text{se}$. Dixhitali vlen $e^{-rT}\Phi(d_2)$: pjesa ``e parave'' e call-it, pa $K$.
+  \vfill\kthehu{w10ush3b}
+\end{frame}
