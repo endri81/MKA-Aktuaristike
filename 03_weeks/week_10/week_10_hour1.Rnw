@@ -1,0 +1,381 @@
+% ============================================================
+%  Java 10 · Ora 1 — Motivimi: hapja e "kutisë së zezë"
+% ============================================================
+\section{Motivimi}
+
+\begin{frame}{Ora 1 · Motivimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w10h1-setup, include=FALSE>>=
+suppressMessages(library(derivmkts))
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+st  <- read.csv(file.path(DATA, "stock_prices_gbm_synthetic.csv"))
+sig_hat <- sd(diff(log(st$close))) * sqrt(252)          # Week 8
+C0 <- bscall(100, 100, 0.25, 0.03, 1, 0)                # benchmark call
+P0 <- bsput(100, 100, 0.25, 0.03, 1, 0)                 # benchmark put
+@
+
+% ------------------------------------------------------------
+\subsection{Pyetja e javës}
+% ------------------------------------------------------------
+
+\begin{frame}{Rikthim te ``Pensioni Plus''}
+  \begin{itemize}
+    \item<1-> Java 8: fondi garanton 10\,000\,000 lekë pas 5 vitesh, të investuara në një aksion.
+    \item<2-> Garancia = 100\,000 put me $K=100$, $T=5$.
+    \item<3-> Çmimi që gjetëm: \textbf{\Sexpr{fmt(1e5 * bsput(100, 100, sig_hat, 0.03, 5, 0))} lekë}.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Shembull}[(pyetja e javës)]
+    ``Nga vjen ky numër? Dhe sa i besueshëm është, kur $\sigma$ dhe tregu nuk janë të njohur saktë?''
+  \end{Shembull}}
+  \onslide<5->{\small Shembull ilustrues: fondi dhe anëtari janë fiktivë.}
+\end{frame}
+
+\begin{frame}[fragile]{Kutia e zezë}
+<<w10h1-box>>=
+c(call = bscall(s = 100, k = 100, v = 0.25, r = 0.03, tt = 1, d = 0),
+  put  = bsput (s = 100, k = 100, v = 0.25, r = 0.03, tt = 1, d = 0))
+@
+  \begin{itemize}
+    \item Javët 8--9: e përdorëm këtë funksion pa e parë brenda.
+    \item Sot e hapim: çfarë formule ka brenda? Mbi cilat supozime mbështetet?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Formula që do të nxjerrim}
+  \begin{Teoreme}[(Black--Scholes, 1973)]
+    \[
+      C = S_0\,\Phi(d_1) - K e^{-rT}\,\Phi(d_2), \qquad
+      d_{1,2} = \frac{\ln(S_0/K) + (r \pm \tfrac12\sigma^2)T}{\sigma\sqrt{T}}
+    \]
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item $\Phi$: funksioni i shpërndarjes normale standarde (\Rkey{pnorm}).
+    \item Pesë hyrje: $S_0$, $K$, $\sigma$, $r$, $T$. Asnjë $\mu$!
+  \end{itemize}
+  \pause
+  \small Nxjerrja hap pas hapi: Ora 2. Sot: intuita.
+\end{frame}
+
+\begin{frame}{Pak histori}
+  \begin{itemize}
+    \item 1973: F.~Black dhe M.~Scholes; R.~C.~Merton në të njëjtin vit, me një argument të përgjithshëm.
+    \item Në të njëjtin vit hapet bursa e opsioneve në Çikago (CBOE).
+    \item 1997: Çmimi Nobel në ekonomi për Scholes dhe Merton. Black kishte vdekur në 1995.
+  \end{itemize}
+    \begin{Keshille}Ideja kryesore nuk është formula, por argumenti: një opsion mund të \textbf{riprodhohet} me aksion + obligacion.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Objektivat e Javës 10}
+  \begin{enumerate}
+    \item Të kuptojmë supozimet dhe nxjerrjen e formulës Black--Scholes. \LO{K3}
+    \item Ta programojmë nga zero dhe ta krahasojmë me \Rkey{derivmkts}. \LO{S2}
+    \item Të llogarisim dhe interpretojmë Greeks: $\Delta,\Gamma,\nu,\Theta,\rho$. \LO{K3}
+    \item Të gjejmë volatilitetin e nënkuptuar nga një çmim tregu. \LO{K3}
+    \item Të vlerësojmë një garanci të ngulitur në një kontratë sigurimi jete. \LO{C3}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Harta e ditës}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.6cm,
+                minimum height=1cm,align=center,font=\footnotesize}]
+    \node[b] (t1) at (0,0) {\textbf{Formula BS}\\teori, Ora 2};
+    \node[b] (l1) at (3.6,0) {\textbf{BS nga zero}\\R, Ora 3};
+    \node[b] (t2) at (0,-2) {\textbf{Greeks}\\teori, Ora 4};
+    \node[b] (l2) at (3.6,-2) {\textbf{Greeks, IV}\\R, Ora 5};
+    \node[b,fill=accent!15,draw=accent] (c) at (7.6,-1) {\textbf{Garancia}\\unit-linked, Ora 6};
+    \draw[->,thick,uptmid] (t1) -- (l1); \draw[->,thick,uptmid] (t2) -- (l2);
+    \draw[->,thick,uptmid] (l1) -- (c); \draw[->,thick,uptmid] (l2) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Java e kolegiumit dhe e projektit}
+  \begin{itemize}
+    \item Kolegiumi (provimi i ndërmjetëm) zhvillohet në Javën 10 ose 11.
+    \item Projekti i kursit: një detyrë për sigurimet e jetës dhe një për sigurimet e jo-jetës, që caktohen në Javët 10--12.
+    \item Ora 6 e sotme përdor të njëjtat mjete që do t'ju duhen në detyrën e jetës.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Nga Javët 8--9}
+  \begin{itemize}
+    \item GBM: $\ln(S_T/S_0)\sim N\big((\mu-\tfrac12\sigma^2)T,\;\sigma^2T\big)$.
+    \item Parity: $C-P=S_0-Ke^{-rT}$.
+    \item Kufijtë: $\max(S_0-Ke^{-rT},0)\le C\le S_0$.
+    \item Call-i amerikan pa dividendë $=$ call-i europian.
+    \item Të dhënat tona: $\hat\sigma=\Sexpr{fmt(100 * sig_hat, 1)}\%$ (sintetike, e vërteta $25\%$).
+  \end{itemize}
+  \pause
+  \begin{Keshille}Black--Scholes duhet t'i respektojë të gjitha këto. Do ta kontrollojmë në Orën 3.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Funksioni $\Phi$}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+      \begin{tikzpicture}
+        \begin{axis}[width=6.4cm,height=4.4cm,xmin=-3.2,xmax=3.2,ymin=0,ymax=0.45,
+            axis lines=left,xlabel={$z$},ytick=\empty,tick label style={font=\scriptsize}]
+          \addplot[domain=-3.2:0.8,samples=80,fill=uptlight,draw=none] {exp(-x^2/2)/sqrt(2*pi)} \closedcycle;
+          \addplot[domain=-3.2:3.2,samples=120,thick,uptblue] {exp(-x^2/2)/sqrt(2*pi)};
+          \draw[accent,thick] (axis cs:0.8,0) -- (axis cs:0.8,0.29);
+          \node[font=\scriptsize,uptblue] at (axis cs:-1.2,0.08) {$\Phi(0.8)$};
+        \end{axis}
+      \end{tikzpicture}
+    \column{0.46\textwidth}
+      \begin{itemize}
+        \item $\Phi(z)=P(Z\le z)$, $Z\sim N(0,1)$.
+        \item $\Phi(0)=0.5$; \; $\Phi(-z)=1-\Phi(z)$.
+        \item Në R: \texttt{pnorm(0.8)} $=\Sexpr{fmt(pnorm(0.8), 4)}$.
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[label=w10mc1]{Zgjedhje e shumëfishtë}
+  Sa është $\Phi(-0.8)$?
+  \begin{enumerate}[A)]
+    \item $-0.7881$
+    \item $0.2119$
+    \item $0.7881$
+    \item Nuk mund të llogaritet pa tabelë të veçantë për vlerat negative.
+  \end{enumerate}
+  \vfill\shkoTe{w10zgjMC1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Intuita}
+% ------------------------------------------------------------
+
+\begin{frame}{Dy pjesët e formulës}
+  \[
+    C = \underbrace{S_0\,\Phi(d_1)}_{\text{aksioni që merr}} - \underbrace{K e^{-rT}\,\Phi(d_2)}_{\text{pagesa e skontuar}}
+  \]
+  \begin{itemize}
+    \item<2-> $\Phi(d_2)$: probabiliteti (në botën ``neutrale ndaj rrezikut'') që call-i të ushtrohet.
+    \item<2-> $Ke^{-rT}\Phi(d_2)$: vlera sot e pagesës së pritshme $K$.
+    \item<2-> $S_0\Phi(d_1)$: vlera sot e aksionit që merret, \textbf{vetëm} kur ushtrohet.
+  \end{itemize}
+  \onslide<3->{\small Pse $d_1\neq d_2$? Sepse aksioni merret pikërisht kur ai është i lartë. Ora 2.}
+\end{frame}
+
+\begin{frame}[fragile]{Dy pjesët në numra}
+<<w10h1-parts>>=
+S <- 100; K <- 100; sig <- 0.25; r <- 0.03; T <- 1
+d1 <- (log(S / K) + (r + sig^2 / 2) * T) / (sig * sqrt(T))
+d2 <- d1 - sig * sqrt(T)
+round(c(d1 = d1, d2 = d2, N_d1 = pnorm(d1), N_d2 = pnorm(d2)), 4)
+round(c(stock_part = S * pnorm(d1), cash_part = K * exp(-r * T) * pnorm(d2),
+        C = S * pnorm(d1) - K * exp(-r * T) * pnorm(d2)), 4)
+@
+  \small Rezultati: \Sexpr{fmt(C0, 4)}, njësoj si \texttt{bscall()}.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kutia e zezë është vetëm \textbf{katër rreshta} me \texttt{pnorm()}.
+    \item<2-> $\Phi(d_2)\approx\Sexpr{fmt(pnorm(d2), 2)}$: rreth gjysma e rasteve përfundojnë në para, sepse $S_0=K$.
+    \item<3-> $\Phi(d_1)\approx\Sexpr{fmt(pnorm(d1), 2)}>\Phi(d_2)$: diferenca vjen nga $\sigma\sqrt T$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Mungesa e $\mu$}
+  \begin{itemize}
+    \item<1-> Dy investitorë: njëri pret $\mu=15\%$, tjetri $\mu=2\%$. Çmimi i call-it është \textbf{i njëjtë}.
+    \item<1-> Pse? Opsioni mund të riprodhohet me aksion + para. Çmimi i aksionit sot $S_0$ e përmban tashmë $\mu$.
+    \item<1-> Rezultati: çmimi llogaritet \textbf{sikur} aksioni të rritej me normën $r$.
+  \end{itemize}
+  \onslide<2->{
+  \begin{Gabim}Të vendosësh $\mu$ (kthimin e pritur) në vend të $r$ në formulë. $\mu$ nuk hyn kurrë në çmimin e opsionit.\end{Gabim}}
+\end{frame}
+
+\begin{frame}[label=w10par1]{Parashiko}
+  \begin{Parashiko}
+    $S_0=K=100$, $r=3\%$, $T=1$. Sa bëhet çmimi i call-it kur:
+    \begin{enumerate}
+      \item $\sigma\to0$ (aksioni nuk luhatet fare)?
+      \item $\sigma$ bëhet shumë i madh (p.sh.\ 300\%)?
+    \end{enumerate}
+    Ndihmë: përdor kufijtë e Javës 9.
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Call-i si funksion i $\sigma$}
+<<w10h1-sig, echo=FALSE, fig.height=2.9>>=
+sg <- seq(0.001, 1.5, length.out = 200)
+ggplot(data.frame(sig = sg, C = bscall(100, 100, sg, 0.03, 1, 0)), aes(sig, C)) +
+  geom_line(colour = "#2C5AA0", linewidth = 1) +
+  geom_hline(yintercept = c(100 - 100 * exp(-0.03), 100), linetype = 2, colour = "#E67E22") +
+  annotate("text", x = 1.25, y = c(8, 94), label = c("S - K e^(-rT)", "S0 = 100"), size = 4) +
+  labs(x = "sigma", y = "C") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Ekstremet në numra}
+<<w10h1-ext>>=
+sig_grid <- c(1e-8, 0.10, 0.25, 0.50, 1, 3)
+round(rbind(sigma = sig_grid, C = bscall(100, 100, sig_grid, 0.03, 1, 0)), 3)
+c(lower_bound = 100 - 100 * exp(-0.03), upper_bound = 100)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $\sigma\to0$: $C\to S_0-Ke^{-rT}=\Sexpr{fmt(100 - 100 * exp(-0.03), 2)}$: kufiri i poshtëm.
+    \item<2-> $\sigma\to\infty$: $C\to S_0=100$: kufiri i sipërm.
+    \item<3-> Mes tyre, $C$ \textbf{rritet} me $\sigma$: më shumë pasiguri $=$ opsion më i vlefshëm.
+  \end{itemize}
+  \onslide<4->{\small Kjo rritje, $\partial C/\partial\sigma$, quhet \textbf{vega}. Ora 4.}
+\end{frame}
+
+\begin{frame}[label=w10ush1]{Radha jote!}
+  \begin{Ushtrim}[(5 minuta, pa ndihmën e PC)]
+    $S_0=K=100$, $r=3\%$, $T=1$, $\sigma=25\%$; \; $e^{-0.03}=0.970446$.
+    \begin{enumerate}
+      \item Llogarit $d_1$ dhe $d_2$.
+      \item Me $\Phi(0.245)=0.5968$ dhe $\Phi(-0.005)=0.4980$, llogarit $C$.
+      \item Llogarit $P$ me parity.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Sa i besueshëm është numri?}
+% ------------------------------------------------------------
+
+\begin{frame}{Pesë hyrje, jo të gjitha të njohura}
+  \begin{center}
+    \begin{tabular}{lll}
+      \toprule
+      Hyrja & Nga vjen & Pasiguria \\
+      \midrule
+      $S_0$ & tregu, sot & pothuajse zero \\
+      $K$, $T$ & kontrata & zero \\
+      $r$ & kurba e normave & e vogël \\
+      $\sigma$ & \textbf{vlerësohet} & \textbf{e madhe} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \pause
+  \small $\sigma$ është e vetmja hyrje që nuk shihet në treg. Prandaj aktuari duhet ta vlerësojë dhe ta justifikojë.
+\end{frame}
+
+\begin{frame}[label=w10par1b]{Parashiko}
+  \begin{Parashiko}
+    Garancia e ``Pensioni Plus'' kushton rreth 1.40 milionë lekë me $\hat\sigma\approx25\%$.
+    \begin{enumerate}
+      \item Sa bëhet me $\sigma=15\%$?
+      \item Sa bëhet me $\sigma=40\%$?
+      \item A ndryshon çmimi në mënyrë proporcionale me $\sigma$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar1b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w10ndr1]{Ndrysho parametrin: $\sigma$ e garancisë}
+<<w10h1-fund>>=
+sig_fund <- c(sigma15 = 0.15, sigma_hat = sig_hat, sigma25 = 0.25, sigma40 = 0.40)
+put_fund <- 1e5 * bsput(100, 100, sig_fund, 0.03, 5, 0)    # 100 000 puts, T = 5
+round(rbind(sigma_pct = 100 * sig_fund, cost_lek = put_fund, pct_capital = 100 * put_fund / 1e7), 1)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Nga $15\%$ në $40\%$: kostoja shkon nga \Sexpr{fmt(put_fund["sigma15"] / 1e6, 2)} në \Sexpr{fmt(put_fund["sigma40"] / 1e6, 2)} milionë lekë.
+    \item<2-> Afërsisht \textbf{lineare} në $\sigma$ për opsione afër parasë (ATM), por jo proporcionale.
+    \item<3-> Gabimi në $\sigma$ është gabimi kryesor i çmimit. Ora 6: si ta masim.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w10gab1]{Gjej gabimin}
+<<w10h1-bug>>=
+bscall(100, 100, 0.03, 0.25, 1, 0)        # intended: sigma = 25%, r = 3%
+@
+  \begin{enumerate}
+    \item Studenti pret rreth 11.35. Pse merr një numër shumë më të madh?
+    \item Si mund ta shmangësh këtë gabim përgjithmonë?
+  \end{enumerate}
+  \vfill\shkoTe{w10zgjGab1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Opsionet në sigurime}
+% ------------------------------------------------------------
+
+\begin{frame}{Ku shfaqet Black--Scholes në sigurime?}
+  \begin{itemize}
+    \item \textbf{Unit-linked} me garanci minimale në maturim (GMMB): një put europian.
+    \item Garanci në rast vdekjeje (GMDB): një put që paguan në momentin e vdekjes.
+    \item Norma e garantuar në kontratat tradicionale: një seri opsionesh mbi normat.
+    \item Në të gjitha rastet, put-i peshohet me probabilitetin që klienti të jetë gjallë: $_tp_x$ (Java 5).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item \textbf{IFRS 17}: garancitë vlerësohen në mënyrë konsistente me tregun (\emph{market-consistent}).
+    \item \textbf{Solvency II}: ``Best Estimate'' përfshin vlerën kohore të opsioneve dhe garancive (TVOG).
+    \item Për kontrata të thjeshta: Black--Scholes. Për më të ndërlikuarat: simulim Monte Carlo me të njëjtën logjikë (Ora 3).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10tps1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item Një kompani sigurimi shqiptare shet garanci unit-linked mbi një fond. Nga do ta marrë $\sigma$?
+      \item Pse çmimi i garancisë nuk varet nga sa optimist është menaxheri për fondin?
+      \item Cili supozim i Black--Scholes ju duket më pak realist për një garanci 20-vjeçare?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjTps1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Cilat janë pesë hyrjet e formulës Black--Scholes?
+    \item Çfarë përfaqëson $\Phi(d_2)$?
+    \item Pse $\mu$ nuk shfaqet në formulë?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $S_0,K,\sigma,r,T$; (2) probabilitetin neutral ndaj rrezikut që call-i të ushtrohet;
+  (3) opsioni riprodhohet me aksion + obligacion, dhe $S_0$ e përmban tashmë $\mu$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item \texttt{bscall()} $= S_0\Phi(d_1)-Ke^{-rT}\Phi(d_2)$: katër rreshta R.
+    \item $C$ rritet me $\sigma$, nga $S_0-Ke^{-rT}$ në $S_0$.
+    \item $\sigma$ është hyrja kryesore e pasigurt: garancia shkon nga \Sexpr{fmt(put_fund["sigma15"] / 1e6, 2)} në \Sexpr{fmt(put_fund["sigma40"] / 1e6, 2)} milionë.
+    \item Garancitë unit-linked janë opsione put, të peshuara me $_tp_x$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Teoria I: supozimet, bota neutrale ndaj rrezikut, nxjerrja e formulës hap pas hapi.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item F.~Black, M.~Scholes (1973), ``The Pricing of Options and Corporate Liabilities'', \emph{Journal of Political Economy}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: modeli Black--Scholes--Merton.
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{bscall()}, \texttt{bsput()}.
+    \item README i të dhënave: \texttt{stock\_prices\_gbm\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}

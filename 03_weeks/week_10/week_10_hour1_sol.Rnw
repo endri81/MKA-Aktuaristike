@@ -1,0 +1,62 @@
+% ============================================================
+%  Java 10 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} Simetria: $\Phi(-0.8)=1-\Phi(0.8)=1-\Sexpr{fmt(pnorm(0.8), 4)}=\Sexpr{fmt(pnorm(-0.8), 4)}$.
+  \begin{itemize}
+    \item A) një probabilitet nuk është kurrë negativ.
+    \item C) kjo është $\Phi(0.8)$.
+    \item D) mjafton tabela për $z\ge0$ dhe simetria e dendësisë.
+  \end{itemize}
+  \vfill\kthehu{w10mc1}
+\end{frame}
+
+\begin{frame}[label=w10zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $\sigma\to0$: $S_T=S_0e^{rT}$ me siguri në botën neutrale; call-i paguan $S_0e^{rT}-K$, i skontuar: $S_0-Ke^{-rT}=2.96$.
+    \item $\sigma=300\%$: $C=\Sexpr{fmt(bscall(100, 100, 3, 0.03, 1, 0), 2)}$, afër kufirit të sipërm $S_0=100$.
+  \end{enumerate}
+  \small Të dyja janë kufijtë pa arbitrazh të Javës 9: formula i respekton automatikisht.
+  \vfill\kthehu{w10par1}
+\end{frame}
+
+\begin{frame}[label=w10zgjUsh1]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $d_1=\dfrac{0+(0.03+0.03125)\cdot1}{0.25}=0.245$; \quad $d_2=0.245-0.25=-0.005$.
+    \item $C=100\cdot0.5968-97.0446\cdot0.4980=59.68-48.33=11.35$.
+    \item $P=C-S_0+Ke^{-rT}=11.35-100+97.04=8.39$.
+  \end{enumerate}
+  \small Me R: $C=\Sexpr{fmt(C0, 4)}$, $P=\Sexpr{fmt(P0, 4)}$. Diferencat vijnë nga rrumbullakimi i $\Phi$.
+  \vfill\kthehu{w10ush1}
+\end{frame}
+
+\begin{frame}[label=w10zgjPar1b]{Zgjidhja: Parashiko (garancia)}
+  \begin{enumerate}
+    \item $\sigma=15\%$: \Sexpr{fmt(put_fund["sigma15"])} lekë.
+    \item $\sigma=40\%$: \Sexpr{fmt(put_fund["sigma40"])} lekë.
+    \item Jo proporcionale: $\sigma$ rritet $2.67$ herë, kostoja $\Sexpr{fmt(put_fund["sigma40"] / put_fund["sigma15"], 2)}$ herë.
+      Por afërsisht \textbf{lineare}: rreth \Sexpr{fmt((put_fund["sigma40"] - put_fund["sigma15"]) / 25 / 1e3)} mijë lekë për çdo pikë përqindjeje të $\sigma$.
+  \end{enumerate}
+  \vfill\kthehu{w10par1b}
+\end{frame}
+
+\begin{frame}[label=w10zgjGab1]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item Radha e argumenteve është \texttt{(s, k, v, r, tt, d)}. Kodi jep $\sigma=3\%$ dhe $r=25\%$:
+      call-i me normë 25\% vlen shumë, sepse $Ke^{-rT}$ është i vogël.
+    \item Përdor gjithmonë emrat: \texttt{bscall(s = 100, k = 100, v = 0.25, r = 0.03, tt = 1, d = 0)}
+      $=\Sexpr{fmt(bscall(s = 100, k = 100, v = 0.25, r = 0.03, tt = 1, d = 0), 4)}$.
+  \end{enumerate}
+  \vfill\kthehu{w10gab1}
+\end{frame}
+
+\begin{frame}[label=w10zgjTps1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Nga historia e fondit ($\hat\sigma$, Java 8), ose nga çmimet e opsioneve në tregjet ndërkombëtare
+      (volatiliteti i nënkuptuar, Ora 5). Në Shqipëri nuk ka treg opsionesh: zakonisht përdoret historia.
+    \item Sepse garancia mund të riprodhohet me aksion + obligacion: kostoja e riprodhimit nuk varet nga $\mu$.
+    \item Volatiliteti dhe norma konstante për 20 vjet; mbrojtja e vazhdueshme pa kosto transaksioni.
+  \end{enumerate}
+  \vfill\kthehu{w10tps1}
+\end{frame}
