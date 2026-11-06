@@ -9,7 +9,8 @@
 
 <<w6h1-setup, include=FALSE>>=
 suppressMessages(library(lifecontingencies))
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d))
 mt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
 data(soa08Act)
 @
