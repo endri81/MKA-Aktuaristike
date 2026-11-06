@@ -1,0 +1,218 @@
+% ============================================================
+%  Java 12 · Ora 5 — Jetë II: IA/DA, anuitetet, primet, rezervat (Java 7)
+% ============================================================
+\section{Jetë II}
+
+\begin{frame}{Ora 5 · Jetë II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w12h5-setup, include=FALSE>>=
+toy5 <- new("actuarialtable", x = 60:63, lx = c(1000, 950, 880, 0), interest = 0.05)
+@
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Sigurimet rritëse dhe zbritëse (Java 7)}
+  \begin{itemize}
+    \item<1-> Rritës: $(IA)^1_{x:\overline n|}=\sum_{k=0}^{n-1}(k+1)\,v^{k+1}\,{}_kp_x\,q_{x+k}$: paguan $k+1$ nëse vdes në vitin $k+1$.
+    \item<2-> Zbritës: $(DA)^1_{x:\overline n|}=\sum_{k=0}^{n-1}(n-k)\,v^{k+1}\,{}_kp_x\,q_{x+k}$: p.sh.\ sigurimi i kredisë.
+    \item<3-> Kontroll: $(IA)^1+(DA)^1=(n+1)\,A^1_{x:\overline n|}$.
+    \item<4-> Anuiteti i vonuar: $_{u|}\ddot a_x={}_uE_x\,\ddot a_{x+u}=N_{x+u}/D_x$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Primet neto dhe rezerva (Java 7)}
+  \begin{itemize}
+    \item<1-> Parimi i ekuivalencës: $P\cdot\ddot a_{x:\overline n|}=S\cdot A$ (vlera sot e primeve $=$ vlera sot e përfitimeve).
+    \item<2-> Rezerva prospektive: $_tV=S\cdot A_{x+t}-P\cdot\ddot a_{x+t}$ (përfitimet e ardhshme $-$ primet e ardhshme).
+    \item<3-> Rekursioni: $({}_tV+P)(1+i)=q_{x+t}\,S+p_{x+t}\,{}_{t+1}V$.
+    \item<4-> Sigurim i plotë jete: $_tV=1-\ddot a_{x+t}/\ddot a_x$ (për $S=1$).
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}\texttt{IAxn(t, x)} dhe \texttt{DAxn(t, x)} pa \texttt{n}: horizonti presupozohet dhe mund të jetë i gabuar. Jep gjithmonë \texttt{n}.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ushtrime pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w12q5a]{Ushtrim 1 · IA dhe DA}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Tabela e Orës 4: $l_{60}=1000$, $l_{61}=950$, $l_{62}=880$, $l_{63}=0$; \; $i=5\%$;
+    \; $v=0.952381$, $v^2=0.907029$, $v^3=0.863838$.
+    \begin{enumerate}
+      \item Llogarit $(IA)^1_{60:\overline3|}$ dhe $(DA)^1_{60:\overline3|}$.
+      \item Kontrollo: $(IA)+(DA)=4A_{60}$, me $A_{60}=0.87129$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj5a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q5b]{Ushtrim 2 · Primi dhe rezerva}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    E njëjta tabelë; sigurim i plotë jete, $S=1$, prime vjetore paraprake.
+    Nga Ora 4: $A_{60}=0.87129$, $\ddot a_{60}=2.70295$.
+    \begin{enumerate}
+      \item Llogarit primin vjetor neto $P$.
+      \item Llogarit $A_{61}$, $\ddot a_{61}$ dhe rezervën $_1V$.
+      \item Kontrollo me $_1V=1-\ddot a_{61}/\ddot a_{60}$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj5b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q5c]{Ushtrim 3 · Rekursioni}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Me numrat e Ushtrimit 2 ($P=0.32235$, $_1V=0.30365$), $q_{61}=70/950$, $S=1$.
+    \begin{enumerate}
+      \item Llogarit $_2V$ me rekursionin $({}_1V+P)(1+i)=q_{61}\cdot1+p_{61}\,{}_2V$.
+      \item Kontrollo me formulën prospektive $_2V=A_{62}-P\,\ddot a_{62}$.
+      \item Pse $_3V=0$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj5c}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q5d]{Ushtrim 4 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Për një sigurim të përzier (\emph{endowment}) 20-vjeçar, si sillet zakonisht rezerva $_tV$?
+    \begin{enumerate}
+      \item[A)] Rritet nga 0 drejt $S$ në $t=20$.
+      \item[B)] Është gjithmonë 0, sepse primet barazojnë përfitimet.
+      \item[C)] Rritet, pastaj bie në 0.
+      \item[D)] Bie nga $S$ në 0.
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w12zgj5d}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ushtrime në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile,label=w12q5e]{Ushtrim 5 · Gjej gabimin}
+<<w12h5-bug>>=
+c(IA_no_n = IAxn(toy5, 60), IA_n3 = IAxn(toy5, 60, n = 3), hand = 2.4551)
+@
+  \small Pse rezultati pa \texttt{n} është kaq i vogël? Çfarë horizonti përdori funksioni?
+  \hfill\shkoTe{w12zgj5e}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 6 · Primet për një burrë 40 vjeç}
+<<w12h5-prem>>=
+P40 <- 1e6 * c(term_20 = Axn(tM4, 40, 20) / axn(tM4, 40, 20),
+               endowment_20 = AExn(tM4, 40, 20) / axn(tM4, 40, 20),
+               whole_life = Axn(tM4, 40) / axn(tM4, 40))
+round(P40)
+round(1e6 * c(IA_20 = IAxn(tM4, 40, 20), DA_20 = DAxn(tM4, 40, 20)))
+@
+  \small Primet vjetore neto për $S=1\,000\,000$ lekë; tabela sintetike (M), $i=5\%$. Rreshti i dytë: primet e vetme për IA dhe DA.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Sigurimi i përkohshëm është shumë i lirë: rreziku i vdekjes në moshën 40--60 është i vogël.
+    \item<2-> Endowment kushton shumë më shumë: përfitimi paguhet \textbf{me siguri} (vdekje ose maturim).
+    \item<3-> IA $>$ DA: IA paguan shuma më të mëdha në vitet e vona, kur vdekshmëria është më e lartë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 7 · Rezerva e endowment-it}
+<<w12h5-res, fig.height=2.5>>=
+t5 <- 0:20
+V5 <- sapply(t5, function(t) if (t == 20) 1e6 else
+  1e6 * AExn(tM4, 40 + t, 20 - t) - P40["endowment_20"] * axn(tM4, 40 + t, 20 - t))
+ggplot(data.frame(t = t5, V = V5 / 1e6), aes(t, V)) + geom_line(colour = "#2C5AA0", linewidth = 1) +
+  geom_point(colour = "#2C5AA0") + labs(x = "t (vite)", y = "rezerva (mln leke)") + th
+@
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli: rekursioni në një vit}
+<<w12h5-rec>>=
+k5 <- 5; q5 <- qxt(tM4, 40 + k5, 1)                       # year 6 of the policy
+lhs <- (V5[k5 + 1] + P40["endowment_20"]) * 1.05
+rhs <- q5 * 1e6 + (1 - q5) * V5[k5 + 2]
+round(c(lhs = unname(lhs), rhs = rhs, diff = unname(lhs - rhs)), 4)
+@
+  \small Rekursioni i Javës 7 vlen: rezerva prospektive dhe ajo rekursive janë e njëjta gjë. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 8 · Shqipëri kundrejt sintetike kundrejt SOA}
+<<w12h5-cmp>>=
+h5 <- subset(hld4, Year1 == 2011 & Sex == 1)
+lx_h5 <- exp(approx(h5$Age, log(h5[["l(x)"]]), xout = 0:95)$y)       # log-linear (Week 11)
+tH5 <- new("actuarialtable", x = 0:95, lx = lx_h5, interest = 0.05)
+tS5 <- new("actuarialtable", x = soa08Act@x, lx = soa08Act@lx, interest = 0.05)
+round(c(HLD_2011 = axn(tH5, 65), synthetic = axn(tM4, 65), SOA = axn(tS5, 65)), 3)
+@
+  \small $\ddot a_{65}$ për burra, të gjitha me $i=5\%$. HLD 2011 (\textbf{reale}) ndalet te mosha 95: pak nënvlerësim.
+\end{frame}
+
+\begin{frame}[label=w12q5f]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta)]
+    \begin{enumerate}
+      \item Një burrë 45 vjeç blen sot një anuitet të vonuar me 20 vjet: 600\,000 lekë në vit nga mosha 65.
+        Llogarit primin e vetëm neto me tabelën sintetike ($i=5\%$): \texttt{axn(tM4, 45, m = 20)}.
+      \item Kontrollo me $_{20}E_{45}\cdot\ddot a_{65}$.
+      \item Sa ndryshon primi me HLD 2011? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj5f}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë: Java 7}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Detyra & R \\
+      \midrule
+      rritës / zbritës & \texttt{IAxn(t, x, n)}, \texttt{DAxn(t, x, n)} (gjithmonë me \texttt{n}) \\
+      endowment & \texttt{AExn(t, x, n)} \\
+      anuitet i vonuar & \texttt{axn(t, x, m = u)} \\
+      primi neto & \texttt{S * Axn(...) / axn(t, x, n)} \\
+      rezerva prospektive & \texttt{S * A(x+t) - P * a(x+t)}; kontroll me rekursion \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj kontrollin $(IA)+(DA)$.
+    \item Shkruaj rezervën prospektive dhe rekursionin.
+    \item Pse \texttt{IAxn(toy5, 60)} pa \texttt{n} është i gabuar?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $(n+1)A^1_{x:\overline n|}$; (2) $_tV=SA_{x+t}-P\ddot a_{x+t}$, \; $({}_tV+P)(1+i)=qS+p\,{}_{t+1}V$;
+  (3) horizonti i parazgjedhur e pret tabelën para fundit.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item IA/DA pa ndihmën e PC; kontrolli $(n+1)A^1$.
+    \item Primi neto dhe rezerva: prospektive $=$ rekursive.
+    \item Burrë 40 vjeç: përkohshëm \Sexpr{fmt(P40["term_20"])}, endowment \Sexpr{fmt(P40["endowment_20"])} lekë/vit.
+    \item $\ddot a_{65}$: HLD 2011 \Sexpr{fmt(axn(tH5, 65), 2)}, sintetike \Sexpr{fmt(axn(tM4, 65), 2)}, SOA \Sexpr{fmt(axn(tS5, 65), 2)}.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Financa: kthimet, parity, opsionet, Black--Scholes, CRR, garancitë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item G.~A.~Spedicato, vinjeta e paketës \Rkey{lifecontingencies}: \texttt{IAxn}, \texttt{DAxn}, \texttt{AExn}.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item Human Life-Table Database (\textbf{reale}); tabela ilustruese SOA (\texttt{soa08Act}); tabela sintetike.
+  \end{itemize}
+\end{frame}

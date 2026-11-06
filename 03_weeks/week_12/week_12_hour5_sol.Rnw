@@ -1,0 +1,69 @@
+% ============================================================
+%  Java 12 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12zgj5a]{Zgjidhja: Ushtrim 1}
+  \begin{enumerate}
+    \item $(IA)^1_{60:\overline3|}=\big(1\cdot50v+2\cdot70v^2+3\cdot880v^3\big)/1000=(47.619+126.984+2280.53)/1000=\mathbf{2.4551}$.\\
+      $(DA)^1_{60:\overline3|}=\big(3\cdot50v+2\cdot70v^2+1\cdot880v^3\big)/1000=(142.857+126.984+760.18)/1000=\mathbf{1.0300}$.
+    \item $2.4551+1.0300=3.4851=4\cdot0.87129$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small R: \texttt{IAxn(toy5, 60, n = 3)} $=\Sexpr{fmt(IAxn(toy5, 60, n = 3), 4)}$, \; \texttt{DAxn(toy5, 60, n = 3)} $=\Sexpr{fmt(DAxn(toy5, 60, n = 3), 4)}$.
+  \vfill\kthehu{w12q5a}
+\end{frame}
+
+\begin{frame}[label=w12zgj5b]{Zgjidhja: Ushtrim 2}
+  \begin{enumerate}
+    \item $P=0.87129/2.70295=\mathbf{0.32235}$.
+    \item $A_{61}=(70v+880v^2)/950=(66.667+798.186)/950=0.91037$; \; $\ddot a_{61}=1+\frac{880}{950}v=1.88221$.\\
+      $_1V=0.91037-0.32235\cdot1.88221=\mathbf{0.30364}$.
+    \item $1-1.88221/2.70295=0.30365$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small R: $\Sexpr{fmt(Axn(toy5, 61) - Axn(toy5, 60) / axn(toy5, 60) * axn(toy5, 61), 5)}$.
+  \vfill\kthehu{w12q5b}
+\end{frame}
+
+\begin{frame}[label=w12zgj5c]{Zgjidhja: Ushtrim 3}
+  \begin{enumerate}
+    \item $(0.30365+0.32235)\cdot1.05=0.65730$; \; $q_{61}=0.07368$, $p_{61}=0.92632$:\\
+      $_2V=(0.65730-0.07368)/0.92632=\mathbf{0.63004}$.
+    \item $l_{63}=0$ $\Rightarrow$ $q_{62}=1$: \; $A_{62}=v=0.95238$, $\ddot a_{62}=1$; \; $_2V=0.95238-0.32235=0.63003$. \textcolor{okgreen}{$\checkmark$}
+    \item Në moshën 63 nuk ka asnjë të gjallë: kontrata ka mbaruar, nuk ka detyrime të ardhshme.
+  \end{enumerate}
+  \vfill\kthehu{w12q5c}
+\end{frame}
+
+\begin{frame}[label=w12zgj5d]{Zgjidhja: Ushtrim 4}
+  \textbf{A)} Në endowment, kompania duhet të ketë $S$ në maturim për çdo të gjallë: rezerva rritet nga $_0V=0$ te $_{20}V=S$.
+  \begin{itemize}
+    \item C) është forma tipike e sigurimit të \textbf{përkohshëm}: rritet pak, pastaj bie në 0.
+    \item B) $_0V=0$ vetëm në fillim. \; D) nuk ka kuptim me prime të nivelit.
+  \end{itemize}
+  \small Grafiku i Ushtrimit 7 e konfirmon: nga 0 te 1 milion lekë.
+  \vfill\kthehu{w12q5d}
+\end{frame}
+
+\begin{frame}[label=w12zgj5e]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item Pa \texttt{n}, funksioni përdor një horizont të parazgjedhur më të shkurtër se jeta e mbetur në tabelë
+      (\texttt{getOmega(toy5)} $=\Sexpr{getOmega(toy5)}$): humbet pjesën më të madhe të pagesave.
+    \item Me \texttt{n = 3}: \Sexpr{fmt(IAxn(toy5, 60, n = 3), 4)}, njësoj si llogaritja pa ndihmën e PC.
+    \item Rregulli i Javës 7: me \texttt{IAxn}, \texttt{DAxn}, \texttt{Axyzn}, jep \textbf{gjithmonë} \texttt{n}.
+  \end{itemize}
+  \vfill\kthehu{w12q5e}
+\end{frame}
+
+<<w12h5-sol-f, include=FALSE>>=
+def45 <- 6e5 * c(synthetic = axn(tM4, 45, m = 20), check = Exn(tM4, 45, 20) * axn(tM4, 65),
+                 HLD_2011 = axn(tH5, 45, m = 20))
+@
+
+\begin{frame}[label=w12zgj5f]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $600\,000\cdot{}_{20|}\ddot a_{45}=\Sexpr{fmt(unname(def45["synthetic"]))}$ lekë (tabela sintetike).
+    \item $600\,000\cdot{}_{20}E_{45}\,\ddot a_{65}=\Sexpr{fmt(unname(def45["check"]))}$ lekë. \textcolor{okgreen}{$\checkmark$}
+    \item HLD 2011: \Sexpr{fmt(unname(def45["HLD_2011"]))} lekë: më lirë, sepse vdekshmëria shqiptare e 2011 është më e lartë
+      (mbijetesa deri në 65 dhe pas 65 më e ulët), dhe tabela ndalet te 95.
+  \end{enumerate}
+  \vfill\kthehu{w12q5f}
+\end{frame}

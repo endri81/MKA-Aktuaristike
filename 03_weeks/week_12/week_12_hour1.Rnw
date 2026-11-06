@@ -12,7 +12,8 @@ suppressMessages({library(tvm); library(fitdistrplus); library(actuar); library(
                   library(lifecontingencies); library(derivmkts)})
 library(ggplot2)
 th  <- theme_minimal(base_size = 13)
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d), fixed = FALSE)
 claims <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
 @
 
