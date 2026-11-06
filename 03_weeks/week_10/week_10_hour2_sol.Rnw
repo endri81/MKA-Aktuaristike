@@ -1,0 +1,54 @@
+% ============================================================
+%  Java 10 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10zgjPar2]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item \textbf{Jo.} $p$ nuk hyn në sistemin $120\Delta+1.05B=20$, $90\Delta+1.05B=0$. Çmimi mbetet 9.52.
+    \item Po: $\Delta=30/40=0.75$, \; $B=-67.5/1.05=-64.29$, \; $C=75-64.29=10.71$.
+      Edhe $q=(1.05-0.9)/(1.3-0.9)=0.375$: \; $0.375\cdot30/1.05=10.71$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small Çmimi varet nga \textbf{gjerësia} e skenarëve (volatiliteti), jo nga probabiliteti i tyre real.
+  \vfill\kthehu{w10par2}
+\end{frame}
+
+\begin{frame}[label=w10zgjTps2]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item \textbf{Jo}, në kuptimin real. $\Phi(d_2)$ është probabilitet nën $\mathbb{Q}$, një mjet llogaritës.
+      Probabiliteti real përdor $\mu$ në vend të $r$.
+    \item \textbf{Më i madh} për call-in: me $\mu>r$, $S_T$ priret të jetë më i lartë se nën $\mathbb{Q}$.
+      Probabiliteti real: $\Phi(\hat d_2)$, ku $\hat d_2$ ka $\mu$ në vend të $r$.
+  \end{enumerate}
+  \small Për garancinë (put), e kundërta: probabiliteti real i pagesës është më i vogël se $\Phi(-d_2)$.
+  \vfill\kthehu{w10tps2}
+\end{frame}
+
+\begin{frame}[label=w10zgjMC2]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{D)} është e gabuar. Me $S_0=K$: $d_1=\dfrac{(r+\frac12\sigma^2)T}{\sigma\sqrt T}=\Big(\dfrac r\sigma+\dfrac\sigma2\Big)\sqrt T>0$.
+  \begin{itemize}
+    \item Në shembullin tonë: $d_1=0.245$, jo 0.
+    \item A) $d_1-d_2=\sigma\sqrt T>0$. \; B) Hapi 1. \; C) $\Phi(x)+\Phi(-x)=1$ për çdo $x$.
+  \end{itemize}
+  \vfill\kthehu{w10mc2}
+\end{frame}
+
+\begin{frame}[label=w10zgjUsh2]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $d_1=\dfrac{0.09531+(0.05+0.02)\cdot0.5}{0.2\cdot0.7071}=\dfrac{0.13031}{0.14142}=0.9214$; \; $d_2=0.9214-0.1414=0.7800$.
+    \item $C=110\cdot0.8216-97.531\cdot0.7823=90.38-76.30=14.08$.
+    \item $P=97.531\cdot(1-0.7823)-110\cdot(1-0.8216)=21.23-19.62=1.61$.\\
+      Parity: $C-S_0+Ke^{-rT}=14.08-110+97.53=1.61$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \small R: $C=\Sexpr{fmt(bscall(S2, K2, s2, r2, T2, 0), 4)}$, $P=\Sexpr{fmt(bsput(S2, K2, s2, r2, T2, 0), 4)}$.
+  \vfill\kthehu{w10ush2}
+\end{frame}
+
+\begin{frame}[label=w10zgjGab2]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item \texttt{log10()} në vend të \texttt{log()}: formula kërkon logaritmin natyror.
+    \item \texttt{sig\^{}2} në vend të \texttt{sig\^{}2 / 2}.
+    \item \texttt{sig * T} në vend të \texttt{sig * sqrt(T)} te $d_2$.
+  \end{enumerate}
+  \small Gabimi i tretë nuk shihet kur $T=1$. Prandaj testo gjithmonë me $T\neq1$ dhe $S_0\neq K$.
+  \vfill\kthehu{w10gab2}
+\end{frame}

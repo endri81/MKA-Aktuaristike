@@ -1,0 +1,390 @@
+% ============================================================
+%  Java 10 · Ora 2 — Teoria I: nxjerrja e formulës Black–Scholes
+% ============================================================
+\section{Teoria I: formula}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Supozimet}
+% ------------------------------------------------------------
+
+\begin{frame}{Gjashtë supozime}
+  \begin{enumerate}
+    \item Çmimi ndjek GBM: $dS_t=\mu S_t\,dt+\sigma S_t\,dW_t$, me $\sigma$ \textbf{konstante}.
+    \item Norma pa rrezik $r$ konstante, e njëjtë për huamarrje dhe depozitë.
+    \item Aksion pa dividendë deri në $T$ (Zgjerimi në fund të orës).
+    \item Tregtim i vazhdueshëm, pa kosto transaksioni, pa taksa.
+    \item Lejohet shitja e shkurtër (\emph{short selling}) dhe pjesë të aksionit.
+    \item Pa arbitrazh.
+  \end{enumerate}
+  \small $W_t$: lëvizja Browniane (\emph{Brownian motion}), $W_T\sim N(0,T)$.
+\end{frame}
+
+\begin{frame}{Ku dështojnë në praktikë?}
+  \begin{center}
+    \begin{tabular}{lll}
+      \toprule
+      Supozimi & Realiteti & Pasoja \\
+      \midrule
+      $\sigma$ konstante & $\sigma$ ndryshon në kohë & buzëqeshja e volatilitetit \\
+      kthime normale & bishta të trashë & put-et OTM nënvlerësohen \\
+      $r$ konstante & kurba e normave lëviz & problem për $T$ të gjatë \\
+      tregtim i vazhdueshëm & rebalancim diskret & gabim mbrojtjeje (Ora 5) \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \small Modeli nuk është ``i vërtetë''. Është një \textbf{standard} i përbashkët: të gjithë flasin me të njëjtën gjuhë.
+\end{frame}
+
+\begin{frame}{GBM: zgjidhja}
+  \begin{itemize}
+    \item Nga lema e Itô-s (Java 8):
+      \[ S_T = S_0\exp\!\Big(\big(\mu-\tfrac12\sigma^2\big)T+\sigma W_T\Big). \]
+    \item Me $W_T=\sqrt{T}\,Z$, $Z\sim N(0,1)$:
+      \[ \ln S_T \sim N\!\Big(\ln S_0+\big(\mu-\tfrac12\sigma^2\big)T,\; \sigma^2T\Big). \]
+    \item $E[S_T]=S_0e^{\mu T}$: termi $-\tfrac12\sigma^2$ kompenson konveksitetin e eksponencialit.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Riprodhimi dhe bota neutrale}
+% ------------------------------------------------------------
+
+\begin{frame}{Ideja: riprodho opsionin}
+  \begin{itemize}
+    \item Ndërto një portofol me $\Delta$ aksione dhe $B$ lekë në bankë.
+    \item Zgjidh $\Delta$ dhe $B$ që portofoli të paguajë \textbf{saktësisht} si opsioni, në çdo skenar.
+    \item Pa arbitrazh: çmimi i opsionit $=$ kostoja e portofolit.
+  \end{itemize}
+    \begin{Keshille}Shembulli më i thjeshtë: një hap, dy skenarë. Pema e plotë: Java 11.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Shembull lodër: një hap}
+  \begin{columns}[T]
+    \column{0.42\textwidth}
+      \begin{tikzpicture}[>=Stealth,font=\small]
+        \node[draw=uptblue,fill=uptlight,rounded corners] (s0) at (0,0) {$S_0=100$};
+        \node[draw=okgreen,fill=green!5,rounded corners] (su) at (3,1.1) {$120$: call $20$};
+        \node[draw=warnred,fill=red!4,rounded corners] (sd) at (3,-1.1) {$90$: call $0$};
+        \draw[->,thick] (s0) -- (su); \draw[->,thick] (s0) -- (sd);
+      \end{tikzpicture}
+    \column{0.54\textwidth}
+      $K=100$; banka: 1 lek bëhet $1.05$.
+      \begin{itemize}
+        \item<2-> $120\Delta+1.05B=20$
+        \item<2-> $\phantom{1}90\Delta+1.05B=0$
+        \item<3-> Zbrit: $30\Delta=20\Rightarrow\Delta=2/3$.
+        \item<4-> $B=-60/1.05=-57.14$ (hua).
+        \item<5-> $C=100\cdot\tfrac23-57.14=\mathbf{9.52}$.
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Ku është probabiliteti?}
+  \begin{itemize}
+    \item Nuk e përdorëm kurrë probabilitetin real $p$ të rritjes!
+    \item Shkruaj $C$ si pritje e skontuar: $C=\dfrac{q\cdot20+(1-q)\cdot0}{1.05}$.
+    \item Nga $C=9.52$: $q=0.5$. Por edhe direkt: $q=\dfrac{1.05-0.90}{1.20-0.90}=0.5$.
+    \item $q$: \termi{probabiliteti neutral ndaj rrezikut}{risk-neutral probability}. Nën $q$, $E[S_1]=100\cdot1.05$.
+  \end{itemize}
+  \small Nën $q$, aksioni rritet mesatarisht me normën pa rrezik, njësoj si banka.
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli në R}
+<<w10h2-toy>>=
+Su <- 120; Sd <- 90; R <- 1.05; Kt <- 100
+pay <- pmax(c(Su, Sd) - Kt, 0)                  # call payoff up / down
+sol <- solve(matrix(c(Su, Sd, R, R), 2), pay)   # Delta and B
+q <- (R - Sd / 100) / (Su / 100 - Sd / 100)
+round(c(Delta = sol[1], B = sol[2], C_replication = 100 * sol[1] + sol[2],
+        q = q, C_riskneutral = (q * pay[1] + (1 - q) * pay[2]) / R), 4)
+@
+\end{frame}
+
+\begin{frame}[label=w10par2]{Parashiko}
+  \begin{Parashiko}
+    Në shembullin lodër, analistët thonë: ``probabiliteti real i rritjes është $p=0.9$''.
+    \begin{enumerate}
+      \item A ndryshon çmimi i call-it $9.52$?
+      \item Po nëse $S_u$ bëhet $130$ në vend të $120$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Nga lodra te Black--Scholes}
+  \begin{Teoreme}[(vlerësimi neutral ndaj rrezikut)]
+    Pa arbitrazh, në një treg të plotë:
+    \[ V_0 = e^{-rT}\,E^{\mathbb{Q}}\big[\text{payoff}(S_T)\big], \]
+    ku nën masën $\mathbb{Q}$: \;
+    $S_T = S_0\exp\!\Big(\big(r-\tfrac12\sigma^2\big)T+\sigma\sqrt{T}\,Z\Big)$, \; $Z\sim N(0,1)$.
+  \end{Teoreme}
+  \pause
+  \begin{itemize}
+    \item Vetëm një ndryshim nga GBM-ja reale: $\mu\to r$.
+    \item $\sigma$ \textbf{nuk} ndryshon. Prandaj $\sigma$ është hyrja kyçe.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{``Neutral ndaj rrezikut'' nuk do të thotë\ldots}
+  \begin{Gabim}
+    ``Black--Scholes supozon që investitorët nuk kanë frikë nga rreziku.'' \textbf{Jo.}
+  \end{Gabim}
+  \begin{itemize}
+    \item Investitorët realë kërkojnë $\mu>r$.
+    \item $\mathbb{Q}$ është një \textbf{mjet llogaritës}: jep çmimin e saktë, sepse çmimi del nga riprodhimi.
+    \item Probabilitetet nën $\mathbb{Q}$ nuk janë parashikime të së ardhmes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10tps2]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(3 minuta)]
+    \begin{enumerate}
+      \item Një aktuar thotë: ``$\Phi(d_2)=0.50$, pra ka 50\% shans që garancia të paguajë.'' A ka të drejtë?
+      \item A është probabiliteti real që call-i të ushtrohet më i madh apo më i vogël se $\Phi(d_2)$, kur $\mu>r$?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjTps2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Nxjerrja hap pas hapi}
+% ------------------------------------------------------------
+
+\begin{frame}{Plani i nxjerrjes}
+  \[
+    C=e^{-rT}E^{\mathbb{Q}}\big[(S_T-K)^+\big]
+     =e^{-rT}\Big(\underbrace{E^{\mathbb{Q}}\big[S_T\,\mathbf 1_{\{S_T>K\}}\big]}_{\text{Hapi 2}}
+       -K\underbrace{\mathbb{Q}(S_T>K)}_{\text{Hapi 1}}\Big)
+  \]
+  \begin{itemize}
+    \item $\mathbf 1_{\{S_T>K\}}$: tregues (\emph{indicator}): 1 nëse call-i ushtrohet, 0 përndryshe.
+    \item Dy pritje të thjeshta me shpërndarjen normale.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Dendësia e $S_T$ nën $\mathbb{Q}$}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=10cm,height=4.8cm,xmin=40,xmax=200,ymin=0,ymax=0.02,clip=false,axis lines=left,
+        xlabel={$S_T$},ytick=\empty,tick label style={font=\scriptsize}]
+      \addplot[domain=100:200,samples=120,fill=accent!25,draw=none]
+        {exp(-(ln(x)-4.60392)^2/(2*0.0625))/(x*0.25*sqrt(2*pi))} \closedcycle;
+      \addplot[domain=40:200,samples=160,thick,uptblue]
+        {exp(-(ln(x)-4.60392)^2/(2*0.0625))/(x*0.25*sqrt(2*pi))};
+      \draw[dashed,warnred] (axis cs:100,0) -- (axis cs:100,0.018) node[above,font=\scriptsize]{$K=100$};
+      \node[font=\scriptsize,accent!70!black,anchor=west] at (axis cs:150,0.008) {$\mathbb{Q}(S_T>K)=\Phi(d_2)$};
+    \end{axis}
+  \end{tikzpicture}\par
+  \small $S_0=100$, $\sigma=25\%$, $r=3\%$, $T=1$. Lognormale, me bisht të gjatë djathtas.
+\end{frame}
+
+\begin{frame}{Hapi 1: $\mathbb{Q}(S_T>K)$}
+  \begin{align*}
+    S_T>K
+    \onslide<2->{&\iff \ln S_0+\big(r-\tfrac12\sigma^2\big)T+\sigma\sqrt T\,Z>\ln K\\}
+    \onslide<3->{&\iff Z>-\frac{\ln(S_0/K)+\big(r-\tfrac12\sigma^2\big)T}{\sigma\sqrt T}=-d_2\\}
+    \onslide<4->{\mathbb{Q}(S_T>K)&=P(Z>-d_2)=P(Z<d_2)=\Phi(d_2).}
+  \end{align*}
+  \onslide<5->{\small Hapi i fundit: simetria e normales, $P(Z>-a)=P(Z<a)$.}
+\end{frame}
+
+\begin{frame}{Hapi 2: $E^{\mathbb{Q}}[S_T\mathbf 1_{\{S_T>K\}}]$}
+  Shkruaj $a=\sigma\sqrt T$ dhe $S_T=S_0e^{(r-\frac12\sigma^2)T}e^{aZ}$:
+  \begin{align*}
+    E\big[S_T\mathbf 1_{\{Z>-d_2\}}\big]
+    \onslide<2->{&=S_0e^{(r-\frac12\sigma^2)T}\int_{-d_2}^{\infty}e^{az}\,\frac{e^{-z^2/2}}{\sqrt{2\pi}}\,dz\\}
+    \onslide<3->{&=S_0e^{(r-\frac12\sigma^2)T}\,e^{a^2/2}\int_{-d_2}^{\infty}\frac{e^{-(z-a)^2/2}}{\sqrt{2\pi}}\,dz\\}
+    \onslide<4->{&=S_0e^{rT}\,P(Z>-d_2-a)=S_0e^{rT}\,\Phi(d_2+\sigma\sqrt T).}
+  \end{align*}
+  \onslide<5->{\small Rreshti 2$\to$3: plotësimi i katrorit, $az-\tfrac{z^2}{2}=\tfrac{a^2}{2}-\tfrac{(z-a)^2}{2}$; \; $e^{a^2/2}=e^{\frac12\sigma^2T}$.}
+\end{frame}
+
+\begin{frame}{Bashkimi}
+  \begin{align*}
+    C \onslide<2->{&=e^{-rT}\Big(S_0e^{rT}\,\Phi(d_2+\sigma\sqrt T)-K\,\Phi(d_2)\Big)\\}
+      \onslide<3->{&=S_0\,\Phi(d_1)-Ke^{-rT}\,\Phi(d_2),}
+  \end{align*}
+  \onslide<3->{ku $d_1=d_2+\sigma\sqrt T=\dfrac{\ln(S_0/K)+(r+\frac12\sigma^2)T}{\sigma\sqrt T}$.}
+  \onslide<4->{
+  \begin{Keshille}$d_1$ dhe $d_2$ ndryshojnë vetëm në shenjën para $\tfrac12\sigma^2$. Mjafton të mbash mend $d_1$ dhe $d_2=d_1-\sigma\sqrt T$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Put-i: nga parity}
+  \begin{align*}
+    P \onslide<2->{&=C-S_0+Ke^{-rT}\\}
+      \onslide<3->{&=S_0\big(\Phi(d_1)-1\big)-Ke^{-rT}\big(\Phi(d_2)-1\big)\\}
+      \onslide<4->{&=Ke^{-rT}\,\Phi(-d_2)-S_0\,\Phi(-d_1).}
+  \end{align*}
+  \onslide<5->{\small $\Phi(-d_2)=\mathbb{Q}(S_T<K)$: probabiliteti neutral që put-i të ushtrohet.}
+\end{frame}
+
+\begin{frame}{Formula e plotë}
+  \begin{Teoreme}[(Black--Scholes)]
+    \vspace{-6pt}
+    \begin{align*}
+      C&=S_0\,\Phi(d_1)-Ke^{-rT}\,\Phi(d_2), & P&=Ke^{-rT}\,\Phi(-d_2)-S_0\,\Phi(-d_1),\\
+      d_1&=\frac{\ln(S_0/K)+(r+\frac12\sigma^2)T}{\sigma\sqrt T}, & d_2&=d_1-\sigma\sqrt T.
+    \end{align*}
+  \end{Teoreme}
+  \begin{itemize}
+    \item $\ln$: logaritmi natyror (\texttt{log()} në R).
+    \item $T$ në vite; $r$ dhe $\sigma$ vjetore, të vazhdueshme.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10mc2]{Zgjedhje e shumëfishtë}
+  Cila nga këto \textbf{nuk} është e vërtetë?
+  \begin{enumerate}[A)]
+    \item $d_1>d_2$ për çdo $\sigma>0$, $T>0$.
+    \item $\Phi(d_2)$ është probabiliteti neutral që call-i të ushtrohet.
+    \item $\Phi(d_1)+\Phi(-d_1)=1$.
+    \item Kur $S_0=K$, kemi $d_1=0$.
+  \end{enumerate}
+  \vfill\shkoTe{w10zgjMC2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembuj pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Tabela e $\Phi$ (pjesë)}
+  \begin{center}
+    \small
+    \begin{tabular}{c|cccccc}
+      \toprule
+      $z$ & 0.00 & 0.24 & 0.25 & 0.78 & 0.92 & 1.00 \\
+      \midrule
+      $\Phi(z)$ & \Sexpr{paste(fmt(pnorm(c(0, 0.24, 0.25, 0.78, 0.92, 1)), 4), collapse = " & ")} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item Për vlera ndërmjet: interpolim linear.
+    \item Për $z<0$: $\Phi(z)=1-\Phi(-z)$.
+  \end{itemize}
+  \begin{Gabim}Të rrumbullakosh $d_1$ në dy shifra pa interpolim: gabimi në $C$ mund të arrijë disa qindarka për çdo 100 lekë.\end{Gabim}
+\end{frame}
+
+\begin{frame}{Shembull: put-i ATM}
+  $S_0=K=100$, $\sigma=25\%$, $r=3\%$, $T=1$. Nga Ora 1: $d_1=0.245$, $d_2=-0.005$.
+  \begin{itemize}
+    \item<2-> $\Phi(-d_2)=\Phi(0.005)=0.5020$; \quad $\Phi(-d_1)=\Phi(-0.245)=1-0.5968=0.4032$.
+    \item<3-> $P=97.0446\cdot0.5020-100\cdot0.4032$.
+    \item<4-> $P=48.72-40.32=\mathbf{8.40}$.
+  \end{itemize}
+  \onslide<5->{\small R: \texttt{bsput(100, 100, 0.25, 0.03, 1, 0)} $=\Sexpr{fmt(P0, 4)}$. Parity jep të njëjtën gjë.}
+\end{frame}
+
+\begin{frame}[label=w10ush2]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta, pa ndihmën e PC)]
+    $S_0=110$, $K=100$, $\sigma=20\%$, $r=5\%$, $T=0.5$.
+    \;Jepen: $\ln1.1=0.09531$, \; $\sqrt{0.5}=0.7071$, \; $e^{-0.025}=0.975310$,
+    \; $\Phi(0.9214)=0.8216$, \; $\Phi(0.7800)=0.7823$.
+    \begin{enumerate}
+      \item Llogarit $d_1$ dhe $d_2$.
+      \item Llogarit $C$.
+      \item Llogarit $P$ me formulën e put-it, pastaj kontrolloje me parity.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli në R}
+<<w10h2-ex>>=
+S2 <- 110; K2 <- 100; s2 <- 0.20; r2 <- 0.05; T2 <- 0.5
+d1_2 <- (log(S2 / K2) + (r2 + s2^2 / 2) * T2) / (s2 * sqrt(T2)); d2_2 <- d1_2 - s2 * sqrt(T2)
+round(c(d1 = d1_2, d2 = d2_2,
+        C = bscall(S2, K2, s2, r2, T2, 0), P = bsput(S2, K2, s2, r2, T2, 0),
+        parity_gap = bscall(S2, K2, s2, r2, T2, 0) - bsput(S2, K2, s2, r2, T2, 0) -
+                     (S2 - K2 * exp(-r2 * T2))), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item Llogaritja pa ndihmën e PC jep $C\approx14.08$; R jep \Sexpr{fmt(bscall(S2, K2, s2, r2, T2, 0), 4)}.
+    \item Call-i është në para ($S_0>K$): $\Phi(d_2)\approx0.78$, ushtrim shumë i mundshëm.
+    \item Vlera intrinsike $10$; vlera kohore $\approx\Sexpr{fmt(bscall(S2, K2, s2, r2, T2, 0) - 10, 2)}$.
+    \item Parity: diferenca $0$ deri në rrumbullakim. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w10gab2]{Gjej gabimin}
+<<w10h2-bug>>=
+bs_bad <- function(S, K, sig, r, T) {
+  d1 <- (log10(S / K) + (r + sig^2) * T) / (sig * sqrt(T))
+  d2 <- d1 - sig * T
+  S * pnorm(d1) - K * exp(-r * T) * pnorm(d2)
+}
+c(bad = bs_bad(110, 100, 0.20, 0.05, 0.5), correct = bscall(110, 100, 0.20, 0.05, 0.5, 0))
+@
+  \small Ka \textbf{tre} gabime. Gjeji të gjitha.
+  \hfill\shkoTe{w10zgjGab2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Dividendët\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Dividend i vazhdueshëm (Merton)\Zgj}
+  \begin{itemize}
+    \item Aksioni paguan dividend me normë të vazhdueshme $\delta$ (p.sh.\ një indeks).
+    \item Mbajtësi i opsionit nuk merr dividendin: zëvendëso $S_0\to S_0e^{-\delta T}$.
+  \end{itemize}
+  \[
+    C=S_0e^{-\delta T}\Phi(d_1)-Ke^{-rT}\Phi(d_2),\qquad
+    d_1=\frac{\ln(S_0/K)+(r-\delta+\frac12\sigma^2)T}{\sigma\sqrt T}.
+  \]
+  \small Në \Rkey{derivmkts}: argumenti i fundit \texttt{d} $=\delta$. Deri tani kemi vënë gjithmonë \texttt{d = 0}.
+\end{frame}
+
+\begin{frame}[fragile]{Efekti i $\delta$\Zgj}
+<<w10h2-div>>=
+dl <- c(0, 0.02, 0.04, 0.06)
+round(rbind(delta = dl, call = bscall(100, 100, 0.25, 0.03, 1, dl),
+            put = bsput(100, 100, 0.25, 0.03, 1, dl)), 4)
+@
+  \small Dividendi e ul call-in dhe e rrit put-in: aksioni ``humbet'' vlerë kur paguan.
+  Dhe call-i amerikan me dividend mund të ushtrohet herët (Java 9, Ora 4).
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Cili parametër ndryshon kur kalojmë nga bota reale në $\mathbb{Q}$?
+    \item Pse $\mathbb{Q}(S_T>K)=\Phi(d_2)$?
+    \item Si nxirret formula e put-it nga ajo e call-it?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\mu\to r$, ndërsa $\sigma$ mbetet; (2) $S_T>K\iff Z>-d_2$, dhe simetria e normales;
+  (3) me put--call parity dhe $1-\Phi(x)=\Phi(-x)$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item Riprodhimi: $\Delta$ aksione + $B$ në bankë; probabiliteti real nuk hyn.
+    \item $V_0=e^{-rT}E^{\mathbb{Q}}[\text{payoff}]$, me $\mu\to r$.
+    \item Dy hapa: $\mathbb{Q}(S_T>K)=\Phi(d_2)$ dhe $E^{\mathbb{Q}}[S_T\mathbf 1]=S_0e^{rT}\Phi(d_1)$.
+    \item $P=Ke^{-rT}\Phi(-d_2)-S_0\Phi(-d_1)$; dividendi: $S_0\to S_0e^{-\delta T}$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator R I: Black--Scholes nga zero, Monte Carlo neutral ndaj rrezikut, kontrolli i kufijve.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item F.~Black, M.~Scholes (1973), \emph{Journal of Political Economy}; R.~C.~Merton (1973), \emph{Bell Journal of Economics and Management Science}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: vlerësimi neutral ndaj rrezikut.
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{bscall()}, \texttt{bsput()}.
+  \end{itemize}
+\end{frame}
