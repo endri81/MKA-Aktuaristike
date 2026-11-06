@@ -1,0 +1,72 @@
+% ============================================================
+%  Java 12 · Ora 3 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12zgj3a]{Zgjidhja: Ushtrim 1}
+  \begin{enumerate}
+    \item $\hat f_1=\dfrac{150+170}{100+110}=\dfrac{320}{210}=1.5238$; \quad $\hat f_2=\dfrac{165}{150}=1.1000$.
+    \item 2023: ultimate 165, IBNR 0. \; 2024: $170\cdot1.1=187$, IBNR 17.\\
+      2025: $120\cdot1.5238\cdot1.1=201.14$, IBNR 81.14. \quad \textbf{Totali: 98.14} mijë €.
+  \end{enumerate}
+  \small R: \texttt{MackChainLadder(as.triangle(matrix(c(100, 110, 120, 150, 170, NA, 165, NA, NA), 3)))}.
+  \vfill\kthehu{w12q3a}
+\end{frame}
+
+\begin{frame}[label=w12zgj3b]{Zgjidhja: Ushtrim 2}
+  \begin{enumerate}
+    \item $\hat m=(0.9+1.1+0.8)/3=0.9333$; \; $k=0.04/0.015=2.667$; \; $Z=\dfrac{4}{4+2.667}=\mathbf{0.60}$.
+    \item A: $0.6\cdot0.9+0.4\cdot0.9333=0.9133$; \; B: $1.0333$; \; C: $0.8533$.
+    \item Mesatarja: $(0.9133+1.0333+0.8533)/3=0.9333=\hat m$: me $Z$ të njëjtë për të gjithë, kredibiliteti vetëm ``tkurr'' drejt mesatares, pa e zhvendosur.
+  \end{enumerate}
+  \vfill\kthehu{w12q3b}
+\end{frame}
+
+\begin{frame}[label=w12zgj3c]{Zgjidhja: Ushtrim 3}
+  \textbf{B)} $\hat a\to0$ $\Rightarrow$ $k=\hat s^2/\hat a\to\infty$ $\Rightarrow$ $Z\to0$.
+  \begin{itemize}
+    \item Nëse kontratat kanë rrezik të njëjtë, diferencat e mesatareve janë vetëm zhurmë: përdor primin kolektiv.
+    \item A) ndodh kur $\hat a$ është i madh (ose $\hat s^2\to0$). \; C) $Z$ varet edhe nga $k$.
+  \end{itemize}
+  \vfill\kthehu{w12q3c}
+\end{frame}
+
+\begin{frame}[label=w12zgj3d]{Zgjidhja: Ushtrim 4}
+  \begin{enumerate}
+    \item Mesatarja e thjeshtë i jep peshë të \textbf{njëjtë} çdo raporti; Chain-Ladder i peshon raportet me $C_{i,j}$:
+      $\hat f_1=\dfrac{100}{210}\cdot1.5+\dfrac{110}{210}\cdot1.5455=1.5238$.
+    \item Chain-Ladder: vitet me më shumë dëme kanë më shumë peshë.
+    \item Kur të gjitha raportet individuale janë të barabarta (ose të gjitha $C_{i,j}$ të barabarta).
+  \end{enumerate}
+  \vfill\kthehu{w12q3d}
+\end{frame}
+
+<<w12h3-sol-2025, include=FALSE>>=
+by3 <- summary(mk3)$ByOrigin
+@
+
+\begin{frame}[label=w12zgj3e]{Zgjidhja: Radha jote! (Mack)}
+  \begin{enumerate}
+    \item 2025: IBNR $=\Sexpr{fmt(by3["2025", "IBNR"] / 1e6, 3)}$ mln €, \; CV $=\Sexpr{fmt(by3["2025", "CV(IBNR)"], 3)}$
+      (\texttt{summary(mk3)\$ByOrigin["2025", ]}).
+    \item Viti më i ri ka vetëm një vlerë të vëzhguar dhe 9 faktorë për t'u zbatuar: pasiguria më e madhe.
+      Totali përfiton nga diversifikimi midis viteve.
+    \item $\Sexpr{fmt(q3[2, 1] / 1e6, 3)}-\Sexpr{fmt(summary(bt3)$Totals["Mean IBNR:", 1] / 1e6, 3)}=\Sexpr{fmt((q3[2, 1] - summary(bt3)$Totals["Mean IBNR:", 1]) / 1e6, 3)}$ mln €.
+  \end{enumerate}
+  \vfill\kthehu{w12q3e}
+\end{frame}
+
+<<w12h3-sol-c5, include=FALSE>>=
+k3 <- sm3$unbiased[[2]] / sm3$unbiased[[1]]
+Z5 <- 1197 / (1197 + k3)
+@
+
+\begin{frame}[label=w12zgj3f]{Zgjidhja: Radha jote! (kontrata 5)}
+  \begin{enumerate}
+    \item $k=\dfrac{\hat s^2}{\hat a}=\dfrac{\Sexpr{fmt(sm3$unbiased[[2]], 4)}}{\Sexpr{fmt(sm3$unbiased[[1]], 5)}}=\Sexpr{fmt(k3, 1)}$; \;
+      $Z_5=\dfrac{1197}{1197+\Sexpr{fmt(k3, 1)}}=\Sexpr{fmt(Z5, 4)}$.
+    \item $P_5=\Sexpr{fmt(Z5, 4)}\cdot0.5853+\Sexpr{fmt(1 - Z5, 4)}\cdot\Sexpr{fmt(sm3$means[[1]], 4)}=\Sexpr{fmt(Z5 * sm3$means$contract[5] + (1 - Z5) * sm3$means[[1]], 4)}$;
+      \; \texttt{predict(fit3)[5]} $=\Sexpr{fmt(predict(fit3)[5], 4)}$. \textcolor{okgreen}{$\checkmark$}
+    \item Kontrata 5 ka përvojë shumë të mirë (0.585), por kredibiliteti e ``tërheq'' drejt $\hat m$.
+  \end{enumerate}
+  \vfill\kthehu{w12q3f}
+\end{frame}

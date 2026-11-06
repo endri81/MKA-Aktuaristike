@@ -1,0 +1,256 @@
+% ============================================================
+%  Java 12 · Ora 3 — Jo-jetë II: rezervat dhe kredibiliteti (Java 4)
+% ============================================================
+\section{Jo-jetë II}
+
+\begin{frame}{Ora 3 · Jo-jetë II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w12h3-setup, include=FALSE>>=
+rt3 <- read.csv(file.path(DATA, "runoff_triangle_synthetic.csv"))
+cr3 <- read.csv(file.path(DATA, "credibility_portfolio_synthetic.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Rifreskim}
+% ------------------------------------------------------------
+
+\begin{frame}{Chain-Ladder dhe Mack (Java 4)}
+  \begin{itemize}
+    \item<1-> $C_{i,j}$: pagesat kumulative për vitin e aksidentit $i$ dhe vitin e zhvillimit $j$.
+    \item<2-> Faktorët (të peshuar me vëllimin): \; $\hat f_j=\dfrac{\sum_i C_{i,j+1}}{\sum_i C_{i,j}}$ (vetëm rreshtat ku ka të dyja).
+    \item<3-> Ultimate: $\hat C_{i,n}=C_{i,\text{fundit}}\cdot\prod_{j\ge\text{fundit}}\hat f_j$; \; IBNR $=\hat C_{i,n}-C_{i,\text{fundit}}$.
+    \item<4-> Mack: gabimi standard i IBNR-së; Bootstrap ODP: shpërndarja e plotë, kuantilet.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Kredibiliteti (Java 4)}
+  \begin{itemize}
+    \item<1-> \textbf{Bühlmann}: \; $P_i=Z\,\bar X_i+(1-Z)\,\hat m$, \; $Z=\dfrac{n}{n+k}$, \; $k=\dfrac{\hat s^2}{\hat a}$.
+    \item<2-> $\hat s^2$: varianca \textbf{brenda} kontratës (luhatja nga viti në vit); \; $\hat a$: varianca \textbf{midis} kontratave.
+    \item<3-> \textbf{Bühlmann--Straub}: me vëllime $w_{it}$: \; $Z_i=\dfrac{w_i}{w_i+k}$, \; $w_i=\sum_tw_{it}$.
+    \item<4-> Në R: \texttt{actuar::cm(\textasciitilde contract, data, ratios, weights)}.
+  \end{itemize}
+  \onslide<5->{
+  \begin{Gabim}Kur $\hat a\le0$, \texttt{cm()} vendos $Z=0$ për të gjithë, pa paralajmërim. Kontrolloje gjithmonë.\end{Gabim}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Ushtrime pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}[label=w12q3a]{Ushtrim 1 · Chain-Ladder}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Trekëndësh kumulativ (mijë €):
+    \begin{center}
+      \begin{tabular}{lccc}
+        \toprule
+        Viti & $j=1$ & $j=2$ & $j=3$ \\
+        \midrule
+        2023 & 100 & 150 & 165 \\
+        2024 & 110 & 170 & \\
+        2025 & 120 & & \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+    \begin{enumerate}
+      \item Llogarit $\hat f_1$ dhe $\hat f_2$.
+      \item Llogarit ultimate dhe IBNR për çdo vit, dhe IBNR-në totale.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj3a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q3b]{Ushtrim 2 · Bühlmann}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Tri kontrata, 4 vjet secila. Mesataret e raportit të dëmeve: A 0.90, B 1.10, C 0.80.
+    Vlerësimet: $\hat s^2=0.04$, \; $\hat a=0.015$.
+    \begin{enumerate}
+      \item Llogarit $\hat m$, $k$ dhe $Z$.
+      \item Llogarit primin e kredibilitetit për çdo kontratë.
+      \item Kontrollo: mesatarja e primeve $=\hat m$? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj3b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q3c]{Ushtrim 3 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Në Bühlmann, çfarë ndodh me $Z$ kur kontratat janë shumë \textbf{të ngjashme} me njëra-tjetrën ($\hat a\to0$)?
+    \begin{enumerate}
+      \item[A)] $Z\to1$: çdo kontratë paguan sipas përvojës së vet.
+      \item[B)] $Z\to0$: të gjitha paguajnë primin kolektiv $\hat m$.
+      \item[C)] $Z$ nuk ndryshon, sepse varet vetëm nga $n$.
+      \item[D)] $Z\to0.5$.
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w12zgj3c}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12q3d]{Ushtrim 4 · Gjej gabimin}
+  \small Studenti llogarit $\hat f_1$ për trekëndëshin e Ushtrimit 1 si mesatare e thjeshtë e raporteve individuale:
+  \[ \hat f_1=\tfrac12\Big(\tfrac{150}{100}+\tfrac{170}{110}\Big)=\tfrac12(1.5+1.5455)=1.5227. \]
+  \begin{enumerate}
+    \item Pse ndryshon nga $\hat f_1$ i Chain-Ladder-it?
+    \item Cili jep më shumë peshë vitit me më shumë dëme?
+    \item Në cilin rast të dy janë të barabartë?
+  \end{enumerate}
+  \vfill\shkoTe{w12zgj3d}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rezervat në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Ushtrim 5 · Faktorët kundrejt së vërtetës}
+<<w12h3-cl>>=
+trc3 <- as.triangle(rt3, origin = "accident_year", dev = "dev_year", value = "cum_paid_eur")
+f3 <- sapply(1:9, function(j) sum(trc3[1:(10 - j), j + 1]) / sum(trc3[1:(10 - j), j]))
+pct3 <- 1 / rev(cumprod(rev(c(f3, 1))))                    # % developed at each dev year
+round(rbind(estimate = pct3, truth = c(0.40, 0.65, 0.80, 0.88, 0.93, 0.96, 0.98, 0.99, 0.995, 1)), 3)
+@
+  \small \textbf{Sintetike}: modeli i vërtetë i zhvillimit nga README. Rreshti i parë: $1/\prod_{k\ge j}\hat f_k$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Përqindjet e vlerësuara janë afër së vërtetës, me gabim disa pikë përqindjeje.
+    \item<2-> Vetëm 10 vite aksidenti: faktorët e vonë mbështeten në 1--3 vlera, ndaj janë më të pasigurt.
+    \item<3-> $\hat f_6=\Sexpr{fmt(f3[6], 4)}$: në kolonën 7 nuk ka asnjë pagesë të re. \Rkey{ChainLadder} jep paralajmërim te Mack.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 6 · Mack dhe bootstrap}
+<<w12h3-mack, warning=FALSE>>=
+mk3 <- MackChainLadder(trc3, est.sigma = "Mack")
+set.seed(2026)
+bt3 <- BootChainLadder(trc3, R = 999, process.distr = "od.pois")
+q3 <- quantile(bt3, c(0.75, 0.995))$Totals
+round(c(IBNR_CL = summary(mk3)$Totals["IBNR:", 1], Mack_SE = summary(mk3)$Totals["Mack S.E.:", 1],
+        Boot_mean = summary(bt3)$Totals["Mean IBNR:", 1], Boot_SD = summary(bt3)$Totals["SD IBNR:", 1],
+        IBNR_75 = q3[1, 1], IBNR_995 = q3[2, 1]) / 1e6, 3)
+@
+  \small Në milionë €.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> IBNR: rreth \Sexpr{fmt(summary(mk3)$Totals["IBNR:", 1] / 1e6, 2)} milionë €, me të dy metodat.
+    \item<2-> Bootstrap jep devijim më të madh se Mack: përfshin edhe gabimin e procesit (ODP).
+    \item<3-> Për Solvency II: rezerva ``best estimate'' $\approx$ mesatarja; kapitali lidhet me kuantilin 99.5\%.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w12q3e]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Llogarit me \texttt{mk3} IBNR-në dhe CV-në për vitin 2025 vetëm.
+      \item Pse CV e vitit 2025 është shumë më e madhe se CV e totalit?
+      \item Sa është kapitali ``për rrezikun e rezervës'' nëse e matim si IBNR$_{99.5\%}$ $-$ mesatarja e bootstrap-it?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj3e}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kredibiliteti në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Ushtrim 7 · Bühlmann--Straub me \texttt{cm()}}
+<<w12h3-cm>>=
+ww3 <- reshape(cr3[, c("contract", "year", "volume")], idvar = "contract", timevar = "year",
+               direction = "wide")
+xx3 <- reshape(cr3[, c("contract", "year", "loss_ratio")], idvar = "contract", timevar = "year",
+               direction = "wide")
+d3 <- cbind(xx3, ww3[, -1])                                  # ratios in 2:7, weights in 8:13
+fit3 <- cm(~contract, d3, ratios = 2:7, weights = 8:13)
+sm3 <- summary(fit3)
+round(rbind(estimate = c(m = sm3$means[[1]], a = sm3$unbiased[[1]], s2 = sm3$unbiased[[2]]),
+            truth = c(0.8, 20 * 0.04^2, 0.25^2 * 100)), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \textbf{Sintetike}: $\theta\sim\text{Gamma}(20,\,0.04)$: mesatarja $0.8$, varianca $20\cdot0.04^2=0.032$; brenda: $0.25^2\cdot100=6.25$.
+    \item<2-> $\hat m$ dhe $\hat s^2$ janë afër; $\hat a$ (vetëm 12 kontrata) ka pasiguri të madhe.
+    \item<3-> Kjo është zakonisht pjesa më e dobët e kredibilitetit: varianca midis vlerësohet me pak grupe.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Primet e kredibilitetit}
+<<w12h3-pred>>=
+tab3 <- data.frame(contract = 1:12, w = rowSums(d3[, 8:13]), own_mean = sm3$means$contract,
+                   Z = fit3$cred, cred_premium = predict(fit3))
+round(head(tab3[order(tab3$w), ], 5), 4)
+@
+  \small Kontratat me vëllimin më të vogël: $Z$ më e vogël, primi më afër $\hat m$.
+\end{frame}
+
+\begin{frame}[label=w12q3f]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Për kontratën 5 (mesatarja e vet 0.585, vëllimi 1197):
+    \begin{enumerate}
+      \item Llogarit $k=\hat s^2/\hat a$ dhe $Z_5=w_5/(w_5+k)$ nga numrat e \texttt{summary(fit3)}.
+      \item Llogarit primin e kredibilitetit. A përputhet me \texttt{predict(fit3)}?
+      \item Kujdes: në Bühlmann--Straub, $\hat m$ i \texttt{cm()} është mesatarja e peshuar me $Z_i$, jo me vëllimin.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgj3f}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë: Java 4}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Detyra & R \\
+      \midrule
+      trekëndëshi & \texttt{as.triangle(df, origin, dev, value)}; \texttt{incr2cum()} \\
+      Chain-Ladder, Mack & \texttt{MackChainLadder(tri, est.sigma = "Mack")} \\
+      bootstrap ODP & \texttt{BootChainLadder(tri, R, process.distr = "od.pois")} \\
+      kuantilet & \texttt{quantile(boot, c(0.75, 0.995))} \\
+      kredibiliteti & \texttt{cm(\textasciitilde contract, data, ratios, weights)}; \texttt{predict()} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si llogaritet $\hat f_j$ në Chain-Ladder?
+    \item Çfarë mat $\hat a$ në kredibilitet?
+    \item Pse \texttt{MackChainLadder()} kërkon trekëndësh kumulativ?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) shuma e kolonës $j+1$ / shuma e kolonës $j$, në rreshtat e përbashkët;
+  (2) variancën midis kontratave (sa ndryshojnë rreziqet e tyre të vërteta); (3) faktorët janë raporte kumulative.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item Chain-Ladder pa ndihmën e PC: $\hat f_j$, ultimate, IBNR.
+    \item Trekëndëshi sintetik: IBNR $\approx\Sexpr{fmt(summary(mk3)$Totals["IBNR:", 1] / 1e6, 2)}$ mln €; Mack dhe bootstrap.
+    \item Bühlmann: $Z=n/(n+k)$; Bühlmann--Straub: $Z_i=w_i/(w_i+k)$.
+    \item \texttt{cm()}: $\hat m$, $\hat s^2$ afër së vërtetës; $\hat a$ më i pasigurti.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Jetë I: tabelat, funksionet bazë, tabela aktuariale, disa jetë.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item M.~Gesmann et al., vinjeta e paketës \Rkey{ChainLadder}.
+    \item Vinjetat e paketës \Rkey{actuar}: \texttt{cm()}.
+    \item M.~V.~Wüthrich, M.~Merz, \emph{Stochastic Claims Reserving Methods in Insurance}, Wiley (thellim).
+    \item README i të dhënave: \texttt{runoff\_triangle\_synthetic.csv}, \texttt{credibility\_portfolio\_synthetic.csv} (sintetike).
+  \end{itemize}
+\end{frame}
