@@ -1,0 +1,275 @@
+% ============================================================
+%  Java 11 · Ora 3 — Laborator R I: pema CRR nga zero
+% ============================================================
+\section{Laborator R I}
+
+\begin{frame}{Ora 3 · Laborator R I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{crr\_tree()}: induksioni prapa në 10 rreshta R.
+    \item<2-> Pemët e plota si matrica, për të parë çdo nyje.
+    \item<3-> Krahasim me \texttt{binomopt(..., crr = TRUE)} në 96 kombinime.
+    \item<4-> Formula binomiale me \texttt{dbinom()} dhe vizualizimi me \texttt{binomplot()}.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{K3}\;\LO{S2}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pema nga zero}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksioni \texttt{crr\_tree()}}
+<<w11h3-fun>>=
+crr_tree <- function(S, K, sig, r, T, n, put = FALSE, american = FALSE) {
+  dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u
+  q <- (exp(r * dt) - d) / (u - d); disc <- exp(-r * dt)
+  pay <- function(s) if (put) pmax(K - s, 0) else pmax(s - K, 0)
+  V <- pay(S * u^(0:n) * d^(n:0))                      # n + 1 terminal values
+  for (i in (n - 1):0) {                                # step back
+    V <- disc * (q * V[-1] + (1 - q) * V[-(i + 2)])     # up = V[j+1], down = V[j]
+    if (american) V <- pmax(V, pay(S * u^(0:i) * d^(i:0)))
+  }
+  V
+}
+@
+\end{frame}
+
+\begin{frame}{Si funksionon cikli?}
+  \begin{itemize}
+    \item<1-> \texttt{V} ka gjatësi $i+2$ në fillim të hapit $i$: vlerat në kohën $i+1$, nga poshtë ($j=0$) lart.
+    \item<2-> \texttt{V[-1]}: heq të parin $\Rightarrow$ vlerat ``lart'' $V_{i+1,j+1}$.
+    \item<3-> \texttt{V[-(i + 2)]}: heq të fundit $\Rightarrow$ vlerat ``poshtë'' $V_{i+1,j}$.
+    \item<4-> Rezultati ka gjatësi $i+1$: një nyje më pak. Në fund mbetet një numër: $V_{0,0}$.
+    \item<5-> Amerikani: një rresht shtesë, \texttt{pmax()} me vlerën intrinsike.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Testi i parë: pema e Orës 2}
+<<w11h3-toy>>=
+crr_check <- function(S, K, u, d, R, n, put = FALSE) {        # toy tree with given u, d, R
+  q <- (R - d) / (u - d); j <- 0:n
+  sum(dbinom(j, n, q) * (if (put) pmax(K - S * u^j * d^(n - j), 0) else pmax(S * u^j * d^(n - j) - K, 0))) / R^n
+}
+c(call = crr_check(100, 100, 1.25, 0.8, 1.05, 2), put = crr_check(100, 100, 1.25, 0.8, 1.05, 2, TRUE))
+@
+  \small Të njëjtat numra si Ora 2: 15.75 dhe 6.45. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Krahasimi me \Rkey{derivmkts}}
+<<w11h3-first>>=
+round(c(own_crr = crr_tree(100, 100, 0.25, 0.03, 1, 3),
+        derivmkts = unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 3,
+                                    american = FALSE, crr = TRUE)),
+        own_am_put = crr_tree(100, 100, 0.25, 0.03, 1, 3, put = TRUE, american = TRUE),
+        derivmkts_am_put = unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 3,
+                                           american = TRUE, putopt = TRUE, crr = TRUE))), 6)
+@
+\end{frame}
+
+\begin{frame}[fragile,label=w11gab3]{Gjej gabimin}
+<<w11h3-bug>>=
+crr_bad <- function(S, K, sig, r, T, n) {
+  dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u; q <- (exp(r * dt) - d) / (u - d)
+  V <- pmax(S * u^(0:n) * d^(n:0) - K, 0)
+  for (i in (n - 1):0) V <- exp(-r * dt) * (q * V[-(i + 2)] + (1 - q) * V[-1])
+  V
+}
+c(bad = crr_bad(100, 100, 0.25, 0.03, 1, 200), correct = crr_tree(100, 100, 0.25, 0.03, 1, 200))
+@
+  \small Kodi ekzekutohet pa gabim, por çmimi është i gabuar. Ku?
+  \hfill\shkoTe{w11zgjGab3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pemët si matrica}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Pema e çmimeve të aksionit}
+<<w11h3-mat>>=
+crr_mat <- function(S, K, sig, r, T, n, put = FALSE, american = FALSE) {
+  dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u
+  q <- (exp(r * dt) - d) / (u - d); disc <- exp(-r * dt)
+  pay <- function(s) if (put) pmax(K - s, 0) else pmax(s - K, 0)
+  St <- V <- matrix(NA, n + 1, n + 1)                  # row j (up-moves), column i (time)
+  for (i in 0:n) St[1:(i + 1), i + 1] <- S * u^(0:i) * d^(i:0)
+  V[, n + 1] <- pay(St[, n + 1])
+  for (i in (n - 1):0) {
+    cont <- disc * (q * V[2:(i + 2), i + 2] + (1 - q) * V[1:(i + 1), i + 2])
+    V[1:(i + 1), i + 1] <- if (american) pmax(cont, pay(St[1:(i + 1), i + 1])) else cont
+  }
+  list(S = St, V = V)
+}
+tr3 <- crr_mat(100, 100, 0.25, 0.03, 1, 3, put = TRUE, american = TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Çmimet dhe vlerat e put-it amerikan}
+<<w11h3-show>>=
+round(tr3$S[4:1, ], 2)                                   # top row = most up-moves
+round(tr3$V[4:1, ], 2)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Kolona $i$ ka $i+1$ vlera; pjesa tjetër \texttt{NA}: pema është një trekëndësh.
+    \item<2-> Rrënja e matricës $V$: \Sexpr{fmt(tr3$V[1, 1], 4)}, njësoj si \texttt{crr\_tree()}.
+    \item<3-> Në nyjet e poshtme, vlera e put-it është saktësisht $K-S$: aty ushtrohet herët.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11ush3]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Ndrysho \texttt{crr\_mat()} që të kthejë edhe një matricë \texttt{E} me \texttt{TRUE} aty ku put-i amerikan ushtrohet
+        (vlera intrinsike $>$ vlera e vazhdimit).
+      \item Me $n=3$: në cilat nyje ushtrohet?
+      \item Llogarit $\Delta_0=\dfrac{V_{1,1}-V_{1,0}}{S_{1,1}-S_{1,0}}$ nga matricat.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Testi i madh}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{96 kombinime, 200 hapa}
+<<w11h3-grid>>=
+g11 <- expand.grid(S = c(80, 100, 120), K = c(90, 110), sig = c(0.15, 0.35), T = c(0.5, 2),
+                   put = c(FALSE, TRUE), am = c(FALSE, TRUE))
+own11 <- with(g11, mapply(function(S, K, sig, T, put, am)
+  crr_tree(S, K, sig, 0.03, T, 200, put, am), S, K, sig, T, put, am))
+pkg11 <- with(g11, mapply(function(S, K, sig, T, put, am)
+  unname(binomopt(S, K, sig, 0.03, T, 0, nstep = 200, american = am, putopt = put, crr = TRUE)),
+  S, K, sig, T, put, am))
+c(n = nrow(g11), max_abs_diff = max(abs(own11 - pkg11)))
+@
+  \small Diferenca $\approx10^{-13}$: \texttt{crr\_tree()} $=$ \texttt{binomopt(..., crr = TRUE)}. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[fragile]{Europian me formulën binomiale}
+<<w11h3-binf>>=
+crr_formula <- function(S, K, sig, r, T, n, put = FALSE) {
+  dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u; q <- (exp(r * dt) - d) / (u - d)
+  j <- 0:n; ST <- S * u^j * d^(n - j)
+  exp(-r * T) * sum(dbinom(j, n, q) * (if (put) pmax(K - ST, 0) else pmax(ST - K, 0)))
+}
+c(formula = crr_formula(100, 100, 0.25, 0.03, 1, 500),
+  tree = crr_tree(100, 100, 0.25, 0.03, 1, 500), black_scholes = C0)
+@
+  \small Pa cikël: një shumë e vetme. Funksionon \textbf{vetëm} për europianët.
+\end{frame}
+
+\begin{frame}[fragile]{Parity në pemë}
+<<w11h3-parity>>=
+n_par <- c(3, 10, 100)
+sapply(n_par, function(n) crr_tree(100, 100, 0.25, 0.03, 1, n) -
+                          crr_tree(100, 100, 0.25, 0.03, 1, n, put = TRUE) -
+                          (100 - 100 * exp(-0.03)))
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Parity vlen \textbf{saktësisht} (deri në $10^{-15}$) për çdo $n$, edhe me 3 hapa.
+    \item<2-> Arsyeja: $E^{\mathbb Q}[S_T]=S_0e^{rT}$ në pemë, njësoj si në Black--Scholes.
+    \item<3-> Pema mund të jetë larg Black--Scholes, por \textbf{nuk} ka arbitrazh brenda saj.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Put-i amerikan sipas $S_0$}
+<<w11h3-curve, echo=FALSE, fig.height=2.8>>=
+Sx3 <- seq(60, 140, by = 2)
+dv3 <- data.frame(S = rep(Sx3, 3),
+  v = c(sapply(Sx3, crr_tree, K = 100, sig = 0.25, r = 0.03, T = 1, n = 200, put = TRUE, american = TRUE),
+        sapply(Sx3, crr_tree, K = 100, sig = 0.25, r = 0.03, T = 1, n = 200, put = TRUE),
+        pmax(100 - Sx3, 0)),
+  curve = rep(c("amerikan (CRR)", "europian (CRR)", "intrinsike"), each = length(Sx3)))
+ggplot(dv3, aes(S, v, colour = curve, linetype = curve)) + geom_line(linewidth = 1) +
+  scale_colour_manual(values = c("#2C5AA0", "#E67E22", "#7F8C8D")) + scale_linetype_manual(values = c(1, 2, 3)) +
+  labs(x = "S0", y = "vlera", colour = NULL, linetype = NULL) + th + theme(legend.position = "top")
+@
+  \small E njëjta figurë si në Javën 9, tani me pemën tonë: amerikani ``ngjitet'' me vlerën intrinsike për $S_0$ të vogël.
+\end{frame}
+
+\begin{frame}[label=w11par3]{Parashiko}
+  \begin{Parashiko}
+    \texttt{crr\_formula()} me $n=5000$ kërkon \texttt{dbinom(j, 5000, q)}. Disa nga këto probabilitete janë $\approx10^{-1500}$.
+    \begin{enumerate}
+      \item A do të prishet rezultati nga ``underflow'' (numra shumë të vegjël $\to0$)?
+      \item Pse po, ose pse jo?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w11zgjPar3}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Vizualizimi}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{\texttt{binomplot()}: put-i amerikan}
+<<w11h3-plot, echo=FALSE, fig.height=3.2>>=
+binomplot(100, 100, 0.25, 0.03, 1, 0, nstep = 8, american = TRUE, putopt = TRUE,
+          crr = TRUE, plotarrows = TRUE, titles = FALSE)
+@
+  \small \texttt{binomplot(100, 100, 0.25, 0.03, 1, 0, nstep = 8, american = TRUE, putopt = TRUE, crr = TRUE)}
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Sipas dokumentacionit të \Rkey{derivmkts}: nyjet e \textbf{gjelbra} janë ato ku opsioni ushtrohet; madhësia e pikës tregon probabilitetin (nën $q$) për të arritur atje.
+    \item<2-> Nyjet e gjelbra janë poshtë: put-i ushtrohet kur aksioni ka rënë mjaftueshëm.
+    \item<3-> Kufiri midis të kuqeve dhe të gjelbrave: kufiri i ushtrimit $S^*(t)$ (Java 9; Ora 4).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w11ndr3]{Ndrysho parametrin: $n$ dhe $\sigma$}
+<<w11h3-nsig>>=
+outer(c(10, 50, 200, 1000), c(0.15, 0.25, 0.40), Vectorize(function(n, s)
+  round(crr_tree(100, 100, s, 0.03, 1, n, put = TRUE, american = TRUE) -
+        crr_tree(100, 100, s, 0.03, 1, n, put = TRUE), 4)))
+@
+  \small Rreshtat: $n=10,50,200,1000$; kolonat: $\sigma=15\%,25\%,40\%$. Vlera: prima e ushtrimit të hershëm.
+  \hfill\shkoTe{w11zgjNdr3}{Interpretimi}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Çfarë kthejnë \texttt{V[-1]} dhe \texttt{V[-(i + 2)]} në ciklin e induksionit?
+    \item Çfarë rreshti shtohet për opsionin amerikan?
+    \item Pse formula binomiale nuk funksionon për amerikanin?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) vlerat ``lart'' dhe ``poshtë'' të hapit pasardhës; (2) \texttt{pmax(V, payoff)};
+  (3) vendimi i ushtrimit në çdo nyje varet nga rruga e induksionit, jo vetëm nga nyjet e fundit.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 3}
+  \begin{itemize}
+    \item \texttt{crr\_tree()}: 10 rreshta; $=$ \texttt{binomopt(..., crr = TRUE)} deri në $10^{-13}$, në 96 kombinime.
+    \item \texttt{crr\_mat()}: pemët e plota si matrica; ushtrimi i hershëm i dukshëm.
+    \item Formula binomiale me \texttt{dbinom()}: europianët pa cikël.
+    \item Prima e ushtrimit të hershëm ndryshon pak me $\sigma$; me $n$ të vogël mbivlerësohet.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 4}
+    Teoria II: opsioni amerikan në pemë, kufiri i ushtrimit, Greeks nga pema, konvergjenca te Black--Scholes.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 3)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{binomopt()}, \texttt{binomplot()}.
+    \item J.~C.~Cox, S.~A.~Ross, M.~Rubinstein (1979), \emph{Journal of Financial Economics}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+  \end{itemize}
+\end{frame}
