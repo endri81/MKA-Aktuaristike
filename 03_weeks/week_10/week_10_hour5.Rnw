@@ -1,0 +1,343 @@
+% ============================================================
+%  Java 10 · Ora 5 — Laborator R II: Greeks, volatiliteti i nënkuptuar, mbrojtja
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item \texttt{bs\_greeks()}: formulat e Orës 4, kundrejt diferencave të fundme.
+    \item Volatiliteti i nënkuptuar me \texttt{uniroot()} dhe \texttt{bscallimpvol()}.
+    \item Simulimi i mbrojtjes delta: sa i madh është gabimi kur rebalancojmë rrallë?
+  \end{enumerate}
+  \vfill\LO{K3}\;\LO{S2}\;\LO{S1}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Greeks në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksioni \texttt{bs\_greeks()}}
+<<w10h5-fun>>=
+bs_greeks <- function(S, K, sig, r, T) {                # call Greeks, per-year units
+  d1 <- (log(S / K) + (r + sig^2 / 2) * T) / (sig * sqrt(T)); d2 <- d1 - sig * sqrt(T)
+  cbind(Delta = pnorm(d1), Gamma = dnorm(d1) / (S * sig * sqrt(T)),
+        Vega  = S * dnorm(d1) * sqrt(T),
+        Theta = -S * dnorm(d1) * sig / (2 * sqrt(T)) - r * K * exp(-r * T) * pnorm(d2),
+        Rho   = K * T * exp(-r * T) * pnorm(d2))
+}
+round(bs_greeks(c(90, 100, 110), 100, 0.25, 0.03, 1), 5)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Rreshti i dytë ($S=100$) përputhet me llogaritjen e Orës 4.
+    \item<2-> $\Delta$ rritet me $S$; $\Gamma$ dhe $\nu$ janë më të mëdha afër parasë.
+    \item<3-> $\rho$ rritet me $S$: call-i thellë në para është më i ndjeshëm ndaj normës.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Diferenca të fundme}
+  \[ \Delta\approx\frac{C(S+h)-C(S-h)}{2h},\qquad \Gamma\approx\frac{C(S+h)-2C(S)+C(S-h)}{h^2} \]
+<<w10h5-fd>>=
+cfun <- function(S) bscall(S, 100, 0.25, 0.03, 1, 0)
+ex5 <- bs_greeks(100, 100, 0.25, 0.03, 1)
+fd5 <- t(sapply(10^-(1:4), function(h) c(h = h,
+  delta_err = (cfun(100 + h) - cfun(100 - h)) / (2 * h) - ex5[1, "Delta"],
+  gamma_err = (cfun(100 + h) - 2 * cfun(100) + cfun(100 - h)) / h^2 - ex5[1, "Gamma"])))
+signif(fd5, 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Me $h=0.01$: gabimet janë rreth $10^{-9}$ për $\Delta$ dhe $10^{-11}$ për $\Gamma$.
+    \item<2-> Diferencat e fundme janë mënyra universale: funksionojnë për \textbf{çdo} funksion çmimi, edhe pa formulë.
+    \item<3-> Kështu i llogarit \texttt{greeks()} e \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10par5]{Parashiko}
+  \begin{Parashiko}
+    Studenti mendon: ``sa më i vogël $h$, aq më e saktë Gamma''. Ai provon $h=10^{-7}$.
+    \begin{enumerate}
+      \item A del gabimi më i vogël se me $h=0.01$?
+      \item Pse po, ose pse jo?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{$h$ shumë i vogël}
+<<w10h5-fd2>>=
+h7 <- 1e-7
+c(gamma_fd = (cfun(100 + h7) - 2 * cfun(100) + cfun(100 - h7)) / h7^2,
+  gamma_exact = ex5[1, "Gamma"])
+@
+  \begin{Gabim}Me $h$ shumë të vogël, numëruesi është diferenca e dy numrave pothuajse të barabartë:
+  gabimi i rrumbullakimit ($\approx10^{-14}$) pjesëtohet me $h^2=10^{-14}$. Zgjidh $h\approx10^{-2}$--$10^{-3}$ për Gamma.\end{Gabim}
+\end{frame}
+
+\begin{frame}[fragile]{Theta: vlera kohore shkrin}
+<<w10h5-decay, echo=FALSE, fig.height=2.8>>=
+tau5 <- seq(1, 0.002, length.out = 250)
+dt5 <- do.call(rbind, lapply(c(90, 100, 110), function(S) data.frame(tau = tau5,
+  C = bscall(S, 100, 0.25, 0.03, tau5, 0), S = paste("S =", S))))
+ggplot(dt5, aes(tau, C, colour = S)) + geom_line(linewidth = 1) + scale_x_reverse() +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0", "#15803D")) +
+  labs(x = "koha deri ne maturim (vite)", y = "C", colour = NULL) + th + theme(legend.position = "top")
+@
+  \small Lexohet nga e majta në të djathtë: koha kalon. Opsioni ATM humbet vlerë më shpejt afër maturimit ($\Theta$ e madhe).
+\end{frame}
+
+\begin{frame}[label=w10ush5a]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Garancia e ``Pensioni Plus'': kompania ka \textbf{shitur} 100\,000 put, $S=K=100$, $T=5$, $r=3\%$, $\sigma=25\%$.
+    \begin{enumerate}
+      \item Llogarit me \texttt{greeks()} Delta dhe Vega e \textbf{pozicionit} (në lekë).
+      \item Sa humbet kompania nëse $\sigma$ rritet me 1 pikë përqindjeje?
+      \item Sa aksione duhet të shesë për të qenë delta-neutral?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh5a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Volatiliteti i nënkuptuar}
+% ------------------------------------------------------------
+
+\begin{frame}{Problemi i kundërt}
+  \begin{itemize}
+    \item Deri tani: $\sigma\;\to\;$ çmimi.
+    \item Tani: \textbf{çmimi i tregut} $\;\to\;\sigma$?
+  \end{itemize}
+  \begin{Definicion}
+    \termi{Volatiliteti i nënkuptuar}{implied volatility} $\sigma_{\text{imp}}$: vlera e $\sigma$ për të cilën
+    $C_{BS}(S_0,K,\sigma_{\text{imp}},r,T)=C_{\text{tregu}}$.
+  \end{Definicion}
+  \small Ekziston dhe është unike, sepse $C$ rritet rreptësisht me $\sigma$ ($\nu>0$) nga $S_0-Ke^{-rT}$ në $S_0$ (Ora 1).
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{uniroot()} kundrejt \texttt{bscallimpvol()}}
+<<w10h5-iv>>=
+iv_call <- function(price, S, K, r, T)
+  uniroot(function(s) bscall(S, K, s, r, T, 0) - price, c(1e-4, 3), tol = 1e-10)$root
+c(own = iv_call(13, 100, 100, 0.03, 1),
+  derivmkts = bscallimpvol(100, 100, 0.03, 1, 0, 13))
+bscall(100, 100, iv_call(13, 100, 100, 0.03, 1), 0.03, 1, 0)   # check: back to 13
+@
+  \small Një call ATM 1-vjeçar që kushton 13 në vend të 11.35 ``nënkupton'' $\sigma\approx\Sexpr{fmt(100 * iv_call(13, 100, 100, 0.03, 1), 1)}\%$.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \texttt{uniroot()} gjen zeron e $f(\sigma)=C_{BS}(\sigma)-C_{\text{tregu}}$ në intervalin $[10^{-4},3]$.
+    \item<2-> Kontrolli: çmimi me $\sigma_{\text{imp}}$ kthen saktësisht 13.
+    \item<3-> Tregtarët kuotojnë shpesh $\sigma_{\text{imp}}$ në vend të çmimit: krahasohet më lehtë midis $K$ dhe $T$ të ndryshëm.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w10gab5]{Gjej gabimin}
+<<w10h5-bug, error=TRUE>>=
+iv_call(2, 100, 100, 0.03, 1)
+@
+  \begin{enumerate}
+    \item Pse \texttt{uniroot()} nuk gjen zgjidhje?
+    \item Çfarë do të thotë një çmim tregu 2 për këtë call?
+  \end{enumerate}
+  \vfill\shkoTe{w10zgjGab5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Newton--Raphson me vega\Zgj}
+  \[ \sigma_{k+1}=\sigma_k-\frac{C_{BS}(\sigma_k)-C_{\text{tregu}}}{\nu(\sigma_k)} \]
+<<w10h5-newton>>=
+iv_newton <- function(price, S, K, r, T, s = 0.2, tol = 1e-10) {
+  for (k in 1:50) {
+    g <- bs_greeks(S, K, s, r, T)
+    step <- (bscall(S, K, s, r, T, 0) - price) / g[1, "Vega"]
+    s <- s - unname(step); if (abs(step) < tol) break
+  }
+  c(sigma = s, iterations = k)
+}
+iv_newton(13, 100, 100, 0.03, 1)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Newton konvergjon në \Sexpr{iv_newton(13, 100, 100, 0.03, 1)["iterations"]} hapa, në të njëjtin $\sigma$ si \texttt{uniroot()}.
+    \item<2-> Vega është derivati i $C$ sipas $\sigma$: Greeks shërbejnë edhe si mjet numerik.
+    \item<3-> Rrezik: për opsione thellë jashtë parasë, $\nu\approx0$ dhe hapi shpërthen. \texttt{uniroot()} është më i sigurt.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Buzëqeshja e volatilitetit\Zgj}
+<<w10h5-smile, echo=FALSE, fig.height=2.6>>=
+Ks5 <- seq(70, 130, by = 5)
+mp5 <- bscall(100, Ks5, 0.25 - 0.15 * log(Ks5 / 100), 0.03, 1, 0)   # synthetic "market" prices
+iv5 <- sapply(seq_along(Ks5), function(i) iv_call(mp5[i], 100, Ks5[i], 0.03, 1))
+ggplot(data.frame(K = Ks5, iv = 100 * iv5), aes(K, iv)) + geom_line(colour = "#2C5AA0", linewidth = 1) +
+  geom_point(colour = "#2C5AA0") + geom_hline(yintercept = 25, linetype = 2, colour = "#E67E22") +
+  labs(x = "K", y = "volatiliteti i nenkuptuar (%)") + th
+@
+  \small Çmime \textbf{sintetike}, të ndërtuara me një $\sigma$ që bie me $K$. Në tregjet reale të aksioneve,
+  $\sigma_{\text{imp}}$ zakonisht bie me $K$ (\emph{skew}): Black--Scholes me një $\sigma$ të vetme nuk mjafton.
+\end{frame}
+
+\begin{frame}[label=w10ush5b]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Shkruaj \texttt{iv\_put()} me \texttt{uniroot()} dhe gjej $\sigma_{\text{imp}}$ për një put ATM ($T=1$, $r=3\%$) që kushton 9.
+      \item Kontrolloje me \texttt{bsputimpvol()}.
+      \item Pa kod: a duhet të jetë $\sigma_{\text{imp}}$ e put-it të njëjtë me atë të call-it me të njëjtët $K$, $T$? Pse?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w10zgjUsh5b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Simulimi i mbrojtjes delta}
+% ------------------------------------------------------------
+
+\begin{frame}{Eksperimenti}
+  \begin{enumerate}
+    \item Shit një call ATM ($T=1$) për $C=11.35$. Bli $\Delta_0$ aksione; pjesa tjetër në bankë.
+    \item Simulo aksionin në \textbf{botën reale}: $\mu=7\%$, $\sigma=25\%$.
+    \item Rebalanco $N$ herë: blej/shit aksione deri te $\Delta$ e re.
+    \item Në $T$: paguaj payoff-in. Gabimi i mbrojtjes $=$ vlera e mbetur, e skontuar.
+  \end{enumerate}
+  \small Nëse Black--Scholes është i saktë, gabimi duhet të shkojë në 0 kur $N\to\infty$.
+\end{frame}
+
+\begin{frame}[fragile]{Funksioni \texttt{hedge\_sim()}}
+<<w10h5-hedge>>=
+hedge_sim <- function(N, M = 2000, mu = 0.07, sig_h = 0.25, sig = 0.25, seed = 1) {
+  set.seed(seed); S0 <- 100; K <- 100; r <- 0.03; TT <- 1; dt <- TT / N
+  dlt <- function(S, tau) pnorm((log(S / K) + (r + sig_h^2 / 2) * tau) / (sig_h * sqrt(tau)))
+  S <- rep(S0, M); D <- dlt(S, TT); cash <- bscall(S0, K, sig_h, r, TT, 0) - D * S
+  for (i in 1:N) {                                       # M paths in parallel
+    S <- S * exp((mu - sig^2 / 2) * dt + sig * sqrt(dt) * rnorm(M)); cash <- cash * exp(r * dt)
+    if (i < N) { Dn <- dlt(S, TT - i * dt); cash <- cash - (Dn - D) * S; D <- Dn }
+  }
+  exp(-r * TT) * (cash + D * S - pmax(S - K, 0))         # discounted hedging error
+}
+@
+  \small \texttt{sig}: volatiliteti i vërtetë; \; \texttt{sig\_h}: volatiliteti që përdor mbrojtësi.
+\end{frame}
+
+\begin{frame}[fragile]{Një rrugë e vetme}
+<<w10h5-path, echo=FALSE, fig.height=2.8>>=
+set.seed(7); N7 <- 252; tt7 <- (0:N7) / N7
+S7 <- 100 * exp(cumsum(c(0, (0.07 - 0.25^2 / 2) / N7 + 0.25 * sqrt(1 / N7) * rnorm(N7))))
+d7 <- function(S, tau) pnorm((log(S / 100) + (0.03 + 0.25^2 / 2) * tau) / (0.25 * sqrt(tau)))
+D7 <- d7(S7[1], 1); cash7 <- C0 - D7 * S7[1]; port7 <- numeric(N7 + 1); port7[1] <- C0
+for (i in 1:N7) {
+  cash7 <- cash7 * exp(0.03 / N7); port7[i + 1] <- cash7 + D7 * S7[i + 1]
+  if (i < N7) { Dn <- d7(S7[i + 1], 1 - tt7[i + 1]); cash7 <- cash7 - (Dn - D7) * S7[i + 1]; D7 <- Dn }
+}
+opt7 <- c(bscall(S7[-(N7 + 1)], 100, 0.25, 0.03, 1 - tt7[-(N7 + 1)], 0), max(S7[N7 + 1] - 100, 0))
+ggplot(data.frame(t = rep(tt7, 2), v = c(opt7, port7), what = rep(c("call (BS)", "portofoli mbrojtes"), each = N7 + 1)),
+       aes(t, v, colour = what, linetype = what)) + geom_line(linewidth = 0.9) +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0")) + scale_linetype_manual(values = c(1, 2)) +
+  labs(x = "koha (vite)", y = "vlera", colour = NULL, linetype = NULL) + th + theme(legend.position = "top")
+@
+  \small Rebalancim ditor. Portofoli (aksion + bankë) ndjek vlerën e call-it gjatë gjithë vitit;
+  në fund diferenca është \Sexpr{fmt(port7[N7 + 1] - opt7[N7 + 1], 2)} lekë.
+\end{frame}
+
+\begin{frame}[fragile]{Rezultatet}
+<<w10h5-res>>=
+Ns <- c(4, 12, 52, 252)                                  # quarterly ... daily
+res5 <- sapply(Ns, function(N) { e <- hedge_sim(N); c(N = N, mean = mean(e), sd = sd(e)) })
+round(t(res5), 3)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Shpërndarja e gabimit}
+<<w10h5-dens, echo=FALSE, fig.height=2.8>>=
+dh5 <- do.call(rbind, lapply(c(12, 52, 252), function(N) data.frame(e = hedge_sim(N), N = paste("N =", N))))
+dh5$N <- factor(dh5$N, levels = c("N = 12", "N = 52", "N = 252"))
+ggplot(dh5, aes(e, colour = N)) + geom_density(linewidth = 1) +
+  scale_colour_manual(values = c("#E67E22", "#2C5AA0", "#15803D")) + coord_cartesian(xlim = c(-8, 8)) +
+  labs(x = "gabimi i mbrojtjes (leke per opsion)", y = "dendesia", colour = NULL) + th +
+  theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Mesatarja $\approx0$ për çdo $N$: çmimi Black--Scholes \textbf{mbulon} koston e mbrojtjes.
+    \item<2-> Devijimi standard bie nga \Sexpr{fmt(res5["sd", 1], 2)} ($N=4$) në \Sexpr{fmt(res5["sd", 4], 2)} ($N=252$): afërsisht si $1/\sqrt N$.
+    \item<3-> Edhe me rebalancim ditor, mbetet rrezik: rreth \Sexpr{fmt(100 * res5["sd", 4] / C0)}\% e çmimit.
+    \item<4-> Simulimi u bë me $\mu=7\%$: mbrojtja nuk ka nevojë për $\mu$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w10par5b]{Parashiko}
+  \begin{Parashiko}
+    \begin{enumerate}
+      \item Me $N=52$: nëse aksioni ka $\mu=-5\%$ në vend të $7\%$, si ndryshon mesatarja e gabimit?
+      \item Mbrojtësi përdor $\sigma_h=20\%$, por volatiliteti i vërtetë është $25\%$. Fiton apo humbet mesatarisht?
+      \item Po me $\sigma_h=30\%$?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w10zgjPar5b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w10ndr5]{Ndrysho parametrin: $\mu$ dhe $\sigma_h$}
+<<w10h5-what>>=
+sc5 <- list(base = hedge_sim(52), mu_neg5 = hedge_sim(52, mu = -0.05),
+            sigh_20 = hedge_sim(52, sig_h = 0.20), sigh_30 = hedge_sim(52, sig_h = 0.30))
+round(sapply(sc5, function(e) c(mean = mean(e), sd = sd(e))), 3)
+@
+  \hfill\shkoTe{w10zgjNdr5}{Interpretimi}
+\end{frame}
+
+\begin{frame}{Lidhja me praktikën}
+  \begin{itemize}
+    \item Kompanitë që shesin garanci unit-linked i mbrojnë me programe \termi{mbrojtjeje dinamike}{dynamic hedging}.
+    \item Kostot reale: rebalancim diskret, kosto transaksioni, $\sigma$ e panjohur, kërcime të tregut.
+    \item Nën Solvency II, një program mbrojtjeje efektiv mund të ulë kapitalin e kërkuar për rrezikun e tregut.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Pse Gamma me diferenca të fundme del e gabuar me $h=10^{-7}$?
+    \item Pse volatiliteti i nënkuptuar është unik?
+    \item Si ndryshon gabimi i mbrojtjes kur $N$ shumëzohet me 4?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) gabimi i rrumbullakimit pjesëtohet me $h^2$; (2) $C$ rritet rreptësisht me $\sigma$;
+  (3) devijimi standard përgjysmohet afërsisht.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item \texttt{bs\_greeks()} = diferencat e fundme deri në $10^{-9}$, me $h$ të zgjedhur mirë.
+    \item $\sigma_{\text{imp}}$: \texttt{uniroot()} $=$ \texttt{bscallimpvol()}; nuk ekziston nën kufirin e poshtëm.
+    \item Mbrojtja delta: mesatarja $\approx0$, gabimi $\propto1/\sqrt N$, i pavarur nga $\mu$.
+    \item $\sigma_h$ e gabuar: humbje ose fitim sistematik.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: garancia unit-linked me vdekshmëri, $\sigma$ nga të dhënat, kostoja dhe mbrojtja.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{greeks()}, \texttt{bscallimpvol()}, \texttt{bsputimpvol()}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: volatiliteti i nënkuptuar, mbrojtja.
+    \item Dokumentacioni i R: \texttt{uniroot()}.
+  \end{itemize}
+\end{frame}

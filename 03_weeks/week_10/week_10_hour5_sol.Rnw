@@ -1,0 +1,65 @@
+% ============================================================
+%  Java 10 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10zgjPar5]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item \textbf{Jo}: me $h=10^{-7}$ gabimi del rreth $\Sexpr{fmt(abs((cfun(100 + h7) - 2 * cfun(100) + cfun(100 - h7)) / h7^2 - ex5[1, "Gamma"]), 2)}$, shumë herë më i madh se vetë Gamma.
+    \item Dy burime gabimi: (a) gabimi i formulës $\propto h^2$, bie me $h$; (b) gabimi i rrumbullakimit $\propto10^{-16}C/h^2$, rritet kur $h$ bie.
+      Optimumi është diku në mes.
+  \end{enumerate}
+  \vfill\kthehu{w10par5}
+\end{frame}
+
+\begin{frame}[fragile,label=w10zgjUsh5a]{Zgjidhja: Radha jote! (Greeks e garancisë)}
+<<w10h5-sol-g>>=
+gp5 <- -1e5 * greeks(bsput(100, 100, 0.25, 0.03, 5, 0))[c("Premium", "Delta", "Vega"), 1]
+round(gp5)                                                  # short 100 000 puts
+@
+  \begin{enumerate}
+    \item Delta e pozicionit: $+\Sexpr{fmt(gp5["Delta"])}$; \; Vega: $\Sexpr{fmt(gp5["Vega"])}$ lekë për 1 pikë përqindjeje.
+    \item $\sigma$: $25\%\to26\%$ $\Rightarrow$ detyrimi rritet me rreth \Sexpr{fmt(-gp5["Vega"])} lekë.
+    \item Shit (shkurt) rreth \Sexpr{fmt(gp5["Delta"])} aksione.
+  \end{enumerate}
+  \vfill\kthehu{w10ush5a}
+\end{frame}
+
+\begin{frame}[label=w10zgjGab5]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item $C_{BS}(\sigma)-2$ është pozitiv në të dy skajet e intervalit: për çdo $\sigma>0$, $C>S_0-Ke^{-rT}=2.96>2$.
+      \texttt{uniroot()} kërkon shenja të kundërta në skaje.
+    \item Çmimi 2 shkel kufirin e poshtëm pa arbitrazh (Java 9): bli call-in, shit aksionin, depozito $Ke^{-rT}$: fitim i sigurt.
+      \texttt{bscallimpvol(100, 100, 0.03, 1, 0, 2)} e thotë direkt: ``\texttt{Option price violates minimum bound}''.
+  \end{enumerate}
+  \vfill\kthehu{w10gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w10zgjUsh5b]{Zgjidhja: Radha jote! (IV e put-it)}
+<<w10h5-sol-iv>>=
+iv_put <- function(price, S, K, r, T)
+  uniroot(function(s) bsput(S, K, s, r, T, 0) - price, c(1e-4, 3), tol = 1e-10)$root
+c(own = iv_put(9, 100, 100, 0.03, 1), derivmkts = bsputimpvol(100, 100, 0.03, 1, 0, 9))
+@
+  \small Pa kod: \textbf{po}, nëse put-i dhe call-i kanë çmime pa arbitrazh. Parity: $C-P=S_0-Ke^{-rT}$ nuk varet nga $\sigma$,
+  pra i njëjti $\sigma$ i shpjegon të dyja çmimet.
+  \vfill\kthehu{w10ush5b}
+\end{frame}
+
+\begin{frame}[label=w10zgjPar5b]{Zgjidhja: Parashiko (mbrojtja)}
+  \begin{enumerate}
+    \item Pothuajse \textbf{asgjë}: $\mu$ ndryshon rrugët e aksionit, por mbrojtja delta e neutralizon drejtimin.
+    \item \textbf{Humbet}: me $\sigma_h=20\%$, call-i shitet më lirë se kostoja e vërtetë e riprodhimit.
+    \item \textbf{Fiton}: call-i shitet më shtrenjtë; mbrojtja kushton mesatarisht sa çmimi me $25\%$.
+  \end{enumerate}
+  \vfill\kthehu{w10par5b}
+\end{frame}
+
+\begin{frame}[label=w10zgjNdr5]{Interpretimi: Ndrysho parametrin}
+  \begin{itemize}
+    \item $\mu=-5\%$: mesatarja \Sexpr{fmt(mean(sc5$mu_neg5), 2)}, njësoj si baza (\Sexpr{fmt(mean(sc5$base), 2)}). \textcolor{okgreen}{$\checkmark$}
+    \item $\sigma_h=20\%$: mesatarja \Sexpr{fmt(mean(sc5$sigh_20), 2)}, afër $C_{20\%}-C_{25\%}=\Sexpr{fmt(bscall(100, 100, 0.2, 0.03, 1, 0) - C0, 2)}$.
+    \item $\sigma_h=30\%$: mesatarja $+\Sexpr{fmt(mean(sc5$sigh_30), 2)}$, afër $C_{30\%}-C_{25\%}=\Sexpr{fmt(bscall(100, 100, 0.3, 0.03, 1, 0) - C0, 2)}$.
+  \end{itemize}
+  \small Mësimi për aktuarin: rreziku kryesor i një garancie të mbrojtur nuk është $\mu$, por \textbf{gabimi në $\sigma$}.
+  \vfill\kthehu{w10ndr5}
+\end{frame}
