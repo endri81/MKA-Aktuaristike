@@ -1,0 +1,64 @@
+% ============================================================
+%  Java 11 · Ora 4 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w11zgjUsh4a]{Zgjidhja: Radha jote! (put me $K=110$)}
+  \begin{enumerate}
+    \item Payoff-et: $S=156.25\to0$; \; $S=100\to10$; \; $S=64\to46$.
+    \item Europian: $P_u=\frac{1}{1.05}\cdot\frac49\cdot10=4.23$; \;
+      $P_d=\frac{1}{1.05}\big(\frac59\cdot10+\frac49\cdot46\big)=\frac{26}{1.05}=24.76$; \;
+      $P_0=\frac{1}{1.05}\big(\frac59\cdot4.23+\frac49\cdot24.76\big)=\mathbf{12.72}$.
+    \item Amerikan: në $S=80$, $K-S=30>24.76$: \textbf{ushtro}, $P_{A,d}=30$. Në $S=125$: $4.23>0$, vazhdo.\\
+      $P_A=\frac{1}{1.05}\big(\frac59\cdot4.23+\frac49\cdot30\big)=\mathbf{14.94}$; në rrënjë $14.94>K-S_0=10$, vazhdo.
+    \item Prima: $14.94-12.72=2.22$.
+  \end{enumerate}
+  \vfill\kthehu{w11ush4a}
+\end{frame}
+
+\begin{frame}[label=w11zgjGab4]{Zgjidhja: Gjej gabimin}
+  \begin{enumerate}
+    \item Llogarit opsionin \textbf{europian} dhe pastaj e krahason vetëm me ushtrimin në $t=0$.
+      Kontrolli \texttt{max()} duhet të jetë \textbf{brenda} ciklit, në çdo nyje.
+    \item I saktë për call-in pa dividendë (ku ushtrimi i hershëm nuk ndodh kurrë).
+      I gabuar për put-in: humbet ushtrimin në nyjet e ndërmjetme.
+  \end{enumerate}
+  \small Në shembullin $K=110$: kodi do të jepte $\max(12.72,\,10)=12.72$, jo 14.94.
+  \vfill\kthehu{w11gab4}
+\end{frame}
+
+\begin{frame}[label=w11zgjMC4]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $S_{2,1}=S_0ud=S_0$, sepse $d=1/u$.
+  \begin{itemize}
+    \item A) $u\ne1$, por $ud=1$. \; C) nyjet e hapit 3 janë $S_0u^3,S_0u,S_0d,S_0d^3$: asnjë nuk është $S_0$.
+    \item D) $S_{1,1}=S_0u>S_0$.
+  \end{itemize}
+  \small Në përgjithësi: $S_{i,j}=S_0$ kur $2j=i$, pra vetëm në hapat çift.
+  \vfill\kthehu{w11mc4}
+\end{frame}
+
+<<w11h4-sol-par, include=FALSE>>=
+e_even <- sapply(c(100, 200, 500), crr) - C0
+e_avg  <- sapply(c(100, 200, 500), function(n) (crr(n) + crr(n + 1)) / 2) - C0
+@
+
+\begin{frame}[label=w11zgjPar4]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Për $n$ çift, pema jep \textbf{më pak}: gabimi me $n=100,200,500$ është
+      \Sexpr{paste(fmt(e_even, 4), collapse = ", ")}.
+    \item Mesatarja e $n$ dhe $n+1$: gabimi bie në \Sexpr{paste(fmt(e_avg, 5), collapse = ", ")}:
+      shumë më afër, sepse gabimet me shenja të kundërta anulohen pjesërisht.
+  \end{enumerate}
+  \vfill\kthehu{w11par4}
+\end{frame}
+
+\begin{frame}[label=w11zgjTps4]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Një skenar ku klientit i leverdis të anulojë: kompania paguan vlerën e garantuar,
+      që është më e madhe se vlera e mbetur e kontratës.
+    \item Tarifa luan rolin e dividendit $\delta$ te put-i: fondi bie më shpejt, ndaj ia vlen të \textbf{presësh}.
+      Kufiri $S^*$ \textbf{ulet} (zona e ushtrimit ngushtohet), por vlera e garancisë rritet.
+      P.sh.\ në $t=0.5$, me $\delta=0\%,2\%,4\%$: $S^*\approx75.4,\;70.2,\;63.2$.
+    \item Ndëshkimi ul vlerën intrinsike të anulimit: vlera e opsionit (dhe detyrimi) bie.
+  \end{enumerate}
+  \vfill\kthehu{w11tps4}
+\end{frame}

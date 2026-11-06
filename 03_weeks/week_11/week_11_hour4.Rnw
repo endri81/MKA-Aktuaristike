@@ -1,0 +1,246 @@
+% ============================================================
+%  Java 11 · Ora 4 — Teoria II: amerikani, Greeks, konvergjenca
+% ============================================================
+\section{Teoria II: amerikani}
+
+\begin{frame}{Ora 4 · Teoria II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Opsioni amerikan në pemë}
+% ------------------------------------------------------------
+
+\begin{frame}{Vendimi në çdo nyje}
+  Në nyjen $(i,j)$, mbajtësi i opsionit amerikan ka dy zgjedhje:
+  \begin{itemize}
+    \item<2-> \textbf{Ushtro tani}: merr vlerën intrinsike $h(S_{i,j})$, p.sh.\ $(K-S_{i,j})^+$.
+    \item<3-> \textbf{Vazhdo}: mban opsionin, me vlerë $c_{i,j}=e^{-r\Delta t}\big[qV_{i+1,j+1}+(1-q)V_{i+1,j}\big]$.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Teoreme}[(induksioni prapa për amerikanin)]
+    \[ V_{i,j}=\max\big(h(S_{i,j}),\;c_{i,j}\big),\qquad V_{n,j}=h(S_{n,j}). \]
+  \end{Teoreme}}
+  \onslide<5->{\small Ky është parimi i programimit dinamik (Bellman): vendimi optimal sot supozon vendime optimale nesër.}
+\end{frame}
+
+\begin{frame}{Pse jo më shumë, pse jo më pak?}
+  \begin{itemize}
+    \item $V_{i,j}\ge h(S_{i,j})$: përndryshe bli opsionin dhe ushtroje menjëherë: arbitrazh.
+    \item $V_{i,j}\ge c_{i,j}$: përndryshe bli opsionin, mbaje një hap dhe riprodhoje me $\Delta$, $B$: arbitrazh.
+    \item $V_{i,j}\le\max(h,c)$: shitësi mund të mbrohet me portofolin që kushton $\max(h,c)$, çfarëdo që bën blerësi.
+  \end{itemize}
+  \small Pra çmimi pa arbitrazh është pikërisht $\max(h,c)$ në çdo nyje.
+\end{frame}
+
+\begin{frame}[label=w11ush4a]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta, pa ndihmën e PC)]
+    Pema e Orës 2: $S_0=100$, $u=1.25$, $d=0.8$, $R=1.05$, $q=5/9$. Put me $K=110$.
+    \begin{enumerate}
+      \item Payoff-et në maturim ($S=156.25,\;100,\;64$).
+      \item Put-i \textbf{europian}: $P_u$, $P_d$, $P_0$.
+      \item Put-i \textbf{amerikan}: në cilën nyje ushtrohet herët? Sa është $P_A$?
+      \item Prima e ushtrimit të hershëm.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh4a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}{Kufiri i ushtrimit}
+  \begin{itemize}
+    \item Për put-in: në çdo kohë $t_i$, ushtrohet kur $S_{i,j}\le S^*(t_i)$.
+    \item $S^*(t)$: \termi{kufiri i ushtrimit}{exercise boundary}, i njohur nga Java 9.
+    \item $S^*(t)$ rritet me kohën dhe shkon te $K$ kur $t\to T$: afër maturimit, vlera kohore zhduket.
+    \item Pema e jep $S^*$ në mënyrë diskrete: nyja më e lartë ``e gjelbër'' në çdo kolonë (Ora 3).
+  \end{itemize}
+  \small Në Orën 5 e nxjerrim nga pema me 500 hapa dhe e vizatojmë.
+\end{frame}
+
+\begin{frame}{Call-i amerikan pa dividendë në pemë}
+  Në çdo nyje, vlera e vazhdimit të call-it plotëson:
+  \begin{align*}
+    \onslide<2->{c_{i,j}&\ge e^{-r\Delta t}\,E^{\mathbb Q}\big[S_{i+1}-K\big]\\}
+    \onslide<3->{&=S_{i,j}-Ke^{-r\Delta t}\\}
+    \onslide<4->{&>S_{i,j}-K=h(S_{i,j}).}
+  \end{align*}
+  \onslide<2->{\small Hapi 1: $V_{i+1}\ge(S_{i+1}-K)^+\ge S_{i+1}-K$. \;}
+  \onslide<3->{\small Hapi 2: $E^{\mathbb Q}[S_{i+1}]=S_{i,j}e^{r\Delta t}$.}
+  \onslide<5->{
+  \begin{Keshille}Pra \texttt{max()} nuk zgjedh kurrë ushtrimin: $C_A=C$ edhe në pemë (Java 9, tani me provë diskrete).\end{Keshille}}
+\end{frame}
+
+\begin{frame}[fragile,label=w11gab4]{Gjej gabimin}
+  Një student shkruan opsionin amerikan kështu:
+<<w11h4-bug, eval=FALSE>>=
+V <- pay(S * u^(0:n) * d^(n:0))
+for (i in (n - 1):0) V <- disc * (q * V[-1] + (1 - q) * V[-(i + 2)])
+V <- max(V, pay(S))                       # "American": compare with exercise at t = 0
+@
+  \begin{enumerate}
+    \item Çfarë llogarit në të vërtetë ky kod?
+    \item Për cilin opsion jep rezultat të saktë, dhe për cilin jo?
+  \end{enumerate}
+  \vfill\shkoTe{w11zgjGab4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Greeks nga pema}
+% ------------------------------------------------------------
+
+\begin{frame}{Delta dhe Gamma}
+  \begin{itemize}
+    \item \textbf{Delta} në $t=0$: pjerrësia midis dy nyjeve të hapit 1:
+      \[ \Delta\approx\frac{V_{1,1}-V_{1,0}}{S_{1,1}-S_{1,0}}. \]
+    \item \textbf{Gamma}: ndryshimi i Delta-s, nga tri nyjet e hapit 2:
+      \[ \Gamma\approx\frac{\dfrac{V_{2,2}-V_{2,1}}{S_{2,2}-S_{2,1}}-\dfrac{V_{2,1}-V_{2,0}}{S_{2,1}-S_{2,0}}}{\tfrac12\big(S_{2,2}-S_{2,0}\big)}. \]
+  \end{itemize}
+  \small Asnjë llogaritje shtesë: vlerat janë tashmë në pemë.
+\end{frame}
+
+\begin{frame}{Theta: një dhuratë e CRR}
+  \begin{itemize}
+    \item Në CRR, $ud=1$: nyja e mesme e hapit 2 është $S_{2,1}=S_0ud=S_0$.
+    \item Pra $V_{2,1}$ është vlera e opsionit me të njëjtin $S$, por $2\Delta t$ më vonë:
+      \[ \Theta\approx\frac{V_{2,1}-V_{0,0}}{2\Delta t}. \]
+    \item Me pemë të tjera ($ud\ne1$) kjo nuk vlen drejtpërdrejt.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11mc4]{Zgjedhje e shumëfishtë}
+  Në një pemë CRR me 3 hapa, cila nyje ka të njëjtin çmim aksioni si $S_0$?
+  \begin{enumerate}[A)]
+    \item Asnjë, sepse $u\ne1$.
+    \item Nyja e mesme e hapit 2 ($S_{2,1}$).
+    \item Të gjitha nyjet e hapit 3.
+    \item Nyja e sipërme e hapit 1.
+  \end{enumerate}
+  \vfill\shkoTe{w11zgjMC4}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontroll: Greeks nga pema kundrejt Black--Scholes}
+<<w11h4-greeks>>=
+n4 <- 500; dt4 <- 1 / n4
+tr4 <- crr_mat(100, 100, 0.25, 0.03, 1, n4)            # Hour 3, European call
+S4 <- tr4$S; V4 <- tr4$V
+D4 <- (V4[2, 2] - V4[1, 2]) / (S4[2, 2] - S4[1, 2])
+G4 <- ((V4[3, 3] - V4[2, 3]) / (S4[3, 3] - S4[2, 3]) - (V4[2, 3] - V4[1, 3]) /
+       (S4[2, 3] - S4[1, 3])) / (0.5 * (S4[3, 3] - S4[1, 3]))
+Th4 <- (V4[2, 3] - V4[1, 1]) / (2 * dt4)
+gbs <- greeks(bscall(100, 100, 0.25, 0.03, 1, 0))[c("Delta", "Gamma", "Theta"), 1] * c(1, 1, 365)
+round(rbind(tree = c(D4, G4, Th4), black_scholes = gbs), 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item Me 500 hapa, Greeks e pemës përputhen me Black--Scholes në 2--3 shifra.
+    \item Për opsionin \textbf{amerikan} nuk ka formulë: Greeks e pemës janë mënyra standarde.
+    \item Pra pema jep \textbf{edhe} çmimin \textbf{edhe} mbrojtjen, për çdo opsion.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Konvergjenca te Black--Scholes\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Pema si ecje e rastit\Zgj}
+  \begin{itemize}
+    \item Pas $n$ hapash me $J$ rritje: $\ln(S_T/S_0)=(2J-n)\,\sigma\sqrt{\Delta t}$, me $J\sim\text{Bin}(n,q)$.
+    \item Teorema qendrore limite: kur $n\to\infty$, $J$ standardizohet në $N(0,1)$.
+    \item Pra $\ln(S_T/S_0)$ bëhet normale: $S_T$ bëhet \textbf{lognormal}, si në Black--Scholes.
+  \end{itemize}
+  \small Mjafton të kontrollojmë që mesatarja dhe varianca shkojnë te $(r-\frac12\sigma^2)T$ dhe $\sigma^2T$.
+\end{frame}
+
+\begin{frame}{Mesatarja\Zgj}
+  Me $a=\sigma\sqrt{\Delta t}$ të vogël, zgjerimi Taylor i $q=\dfrac{e^{r\Delta t}-e^{-a}}{e^{a}-e^{-a}}$ jep:
+  \begin{align*}
+    \onslide<2->{q&\approx\frac12+\frac{(r-\frac12\sigma^2)\sqrt{\Delta t}}{2\sigma}\\}
+    \onslide<3->{E[\ln(S_T/S_0)]&=n(2q-1)\,\sigma\sqrt{\Delta t}\approx n\cdot\frac{(r-\frac12\sigma^2)\sqrt{\Delta t}}{\sigma}\cdot\sigma\sqrt{\Delta t}\\}
+    \onslide<4->{&=n\,\Delta t\,(r-\tfrac12\sigma^2)=(r-\tfrac12\sigma^2)\,T.\;\textcolor{okgreen}{\checkmark}}
+  \end{align*}
+  \onslide<5->{\small Varianca: $4nq(1-q)\sigma^2\Delta t\to\sigma^2T$ (Ora 2). Pra pema $\to$ GBM nën $\mathbb Q$ $\to$ Black--Scholes.}
+\end{frame}
+
+\begin{frame}{Pse lëkundet gabimi?\Zgj}
+  \begin{itemize}
+    \item Payoff-i $(S_T-K)^+$ ka një ``kënd'' në $K$.
+    \item Nyjet e fundit $S_0u^jd^{n-j}$ lëvizin kur ndryshon $n$; $K$ bie herë afër një nyjeje, herë midis dy nyjeve.
+    \item Me $S_0=K$: për $n$ çift ka një nyje saktësisht në $K$; për $n$ tek, $K$ është midis dy nyjeve.
+    \item Rezultati: gabimi $O(1/n)$, por me shenjë që ndryshon. Ora 5: si e zbusim.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11par4]{Parashiko}
+  \begin{Parashiko}
+    Për call-in ATM ($S_0=K=100$), ne pamë që gabimi ndryshon shenjë.
+    \begin{enumerate}
+      \item Për $n$ çift, pema jep më shumë apo më pak se Black--Scholes?
+      \item Po mesatarja e çmimeve me $n$ dhe $n+1$ hapa: a është më afër Black--Scholes?
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w11zgjPar4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Dividendët\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Dividend i vazhdueshëm në pemë\Zgj}
+  \begin{itemize}
+    \item Me normë dividendi $\delta$: nën $\mathbb Q$, $E[S_{t+\Delta t}]=S_te^{(r-\delta)\Delta t}$.
+    \item Pra vetëm $q$ ndryshon: \quad $q=\dfrac{e^{(r-\delta)\Delta t}-d}{u-d}$; \quad $u$, $d$ dhe skontimi mbeten.
+    \item Tani call-i amerikan \textbf{mund} të ushtrohet herët: ushtrimi e kap dividendin.
+    \item Në \Rkey{derivmkts}: argumenti \texttt{d} i \texttt{binomopt()}.
+  \end{itemize}
+  \small Në kontratat unit-linked, tarifa $m$ luan rolin e $\delta$ (Java 10, Ora 6).
+\end{frame}
+
+\begin{frame}[label=w11tps4]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    Kontrata ``Kursimi Plus'' lejon anulimin në çdo kohë, me vlerë të garantuar.
+    \begin{enumerate}
+      \item Në pemë, çfarë përfaqëson një nyje ``e gjelbër'' për kompaninë?
+      \item Si ndryshon kufiri i anulimit nëse tarifa e fondit rritet?
+      \item Pse kompania mund të dojë një \textbf{ndëshkim} për anulimin e hershëm?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjTps4}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj rregullin e induksionit prapa për opsionin amerikan.
+    \item Pse $\Theta$ llogaritet lehtë nga pema CRR?
+    \item Cili teoremë shpjegon konvergjencën e pemës te Black--Scholes?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $V_{i,j}=\max(h(S_{i,j}),c_{i,j})$; (2) $S_{2,1}=S_0$ sepse $ud=1$;
+  (3) teorema qendrore limite për $J\sim\text{Bin}(n,q)$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 4}
+  \begin{itemize}
+    \item Amerikani: $V=\max(\text{intrinsike},\text{vazhdimi})$ në çdo nyje; kufiri $S^*(t)$.
+    \item Call-i pa dividendë: vazhdimi $>S-K$ gjithmonë $\Rightarrow$ $C_A=C$.
+    \item Greeks nga pema: $\Delta$, $\Gamma$ nga hapat 1--2; $\Theta$ falë $S_{2,1}=S_0$.
+    \item Konvergjenca: TQL $\Rightarrow$ lognormale; gabimi luhatet me $n$.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 5}
+    Laborator R II: put-i amerikan, kufiri i ushtrimit, konvergjenca dhe korrigjimet, krahasimi i pemëve.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 4)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Cox, S.~A.~Ross, M.~Rubinstein (1979), \emph{Journal of Financial Economics}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: Greeks nga pema.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}
