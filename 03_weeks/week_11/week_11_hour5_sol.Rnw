@@ -1,0 +1,58 @@
+% ============================================================
+%  Java 11 · Ora 5 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w11zgjPar5]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item $r=6\%$: kufiri \textbf{ngrihet}. Ushtrimi i hershëm i put-it vjen nga interesi mbi $K$: më shumë interes, më shumë arsye për të marrë $K$ sot.
+    \item $\sigma=40\%$: kufiri \textbf{ulet}. Me më shumë pasiguri, vlera kohore e put-it rritet: ia vlen të presësh.
+  \end{enumerate}
+  \small Të dyja duken në grafikun ``Tre kufij''.
+  \vfill\kthehu{w11par5}
+\end{frame}
+
+\begin{frame}[fragile,label=w11zgjUsh5a]{Zgjidhja: Radha jote! (kufiri)}
+<<w11h5-sol-bnd>>=
+s_half <- function(sig, T, n = 500) {                       # S*(t = 0.5)
+  b <- crr_boundary(100, 100, sig, 0.03, T, n); b$Sstar[which.min(abs(b$t - 0.5))]
+}
+round(c(sig15 = s_half(0.15, 1), sig25 = s_half(0.25, 1), sig40 = s_half(0.40, 1),
+        T1 = s_half(0.25, 1), T3 = s_half(0.25, 3)), 2)
+@
+  \small Me $T=3$, në $t=0.5$ mbeten 2.5 vjet: vlera kohore më e madhe, kufiri më i ulët.
+  Kufiri varet nga koha e \textbf{mbetur} $T-t$, jo nga $t$.
+  \vfill\kthehu{w11ush5a}
+\end{frame}
+
+\begin{frame}[label=w11zgjGab5]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item Rreshti i dytë llogarit përsëri \textbf{amerikanin} (\texttt{american = TRUE}), jo europianin.
+    \item Pra \texttt{a} $=$ \texttt{e}, dhe \texttt{a + (P0 - e)} $=$ \texttt{P0}: çmimi Black--Scholes i europianit.
+    \item Rregullimi: \texttt{e <- crr\_tree(100, 100, 0.25, 0.03, 1, n, TRUE)} (\texttt{american = FALSE}).
+  \end{itemize}
+  \small Shenjë alarmi: një put amerikan që vlen saktësisht sa europiani, kur dimë që $P_A>P$.
+  \vfill\kthehu{w11gab5}
+\end{frame}
+
+\begin{frame}[fragile,label=w11zgjUsh5b]{Zgjidhja: Radha jote! (dixhitali)}
+<<w11h5-sol-dig>>=
+crr_digital <- function(n, S = 100, K = 100, sig = 0.25, r = 0.03, T = 1) {
+  dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u; q <- (exp(r * dt) - d) / (u - d); j <- 0:n
+  exp(-r * T) * sum(dbinom(j, n, q) * (S * u^j * d^(n - j) > K))
+}
+dig_bs <- exp(-0.03) * pnorm((0.03 - 0.25^2 / 2) / 0.25)
+signif(sapply(c(100, 101, 200, 201), crr_digital) - dig_bs, 3)
+@
+  \small Për $n$ çift ka një nyje saktësisht në $K$, që nuk paguan: gabimi është probabiliteti i asaj nyjeje, $\approx1/\sqrt n$.
+  Konvergjenca është \textbf{më e keqe} se për call-in ($1/n$), sepse payoff-i ka kërcim.
+  \vfill\kthehu{w11ush5b}
+\end{frame}
+
+\begin{frame}[label=w11zgjNdr5]{Interpretimi: Ndrysho parametrin}
+  \begin{itemize}
+    \item Që gabimi të mbetet nën 0.01 duhen \Sexpr{need5[1]} hapa; nën 0.005, \Sexpr{need5[2]}; nën 0.001, \Sexpr{need5[3]}.
+    \item Tolerancë 10 herë më e vogël kërkon afërsisht 10 herë më shumë hapa: gabimi $\propto1/n$.
+    \item Për një portofol me mijëra kontrata, kjo kosto llogaritëse ka rëndësi: zgjidh $n$ sipas saktësisë që kërkon raporti.
+  \end{itemize}
+  \vfill\kthehu{w11ndr5}
+\end{frame}

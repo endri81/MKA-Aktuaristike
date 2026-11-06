@@ -1,0 +1,254 @@
+% ============================================================
+%  Java 11 · Ora 5 — Laborator R II: kufiri i ushtrimit dhe konvergjenca
+% ============================================================
+\section{Laborator R II}
+
+\begin{frame}{Ora 5 · Laborator R II}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+\begin{frame}{Plani i laboratorit}
+  \begin{enumerate}
+    \item<1-> \texttt{crr\_boundary()}: kufiri i ushtrimit $S^*(t)$ i put-it amerikan.
+    \item<2-> Konvergjenca: gabimi i pemës kundrejt $n$, në shkallë logaritmike.
+    \item<3-> Dy korrigjime: mesatarja e $n$ dhe $n+1$; ndryshorja kontrolluese Black--Scholes.
+    \item<4-> Krahasimi i tri pemëve: CRR, Jarrow--Rudd, forward.
+  \end{enumerate}
+  \onslide<5->{\vfill\LO{K3}\;\LO{S2}}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kufiri i ushtrimit}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksioni \texttt{crr\_boundary()}}
+<<w11h5-bnd>>=
+crr_boundary <- function(S, K, sig, r, T, n) {         # American put only
+  dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u
+  q <- (exp(r * dt) - d) / (u - d); disc <- exp(-r * dt)
+  V <- pmax(K - S * u^(0:n) * d^(n:0), 0); bnd <- numeric(n)
+  for (i in (n - 1):0) {
+    Si <- S * u^(0:i) * d^(i:0)
+    cont <- disc * (q * V[-1] + (1 - q) * V[-(i + 2)])
+    ex <- (K - Si) > cont                                 # exercise nodes at step i
+    bnd[i + 1] <- if (any(ex)) max(Si[ex]) else NA       # highest exercise node
+    V <- pmax(cont, K - Si)
+  }
+  data.frame(t = (0:(n - 1)) * dt, Sstar = bnd)
+}
+@
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli me \texttt{binomopt()}}
+<<w11h5-bndchk>>=
+b5 <- crr_boundary(100, 100, 0.25, 0.03, 1, 500)
+bt5 <- binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = 500, american = TRUE, putopt = TRUE,
+                crr = TRUE, returntrees = TRUE)
+j5 <- 251                                                 # column of t = 0.5
+c(own = b5$Sstar[j5], derivmkts = max(bt5$stree[1:j5, j5][bt5$exertree[1:j5, j5]]))
+@
+  \small \texttt{exertree}: matrica logjike e nyjeve ku opsioni ushtrohet (Java 9). Të dyja japin të njëjtin kufi. \textcolor{okgreen}{$\checkmark$}
+\end{frame}
+
+\begin{frame}[label=w11par5]{Parashiko}
+  \begin{Parashiko}
+    Kufiri $S^*(t)$ për $K=100$, $\sigma=25\%$, $T=1$, $r=3\%$. Si zhvendoset nëse:
+    \begin{enumerate}
+      \item $r$ rritet në $6\%$?
+      \item $\sigma$ rritet në $40\%$?
+    \end{enumerate}
+    Ndihmë: çfarë e shtyn ushtrimin e hershëm të put-it (Java 9)?
+  \end{Parashiko}
+  \vfill\shkoTe{w11zgjPar5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Tre kufij}
+<<w11h5-bndplot, echo=FALSE, fig.height=2.8>>=
+bb5 <- rbind(cbind(crr_boundary(100, 100, 0.25, 0.03, 1, 500), case = "baza: r=3%, sigma=25%"),
+             cbind(crr_boundary(100, 100, 0.25, 0.06, 1, 500), case = "r=6%"),
+             cbind(crr_boundary(100, 100, 0.40, 0.03, 1, 500), case = "sigma=40%"))
+ggplot(bb5[!is.na(bb5$Sstar), ], aes(t, Sstar, colour = case)) + geom_line(linewidth = 1) +
+  geom_hline(yintercept = 100, linetype = 3, colour = "grey50") +
+  scale_colour_manual(values = c("#2C5AA0", "#E67E22", "#15803D")) +
+  labs(x = "koha t (vite)", y = "kufiri S*(t)", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> $S^*(t)$ rritet me kohën dhe shkon te $K=100$ në maturim.
+    \item<2-> $r$ më e lartë: kufiri \textbf{ngrihet}; ushtrimi i hershëm bëhet më tërheqës (interesi mbi $K$).
+    \item<3-> $\sigma$ më e lartë: kufiri \textbf{ulet}; vlera kohore është më e madhe, ia vlen të presësh.
+    \item<4-> Zona poshtë kurbës: ``ushtro''. Mbi kurbë: ``mbaje''.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11ush5a]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Llogarit $S^*(0.5)$ për $\sigma=15\%,25\%,40\%$ (me $r=3\%$, $n=500$).
+      \item Llogarit $S^*(0.5)$ për $T=1$ dhe $T=3$ (me $\sigma=25\%$). Pse ndryshon?
+    \end{enumerate}
+    Ndihmë: \texttt{crr\_boundary(...)\$Sstar[...]}; kujdes me indeksin e kohës $t=0.5$.
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh5a}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Konvergjenca}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Gabimi kundrejt $n$ (shkallë log)}
+<<w11h5-conv, echo=FALSE, fig.height=2.8>>=
+nn5 <- 10:400
+err5 <- abs(sapply(nn5, crr) - C0)
+ggplot(data.frame(n = nn5, e = err5), aes(n, e)) + geom_point(colour = "#2C5AA0", size = 0.6) +
+  geom_line(data = data.frame(n = nn5, e = 2.5 / nn5), colour = "#E67E22", linetype = 2) +
+  scale_x_log10() + scale_y_log10() +
+  labs(x = "n (shkalle log)", y = "|CRR - BS| (shkalle log)") + th
+@
+  \small Vija e portokalltë: $2.5/n$. Pikat ndjekin pjerrësinë $-1$: gabimi $\approx c/n$, me luhatje.
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në shkallë log--log, pjerrësia $-1$ do të thotë gabim $\propto1/n$.
+    \item<2-> Për ta përgjysmuar gabimin, dyfisho $n$; koha rritet afërsisht me $n^2$ (trekëndëshi i pemës).
+    \item<3-> Krahaso me Monte Carlo (Java 10): gabimi $\propto1/\sqrt n$. Pema është më e shpejtë për një aksion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Referenca për put-in amerikan}
+<<w11h5-ref>>=
+ref5 <- (crr_tree(100, 100, 0.25, 0.03, 1, 5000, TRUE, TRUE) +
+         crr_tree(100, 100, 0.25, 0.03, 1, 5001, TRUE, TRUE)) / 2
+c(american_put_reference = ref5)
+@
+  \small Nuk ka formulë të saktë. Përdorim pemën me 5000 hapa, mesatarja e $n$ dhe $n+1$, si ``të vërtetën''.
+\end{frame}
+
+\begin{frame}{Dy korrigjime}
+  \begin{enumerate}
+    \item \textbf{Mesatarja}: $\hat V=\tfrac12\big(V^{(n)}+V^{(n+1)}\big)$: gabimet me shenja të kundërta anulohen.
+    \item \textbf{Ndryshorja kontrolluese} (\emph{control variate}):
+      \[ \hat P_A=P_A^{\text{pema}}+\big(P_E^{\text{BS}}-P_E^{\text{pema}}\big). \]
+      Ideja: pema bën të njëjtin gabim për europianin dhe amerikanin; gabimi i europianit dihet.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Krahasimi i korrigjimeve}
+<<w11h5-corr>>=
+cmp5 <- t(sapply(c(25, 50, 100, 200), function(n) {
+  a <- crr_tree(100, 100, 0.25, 0.03, 1, n, TRUE, TRUE); e <- crr_tree(100, 100, 0.25, 0.03, 1, n, TRUE)
+  c(n = n, raw = a - ref5, average = (a + crr_tree(100, 100, 0.25, 0.03, 1, n + 1, TRUE, TRUE)) / 2 - ref5,
+    control_variate = a + (P0 - e) - ref5)
+}))
+round(cmp5, 4)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> \textbf{Mesatarja} e përgjysmon gabimin në mënyrë të qëndrueshme, për çdo $n$.
+    \item<2-> \textbf{Ndryshorja kontrolluese} ndihmon shumë për disa $n$ (p.sh.\ $n=25$), por jo gjithmonë: gabimi i pemës për amerikanin dhe europianin nuk është saktësisht i njëjtë.
+    \item<3-> Mësimi: çdo ``truk'' numerik duhet testuar kundrejt një reference, jo pranuar me besim.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w11gab5]{Gjej gabimin}
+<<w11h5-bug>>=
+cv_bad <- function(n) {
+  a <- crr_tree(100, 100, 0.25, 0.03, 1, n, TRUE, TRUE)
+  e <- crr_tree(100, 100, 0.25, 0.03, 1, n, TRUE, TRUE)    # European tree price
+  a + (P0 - e)
+}
+c(cv_bad = cv_bad(50), bs_european_put = P0, reference = ref5)
+@
+  \small Rezultati është saktësisht çmimi Black--Scholes i europianit. Pse?
+  \hfill\shkoTe{w11zgjGab5}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w11ush5b]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    Një \textbf{call dixhital} paguan 1 lek nëse $S_T>K$. Black--Scholes: $e^{-rT}\Phi(d_2)$.
+    \begin{enumerate}
+      \item Shkruaj \texttt{crr\_digital(n)} me formulën binomiale (\texttt{dbinom()}).
+      \item Llogarit gabimin për $n=100,101,200,201$. A konvergjon më mirë apo më keq se call-i i zakonshëm?
+      \item Pse? (Ndihmë: payoff-i ka një \textbf{kërcim} në $K$, jo vetëm një kënd.)
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh5b}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Tri pemë\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{CRR, Jarrow--Rudd, forward\Zgj}
+<<w11h5-three, echo=FALSE, fig.height=2.7>>=
+nn6 <- 10:200
+tree6 <- function(n, ...) unname(binomopt(100, 100, 0.25, 0.03, 1, 0, nstep = n, american = FALSE, ...))
+d6 <- data.frame(n = rep(nn6, 3),
+  e = c(sapply(nn6, tree6, crr = TRUE), sapply(nn6, tree6, jarrowrudd = TRUE), sapply(nn6, tree6)) - C0,
+  tree = rep(c("CRR", "Jarrow-Rudd", "forward"), each = length(nn6)))
+ggplot(d6, aes(n, e, colour = tree)) + geom_hline(yintercept = 0, colour = "grey50") + geom_line() +
+  scale_colour_manual(values = c("#2C5AA0", "#15803D", "#E67E22")) + coord_cartesian(ylim = c(-0.15, 0.15)) +
+  labs(x = "n", y = "pema - Black-Scholes", colour = NULL) + th + theme(legend.position = "top")
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?\Zgj}
+  \begin{itemize}
+    \item<1-> Të tri pemët konvergjojnë te Black--Scholes. CRR dhe Jarrow--Rudd luhaten pothuajse njësoj.
+    \item<2-> Pema forward ka këtu gabim mesatar më të vogël (rreth 0.02 kundrejt 0.04 për $n=10$--$200$), por luhatje më të çrregullt.
+    \item<3-> Nuk ka ``fitues'' absolut: për punë praktike, CRR me mesataren e $n$ dhe $n+1$ mjafton.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w11ndr5]{Ndrysho parametrin: $n$ dhe saktësia e kërkuar}
+<<w11h5-need>>=
+cr5 <- sapply(10:1001, crr)                                  # n = 10, ..., 1001
+e5 <- abs((cr5[-length(cr5)] + cr5[-1]) / 2 - C0)            # average of n and n + 1
+need5 <- sapply(c(0.01, 0.005, 0.001), function(tol) (10:1000)[max(which(e5 >= tol)) + 1])
+setNames(need5, c("tol_0.01", "tol_0.005", "tol_0.001"))
+@
+  \small Numri i hapave nga i cili mesatarja $\tfrac12(V^{(n)}+V^{(n+1)})$ e call-it mbetet \textbf{gjithmonë} brenda tolerancës.
+  \hfill\shkoTe{w11zgjNdr5}{Interpretimi}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si gjendet $S^*(t)$ nga pema?
+    \item Me çfarë ritmi bie gabimi i pemës? Po ai i Monte Carlo?
+    \item Pse mesatarja e $n$ dhe $n+1$ e zvogëlon gabimin?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) nyja më e lartë ku $K-S>$ vlera e vazhdimit, në çdo kolonë; (2) $1/n$; $1/\sqrt n$;
+  (3) gabimet për $n$ çift dhe tek kanë shenja të kundërta.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 5}
+  \begin{itemize}
+    \item $S^*(t)$: rritet drejt $K$; ngrihet me $r$, ulet me $\sigma$.
+    \item Gabimi i CRR $\approx c/n$, me luhatje; referenca: pema me 5000 hapa.
+    \item Mesatarja $n$, $n+1$: përgjysmim i qëndrueshëm; ndryshorja kontrolluese: e dobishme, por jo gjithmonë.
+    \item CRR, Jarrow--Rudd, forward: të gjitha konvergjojnë; asnjëra nuk është më e mira në çdo rast.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 6}
+    Rast studimi: garancia me të drejtë anulimi, me $\hat\sigma$ nga të dhënat dhe vdekshmërinë HLD 2011.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 5)}
+  \small
+  \begin{itemize}
+    \item Dokumentacioni i paketës \Rkey{derivmkts}: \texttt{binomopt()} (\texttt{crr}, \texttt{jarrowrudd}, \texttt{returntrees}).
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: ndryshorja kontrolluese për pemët.
+    \item R.~A.~Jarrow, A.~Rudd, \emph{Option Pricing}, Irwin, 1983.
+  \end{itemize}
+\end{frame}
