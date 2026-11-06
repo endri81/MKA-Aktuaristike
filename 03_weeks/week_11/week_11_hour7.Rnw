@@ -1,0 +1,291 @@
+% ============================================================
+%  Java 11 · Ora 7 — Konsolidim
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kuizi i ditës}
+% ------------------------------------------------------------
+
+\begin{frame}{Kuizi: si provimi përfundimtar}
+  \begin{itemize}
+    \item<1-> Provimi: \textbf{15\%} pyetje teorike, \textbf{85\%} ushtrime.
+    \item<2-> Kuizi i sotëm:
+      \begin{itemize}
+        \item 2 pyetje teorike (T1--T2);
+        \item 8 ushtrime (U1--U8): gjashtë pa ndihmën e PC, dy në R.
+      \end{itemize}
+    \item<3-> 30 minuta punë individuale, pastaj kontroll bashkë.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Vlerat e nevojshme: $e^{0.1}=1.105171$, \; $e^{-0.1}=0.904837$, \; $e^{0.01}=1.010050$.\end{Keshille}}
+\end{frame}
+
+\begin{frame}[label=w11qT1]{T1 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Në modelin CRR, cila nga këto është e vërtetë?
+    \begin{enumerate}
+      \item[A)] $q$ varet nga kthimi i pritur $\mu$ i aksionit.
+      \item[B)] $u=e^{\sigma\sqrt{\Delta t}}$ dhe $d=1/u$, prandaj pema rikombinohet.
+      \item[C)] Pas $n$ hapash ka $2^n$ nyje të ndryshme.
+      \item[D)] Pema jep çmimin e saktë Black--Scholes për çdo $n$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w11sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qT2]{T2 · Teori}
+  \begin{Parashiko}[(zgjedhje e shumëfishtë)]
+    Pse në pemë një call amerikan mbi aksion pa dividendë nuk ushtrohet kurrë herët?
+    \begin{enumerate}
+      \item[A)] Sepse $q<0.5$.
+      \item[B)] Sepse vlera e vazhdimit është gjithmonë $\ge S-Ke^{-r\Delta t}>S-K$.
+      \item[C)] Sepse pema nuk lejon ushtrim para maturimit.
+      \item[D)] Sepse call-i ka $\Delta<1$.
+    \end{enumerate}
+  \end{Parashiko}
+  \shkoTe{w11sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU1]{U1 · Një hap}
+  \begin{Ushtrim}[($S_0=50$; $u=1.2$, $d=0.9$; $R=1.03$ për hap; call me $K=50$)]
+    \begin{enumerate}
+      \item Llogarit $\Delta$ dhe $B$ të portofolit riprodhues.
+      \item Llogarit $C_0$ dhe kontrolloje me $q$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU2]{U2 · Parametrat CRR}
+  \begin{Ushtrim}[($\sigma=20\%$, $r=4\%$, $T=0.5$, $n=2$)]
+    \begin{enumerate}
+      \item Llogarit $\Delta t$, $u$, $d$.
+      \item Llogarit $q$.
+      \item Shkruaj çmimet e aksionit në tri nyjet e maturimit për $S_0=100$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU3]{U3 · Put-i europian në pemë}
+  \begin{Ushtrim}[(pema e U2, $K=100$)]
+    \begin{enumerate}
+      \item Llogarit payoff-et e put-it në maturim.
+      \item Llogarit $P_u$, $P_d$ dhe $P_0$ me induksion prapa.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU4]{U4 · Put-i amerikan}
+  \begin{Ushtrim}[(pema e U2, $K=100$)]
+    \begin{enumerate}
+      \item A ushtrohet put-i amerikan herët në ndonjë nyje? Ku?
+      \item Llogarit $P_A$ dhe primën e ushtrimit të hershëm.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU4}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU5]{U5 · Delta nga pema}
+  \begin{Ushtrim}[(put-i europian i U3)]
+    \begin{enumerate}
+      \item Llogarit $\Delta_0$ nga nyjet e hapit 1.
+      \item Kompania ka shitur 1000 put. Sa aksione duhet të blejë ose të shesë për mbrojtje?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU5}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU6]{U6 · Një hap me vdekshmëri}
+  \begin{Ushtrim}[(fondi $F_0=100$; $u=1.2$, $d=0.9$, $R=1.03$; mbijetesa $p=0.98$)]
+    Në fund të hapit: nëse klienti është gjallë, merr $\max(F_1,100)$; nëse ka vdekur, trashëgimtarët marrin vetëm $F_1$.
+    \begin{enumerate}
+      \item Llogarit $q$ dhe vlerën sot $V_0$ të pagesave.
+      \item Sa vlen garancia (diferenca nga $F_0=100$)?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU6}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU7]{U7 · Në R}
+  \begin{Ushtrim}
+    Put amerikan: $S_0=K=100$, $\sigma=30\%$, $r=5\%$, $T=2$.
+    \begin{enumerate}
+      \item Llogarit çmimin me \texttt{crr\_tree()} dhe \texttt{binomopt(..., crr = TRUE)} me $n=400$ dhe mesataren $n$, $n+1$.
+      \item Gjej kufirin e ushtrimit $S^*(1)$ me \texttt{crr\_boundary()}.
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU7}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w11qU8]{U8 · Në R}
+  \begin{Ushtrim}
+    ``Kursimi Plus Jetë'' (Ora 6), me ndëshkim $c=10\%$ dhe tarifë $m=2\%$.
+    \begin{enumerate}
+      \item Llogarit $V_0$ me dhe pa anulim racional.
+      \item A fiton kompania tani? Çfarë do t'i rekomandonit?
+    \end{enumerate}
+  \end{Ushtrim}
+  \shkoTe{w11sU8}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Gabimet e zakonshme}
+% ------------------------------------------------------------
+
+\begin{frame}{Klinika e gabimeve (1/2): teoria}
+  \begin{enumerate}
+    \item $q$ me $\mu$ në vend të $r$.
+    \item $\max(\text{intrinsike},\text{vazhdimi})$ vetëm në $t=0$, jo në çdo nyje.
+    \item Probabiliteti vjetor i mbijetesës në çdo hap mujor, pa e ngritur në fuqinë $\Delta t$.
+    \item Pema me pak hapa si ``përgjigje e saktë'': gabimi është $\approx c/n$ dhe luhatet.
+    \item Tarifa e fondit e harruar: duhet si dividend te $q$.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Klinika e gabimeve (2/2): R}
+  \begin{enumerate}
+    \item \texttt{binomopt()} pa \texttt{crr = TRUE}: pemë forward, jo CRR.
+    \item \texttt{binomopt()} kthen një vlerë me emër: \texttt{unname()} para \texttt{\textbackslash Sexpr}.
+    \item Indekset e kundërta: \texttt{V[-1]} (lart) dhe \texttt{V[-(i + 2)]} (poshtë).
+    \item \texttt{l\_x} në R: elementi \texttt{a + 1} është mosha $a$.
+    \item Ndryshorja kontrolluese me dy çmime amerikane: kthen vetëm Black--Scholes.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w11qGab7]{Gjej gabimin: raundi i shpejtë}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{q <- (exp(mu * dt) - d) / (u - d)}
+    \item[(b)] \texttt{q <- (exp((r - m) * dt) - d) / (u - d)} \;(fond me tarifë $m$)
+    \item[(c)] \texttt{p <- lx[x + 2] / lx[x + 1]} \;(mbijetesa për një hap mujor)
+  \end{enumerate}
+  \vfill\shkoTe{w11sGab7}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesë}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesë (1/3): formula}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      $u=e^{\sigma\sqrt{\Delta t}}$, \; $d=1/u$ & $q=\dfrac{e^{(r-\delta)\Delta t}-d}{u-d}$ \\
+      $V_{i,j}=e^{-r\Delta t}\big[qV_{i+1,j+1}+(1-q)V_{i+1,j}\big]$ & amerikan: $\max(h,\cdot)$ \\
+      $\Delta=\dfrac{V_u-V_d}{S_u-S_d}$ & $\Theta\approx\dfrac{V_{2,1}-V_{0,0}}{2\Delta t}$ \\
+      $V_0=e^{-rT}\sum_j\binom nj q^j(1-q)^{n-j}h(S_0u^jd^{n-j})$ & gabimi $\approx c/n$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesë (2/3): R}
+  \begin{center}
+    \small
+    \begin{tabular}{ll}
+      \toprule
+      Funksioni & Çfarë jep \\
+      \midrule
+      \texttt{binomopt(s, k, v, r, tt, d, nstep, ..., crr = TRUE)} & çmimi CRR \\
+      \texttt{binomopt(..., returntrees = TRUE)} & \texttt{stree}, \texttt{exertree}, \ldots \\
+      \texttt{binomopt(..., returnparams = TRUE)} & \texttt{up}, \texttt{dn}, \texttt{p}, \texttt{h} \\
+      \texttt{binomplot(...)} & vizatimi i pemës \\
+      \texttt{dbinom(j, n, q)} & probabilitetet binomiale \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fletë-kujtesë (3/3): kodi tipik}
+<<w11h7-cheat, eval=FALSE>>=
+dt <- T / n; u <- exp(sig * sqrt(dt)); d <- 1 / u; q <- (exp(r * dt) - d) / (u - d)
+V <- pmax(K - S * u^(0:n) * d^(n:0), 0)                         # put payoff
+for (i in (n - 1):0) {
+  V <- exp(-r * dt) * (q * V[-1] + (1 - q) * V[-(i + 2)])
+  V <- pmax(V, K - S * u^(0:i) * d^(i:0))                       # American
+}
+(V + crr_tree(S, K, sig, r, T, n + 1, TRUE, TRUE)) / 2          # average n, n + 1
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Detyrë shtëpie}
+% ------------------------------------------------------------
+
+\begin{frame}{Detyrë shtëpie (para Javës 12)}
+  \begin{enumerate}
+    \item Shto në \texttt{crr\_tree()} dividendin e vazhdueshëm \texttt{delta} dhe kontrolloje me \texttt{binomopt(..., d = delta)}.
+      Për çfarë $\delta$ fillon ushtrimi i hershëm i call-it amerikan?
+    \item Vizato $V_0$ e ``Kursimi Plus Jetë'' si funksion i $\sigma$ (15\%--35\%), me dhe pa anulim racional.
+    \item Llogarit Delta e kontratës nga pema dhe sa njësi fondi duhen për mbrojtje.
+  \end{enumerate}
+  \small Dorëzim: një skript R i riprodhueshëm dhe një faqe me interpretim.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 12}
+% ------------------------------------------------------------
+
+\begin{frame}{Java 12: përsëritja}
+  \begin{itemize}
+    \item<1-> Ushtrime të tipit të provimit, me përzierjen 15\% teori / 85\% ushtrime.
+    \item<2-> Lidhja e të gjitha javëve: tabela jete $\to$ prime dhe rezerva $\to$ dëmet $\to$ opsionet.
+    \item<3-> Punëtori për projektin e kursit: detyra e jetës dhe detyra e jo-jetës.
+    \item<4-> Klinika e gabimeve më të shpeshta të semestrit.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint i ditës}
+  \begin{enumerate}
+    \item Si llogaritet $q$ dhe pse nuk varet nga $\mu$?
+    \item Si ndryshon induksioni prapa për opsionin amerikan?
+    \item Pse pema është mjeti i duhur për kontratat me anulim?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $q=(e^{r\Delta t}-d)/(u-d)$, nga riprodhimi me bankën; (2) $\max$ me vlerën intrinsike në çdo nyje;
+  (3) anulimi është vendim gjatë jetës së kontratës (opsion amerikan/bermudian) pa formulë të mbyllur.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Javës 11}
+  \begin{itemize}
+    \item Riprodhimi në një hap; parametrat CRR; formula binomiale. \LO{K3}
+    \item \texttt{crr\_tree()} nga zero $=$ \texttt{binomopt(..., crr = TRUE)}. \LO{S2}
+    \item Amerikani: $\max$ në çdo nyje; kufiri $S^*(t)$; Greeks nga pema. \LO{K3}
+    \item Konvergjenca $\approx c/n$; mesatarja $n$, $n+1$. \LO{K3}
+    \item ``Kursimi Plus Jetë'': garanci, vdekje dhe anulim në një pemë mujore. \LO{C3}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Cox, S.~A.~Ross, M.~Rubinstein (1979), \emph{Journal of Financial Economics}.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+    \item Të dhënat: \texttt{stock\_prices\_gbm\_synthetic.csv}, \texttt{mortality\_table\_synthetic.csv},
+      \texttt{lapse\_policies\_synthetic.csv} (sintetike); \texttt{albania\_lifetables\_HLD\_1950\_2011.csv} (reale, HLD).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}
