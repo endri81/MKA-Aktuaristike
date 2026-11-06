@@ -1,0 +1,249 @@
+% ============================================================
+%  Java 12 · Ora 7 — Konsolidim: gabimet, fletë-kujtesa, projekti
+% ============================================================
+\section{Konsolidim}
+
+\begin{frame}{Ora 7 · Konsolidim}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pyetje teorike (15\%)}
+% ------------------------------------------------------------
+
+\begin{frame}{Pyetjet teorike të provimit}
+  \begin{itemize}
+    \item<1-> 15\% e provimit: pyetje të shkurtra mbi temat e leksioneve.
+    \item<2-> Përgjigje e mirë: \textbf{përkufizim} $+$ \textbf{formula} $+$ \textbf{një fjali interpretim}.
+    \item<3-> Katër pyetje stërvitore në slide-et e ardhshme: 2 minuta secila.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w12qT1]{T1}
+  \begin{Parashiko}[(përgjigje e shkurtër)]
+    Shpjego pse Chain-Ladder përdor faktorë të \textbf{peshuar me vëllimin} dhe jo mesataren e thjeshtë të raporteve.
+  \end{Parashiko}
+  \vfill\shkoTe{w12sT1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w12qT2]{T2}
+  \begin{Parashiko}[(përgjigje e shkurtër)]
+    Çfarë mat faktori i kredibilitetit $Z$? Pse $Z\to1$ kur vëllimi i kontratës rritet?
+  \end{Parashiko}
+  \vfill\shkoTe{w12sT2}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w12qT3]{T3}
+  \begin{Parashiko}[(përgjigje e shkurtër)]
+    Përkufizo rezervën prospektive $_tV$ dhe shpjego pse ajo është 0 në fillim të një kontrate me prime neto.
+  \end{Parashiko}
+  \vfill\shkoTe{w12sT3}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w12qT4]{T4}
+  \begin{Parashiko}[(përgjigje e shkurtër)]
+    Pse çmimi Black--Scholes nuk varet nga kthimi i pritur $\mu$ i aksionit?
+  \end{Parashiko}
+  \vfill\shkoTe{w12sT4}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{10 gabimet e semestrit}
+% ------------------------------------------------------------
+
+\begin{frame}{10 gabimet më të shpeshta (1/2): teoria}
+  \begin{enumerate}
+    \item<1-> Norma vjetore me këste mujore (\texttt{tvm}, Java 2).
+    \item<2-> Frekuenca ``për dëm'' me ashpërsi ``për pagesë'' (Java 3).
+    \item<3-> Trekëndësh inkremental në \texttt{MackChainLadder()} (Java 4).
+    \item<4-> $_TE_x\times$ put: skontim i dyfishtë (Javët 8, 10).
+    \item<5-> $\mu$ në vend të $r$: në formulë, në simulim, në $q$ (Javët 10--11).
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{10 gabimet më të shpeshta (2/2): R}
+  \begin{enumerate}
+    \setcounter{enumi}{5}
+    \item<1-> Indeksi i moshës: \texttt{qx[65]} është mosha 64 (Javët 5--7, 11).
+    \item<2-> \texttt{IAxn}, \texttt{DAxn}, \texttt{Axyzn} pa \texttt{n} (Javët 6--7).
+    \item<3-> \texttt{binomopt()} pa \texttt{crr = TRUE}; emrat e kthyer pa \texttt{unname()} (Javët 9--11).
+    \item<4-> Njësitë e \texttt{greeks()}: Vega/Rho për 1\%, Theta për ditë (Java 10).
+    \item<5-> \texttt{ifelse()} me një kusht; \texttt{NA} pa \texttt{na.rm} (Javët 1, 10).
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=w12qG1]{Gjej gabimin: raundi i shpejtë (1/2)}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{pmt(amt = 1e6, maturity = 120, rate = 0.06)} \;(kredi 10-vjeçare, 6\% në vit, këste mujore)
+    \item[(b)] \texttt{MackChainLadder(incr2cum(tri\_incr))}
+    \item[(c)] \texttt{Exn(t, 55, 10) * bsput(100, 100, 0.25, 0.03, 10, 0)} \;(GMMB)
+  \end{enumerate}
+  \vfill\shkoTe{w12sG1}{Shiko zgjidhjen}
+\end{frame}
+
+\begin{frame}[label=w12qG2]{Gjej gabimin: raundi i shpejtë (2/2)}
+  Cili rresht është i saktë?
+  \begin{enumerate}
+    \item[(a)] \texttt{IAxn(tM, 40)} \;(sigurim rritës 20-vjeçar)
+    \item[(b)] \texttt{q <- (exp(r * dt) - d) / (u - d)}
+    \item[(c)] \texttt{theta\_year <- greeks(bscall(...))["Theta", 1]}
+  \end{enumerate}
+  \vfill\shkoTe{w12sG2}{Shiko zgjidhjen}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Fletë-kujtesa e kursit}
+% ------------------------------------------------------------
+
+\begin{frame}{Fletë-kujtesa (1/3): baza dhe jo-jeta}
+  \begin{center}
+    \scriptsize
+    \begin{tabular}{lll}
+      \toprule
+      Java & Detyra & R \\
+      \midrule
+      1 & riprodhueshmëria & \texttt{set.seed()}, skripte, \Rkey{ggplot2} \\
+      2 & përshtatja; TVM & \texttt{fitdist()}, \texttt{gofstat()}; \texttt{pmt()}, \texttt{npv()}, \texttt{irr()} \\
+      3 & dëmet agregate & \texttt{discretize()}, \texttt{aggregateDist()}, \texttt{VaR()}, \texttt{CTE()} \\
+      4 & rezervat & \texttt{as.triangle()}, \texttt{MackChainLadder()}, \texttt{BootChainLadder()} \\
+      4 & kredibiliteti & \texttt{cm(\textasciitilde contract, data, ratios, weights)}, \texttt{predict()} \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesa (2/3): jeta}
+  \begin{center}
+    \scriptsize
+    \begin{tabular}{lll}
+      \toprule
+      Java & Detyra & R (\Rkey{lifecontingencies}) \\
+      \midrule
+      5 & tabela & \texttt{new("actuarialtable", x, lx, interest)}; \texttt{qxt()}, \texttt{pxt()}, \texttt{exn()} \\
+      5 & sigurime, anuitete & \texttt{Axn()}, \texttt{axn()}, \texttt{Exn()}, \texttt{AExn()} \\
+      6 & disa jetë; SOA & \texttt{axyzn(list(t1, t2), c(x, y), status)}; \texttt{soa08Act} \\
+      7 & rritës/zbritës & \texttt{IAxn(t, x, n)}, \texttt{DAxn(t, x, n)} (gjithmonë me \texttt{n}) \\
+      7 & primi, rezerva & \texttt{S * Axn() / axn()}; $_tV=SA_{x+t}-P\ddot a_{x+t}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Fletë-kujtesa (3/3): financa}
+  \begin{center}
+    \scriptsize
+    \begin{tabular}{lll}
+      \toprule
+      Java & Detyra & R (\Rkey{derivmkts}) \\
+      \midrule
+      8 & $\hat\mu$, $\hat\sigma$; parity & \texttt{diff(log(S))}, \texttt{sd() * sqrt(252)} \\
+      9 & kufijtë, amerikani & \texttt{binomopt(..., american = TRUE, returntrees = TRUE)} \\
+      10 & BS, Greeks, IV & \texttt{bscall()}, \texttt{bsput()}, \texttt{greeks()}, \texttt{bscallimpvol()} \\
+      11 & CRR & \texttt{binomopt(..., crr = TRUE)}; \texttt{crr\_tree()} nga zero \\
+      10--11 & garancitë & \texttt{tpx * U * bsput(..., d = fee)}; pemë me vdekshmëri \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Punëtori: projekti i kursit}
+% ------------------------------------------------------------
+
+\begin{frame}{Projekti i kursit}
+  \begin{itemize}
+    \item<1-> Dy detyra: një për sigurimet e \textbf{jetës} dhe një për sigurimet e \textbf{jo-jetës}.
+    \item<2-> Prezenca në orët e projektit: 100\%.
+    \item<3-> Teksti i detyrave jepet nga pedagogu; këtu shohim \textbf{si} duhet ndërtuar raporti.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Struktura e raportit}
+  \begin{enumerate}
+    \item \textbf{Problemi}: çfarë vlerësohet, për kë, me çfarë qëllimi (1 paragraf).
+    \item \textbf{Të dhënat}: burimi, reale apo sintetike, kontrollet e cilësisë.
+    \item \textbf{Modeli dhe supozimet}: formulat, parametrat, pse janë zgjedhur.
+    \item \textbf{Rezultatet}: tabela dhe grafikë me njësi; ``vlerësimi kundrejt së vërtetës'' kur dihet.
+    \item \textbf{Ndjeshmëria}: 2--3 parametrat më të rëndësishëm.
+    \item \textbf{Përfundimi}: një paragraf për menaxherin, pa formula.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Riprodhueshmëria}
+<<w12h7-skel, eval=FALSE>>=
+# project_life.R -- one script, runs top to bottom
+library(lifecontingencies); library(derivmkts); library(ggplot2)
+set.seed(2026)                                        # every simulation reproducible
+DATA <- "data"                                        # relative path, no C:/Users/...
+lt <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+## 1. data checks  2. model  3. results  4. sensitivity  5. figures
+sessionInfo()                                         # package versions at the end
+@
+  \small Testi: një koleg e ekzekuton skriptin në kompjuterin e vet dhe merr të njëjtat numra.
+\end{frame}
+
+\begin{frame}{Lista kontrolli para dorëzimit}
+  \begin{itemize}
+    \item[$\square$] Skripti ekzekutohet nga fillimi në fund pa gabime, në një sesion të ri R.
+    \item[$\square$] Çdo numër në raport vjen nga skripti (pa kopjim nga konsola).
+    \item[$\square$] Çdo dataset është etiketuar \textbf{reale} ose \textbf{sintetike}.
+    \item[$\square$] Njësitë (lekë, €, vite, \%) janë në çdo tabelë dhe grafik.
+    \item[$\square$] Të paktën një kontroll i pavarur (formulë kundrejt paketës, ose simulim).
+    \item[$\square$] Supozimet kryesore janë të shkruara qartë, me burim.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w12qP1]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(5 minuta)]
+    Dy raporte japin të njëjtin rezultat: ``rezerva $=$ 10.0 milionë €''.
+    \begin{enumerate}
+      \item Raporti A jep vetëm numrin. Raporti B jep edhe Mack SE dhe kuantilin 99.5\%. Cili është më i dobishëm, dhe pse?
+      \item Çfarë duhet të shtojë raporti B që një auditor ta riprodhojë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12sP1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Mbyllja}
+% ------------------------------------------------------------
+
+\begin{frame}{Çfarë mësuam këtë semestër}
+  \begin{itemize}
+    \item \textbf{K1--K3}: \Rkey{stats}, funksionet e përziera, modelet aktuariale në R.
+    \item \textbf{S1--S2}: analiza aktuariale dhe paketat e R-së për vlerësime.
+    \item \textbf{C1}: tabela vdekshmërie: nga $l_x$ te tabela aktuariale e plotë.
+    \item \textbf{C2}: rezervat teknike (IBNR) dhe matematike (prospektive).
+    \item \textbf{C3}: garancitë dhe opsionet në kontratat e sigurimit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Fjala e fundit}
+  \begin{itemize}
+    \item<1-> Një aktuar i mirë nuk është ai që di më shumë formula, por ai që \textbf{kontrollon} çdo numër.
+    \item<2-> R është mjeti; gjykimi mbetet i juaji: supozimet, ndjeshmëria, interpretimi.
+    \item<3-> Suksese në provim dhe në projekt!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Burime (Ora 7)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09: rezultatet e të nxënit, vlerësimi, literatura.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015.
+    \item E.~Raço, E.~Llagami, K.~Haxhi, O.~Zaçaj, \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021.
+    \item Dokumentacioni i paketave: \Rkey{tvm}, \Rkey{actuar}, \Rkey{ChainLadder}, \Rkey{lifecontingencies}, \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \centering
+  \vfill
+  {\Large\bfseries\color{uptblue} Faleminderit!}\par
+  \vspace{8pt}
+  {\color{uptmid} Pyetje: e.raco@fimif.edu.al}\par
+  \vspace{12pt}
+  \logoUPT\hspace{0.6cm}\logoFIMIF
+  \vfill
+\end{frame}

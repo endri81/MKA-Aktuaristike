@@ -1,0 +1,65 @@
+% ============================================================
+%  Java 12 · Ora 7 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12sT1]{Zgjidhja T1}
+  \begin{itemize}
+    \item $\hat f_j=\sum_iC_{i,j+1}/\sum_iC_{i,j}$ është mesatare e raporteve individuale $C_{i,j+1}/C_{i,j}$, \textbf{e peshuar me} $C_{i,j}$.
+    \item Vitet me më shumë dëme kanë raporte më të qëndrueshme: meritojnë më shumë peshë.
+    \item Nën modelin e Mack-ut, ky është vlerësuesi me variancë minimale.
+  \end{itemize}
+  \vfill\kthehu{w12qT1}
+\end{frame}
+
+\begin{frame}[label=w12sT2]{Zgjidhja T2}
+  \begin{itemize}
+    \item $Z$ është pesha që i jepet përvojës së vetë kontratës: $P=Z\bar X_i+(1-Z)\hat m$.
+    \item Bühlmann--Straub: $Z_i=w_i/(w_i+k)$, $k=\hat s^2/\hat a$.
+    \item Me $w_i$ të madh, mesatarja e kontratës ka pak zhurmë (varianca $\hat s^2/w_i$ e vogël): $Z_i\to1$.
+  \end{itemize}
+  \vfill\kthehu{w12qT2}
+\end{frame}
+
+\begin{frame}[label=w12sT3]{Zgjidhja T3}
+  \begin{itemize}
+    \item $_tV$ $=$ vlera sot e përfitimeve të ardhshme $-$ vlera sot e primeve të ardhshme, për një kontratë ende në fuqi në kohën $t$.
+    \item Primi neto zgjidhet me parimin e ekuivalencës: në $t=0$ të dy vlerat janë të barabarta, pra $_0V=0$.
+  \end{itemize}
+  \vfill\kthehu{w12qT3}
+\end{frame}
+
+\begin{frame}[label=w12sT4]{Zgjidhja T4}
+  \begin{itemize}
+    \item Opsioni mund të \textbf{riprodhohet} me aksion dhe obligacion (mbrojtje delta).
+    \item Pa arbitrazh, çmimi i opsionit $=$ kostoja e riprodhimit; kjo kosto varet nga $S_0$, $K$, $r$, $T$, $\sigma$.
+    \item $\mu$ është tashmë në çmimin sot $S_0$; llogaritja bëhet nën $\mathbb Q$, ku aksioni rritet me $r$.
+  \end{itemize}
+  \vfill\kthehu{w12qT4}
+\end{frame}
+
+\begin{frame}[label=w12sG1]{Zgjidhja: raundi 1}
+  \textbf{(b)} është i saktë: \texttt{MackChainLadder()} kërkon trekëndësh kumulativ.
+  \begin{itemize}
+    \item (a) Norma duhet mujore: \texttt{rate = 0.06 / 12}.
+    \item (c) Skontim i dyfishtë: duhet \texttt{pxt(t, 55, 10)}, jo \texttt{Exn()}.
+  \end{itemize}
+  \vfill\kthehu{w12qG1}
+\end{frame}
+
+\begin{frame}[label=w12sG2]{Zgjidhja: raundi 2}
+  \textbf{(b)} është i saktë: $q$ me normën pa rrezik $r$.
+  \begin{itemize}
+    \item (a) Mungon \texttt{n = 20}: horizonti i parazgjedhur nuk është 20 vjet.
+    \item (c) \texttt{greeks()} jep Theta-n për ditë: për vit shumëzo me 365.
+  \end{itemize}
+  \vfill\kthehu{w12qG2}
+\end{frame}
+
+\begin{frame}[label=w12sP1]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item \textbf{Raporti B}: menaxheri sheh edhe pasigurinë. Për Solvency II, kapitali lidhet me kuantilin, jo me mesataren.
+    \item Të dhënat (ose burimin e tyre), skriptin me \texttt{set.seed()}, versionet e paketave (\texttt{sessionInfo()}),
+      dhe supozimet (p.sh.\ \texttt{process.distr = "od.pois"}, numri i simulimeve).
+  \end{enumerate}
+  \vfill\kthehu{w12qP1}
+\end{frame}
