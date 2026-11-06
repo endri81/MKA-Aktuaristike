@@ -1,0 +1,57 @@
+% ============================================================
+%  Java 11 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w11zgjPar6]{Zgjidhja: Parashiko}
+  \begin{itemize}
+    \item Renditja: (a) $<$ (b) $<$ (c): \Sexpr{fmt(res6["fund_only"] / 1e6, 2)} $<$ \Sexpr{fmt(res6["plus_guar"] / 1e6, 2)} $<$ \Sexpr{fmt(res6["plus_surrender"] / 1e6, 2)} milionë.
+    \item Çdo e drejtë shtesë e klientit ka vlerë jonegative: vlera nuk mund të bjerë.
+    \item (b) dhe (c) janë \textbf{mbi} $P=10$ milionë: tarifa 1\% nuk i paguan garancitë.
+  \end{itemize}
+  \vfill\kthehu{w11par6}
+\end{frame}
+
+\begin{frame}[label=w11zgjGab6]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item Me $p_{50}$ vjetor në çdo muaj, mbijetesa 10-vjeçare bëhet $p^{120}=\Sexpr{fmt(p_bad^120, 4)}$ në vend të $\Sexpr{fmt(p_good^120, 4)}$.
+    \item Pra modeli ``vret'' rreth 9 herë më shumë klientë: shumë pagesa bëhen si përfitime vdekjeje, para kohe.
+    \item Rregulli: probabiliteti për një hap prej $\Delta t$ vjetësh është $p^{\Delta t}$ (forcë konstante brenda vitit).
+  \end{itemize}
+  \vfill\kthehu{w11gab6}
+\end{frame}
+
+\begin{frame}[label=w11zgjNdr6]{Interpretimi: Ndrysho parametrin}
+  \begin{itemize}
+    \item Asnjë kombinim nuk jep $V_0<10$: edhe me tarifë 2\% dhe ndëshkim 5\%, $V_0=\Sexpr{fmt(grid6[3, 3], 2)}$ milionë.
+    \item Tarifa ul $V_0$ më shumë se ndëshkimi: vepron çdo vit mbi gjithë fondin.
+    \item Dizajn i mundshëm: garanci më e ulët se 100\% e primit, ose anulim pa garanci ($G$ vetëm mbi fondin).
+      Ose kompania e mbron garancinë në treg (Java 10, Ora 5).
+  \end{itemize}
+  \vfill\kthehu{w11ndr6}
+\end{frame}
+
+<<w11h6-sol-65, include=FALSE>>=
+v65 <- c(HLD = kp_value(x = 65, lx = lx_hld), synthetic = kp_value(x = 65, lx = lx_syn))
+g50 <- kp_value(surrender = FALSE) - kp_value(guar = FALSE, surrender = FALSE)
+g65 <- kp_value(x = 65, surrender = FALSE) - kp_value(x = 65, guar = FALSE, surrender = FALSE)
+@
+
+\begin{frame}[label=w11zgjUsh6]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item $x=65$: $V_0=\Sexpr{fmt(v65["HLD"] / 1e6, 3)}$ milionë (HLD 2011) dhe \Sexpr{fmt(v65["synthetic"] / 1e6, 3)} milionë (sintetike).
+    \item Kostoja e garancive pa anulim: \Sexpr{fmt(g65 / 1e6, 3)} milionë në moshën 65, kundrejt \Sexpr{fmt(g50 / 1e6, 3)} në moshën 50.
+    \item Në moshën 65 më shumë klientë vdesin brenda 10 vjetëve, dhe garancia paguhet \textbf{më herët}.
+      Një put më i shkurtër vlen më pak: kostoja bie pak. Dy tabelat mbeten afër njëra-tjetrës edhe këtu.
+  \end{enumerate}
+  \vfill\kthehu{w11ush6}
+\end{frame}
+
+\begin{frame}[label=w11zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Një përzierje: disa klientë reagojnë ndaj tregut dhe normave, shumë anulojnë për nevoja personale.
+      Modeli realist kombinon anulimin ``bazë'' nga të dhënat me një pjesë dinamike.
+    \item Garanci më e ulët, tarifë më e lartë, ndëshkim që zbret me kohën, ose anulim pa garanci.
+    \item Sepse në një krizë shumë klientë dalin njëkohësisht: kompania duhet të shesë aktive me humbje (rreziku i likuiditetit).
+  \end{enumerate}
+  \vfill\kthehu{w11tps6}
+\end{frame}

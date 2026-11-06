@@ -31,7 +31,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 | 08 | R në financë, put–call parity | ✅ gati (332 slide) |
 | 09 | Opsionet europiane dhe amerikane | ✅ gati (326 slide) |
 | 10 | Black–Scholes · kolegium | ✅ gati (353 slide) |
-| 11 | Cox–Ross–Rubinstein (binomial) | 🔄 Ora 5 |
+| 11 | Cox–Ross–Rubinstein (binomial) | 🔄 Ora 6 |
 | 12 | Përsëritje, detyra e kursit | ⏳ |
 
 ## Kompilimi i një jave

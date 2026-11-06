@@ -1,0 +1,299 @@
+% ============================================================
+%  Java 11 · Ora 6 — Rast studimi: kontratë jete me garanci dhe anulim
+% ============================================================
+\section{Rast studimi}
+
+\begin{frame}{Ora 6 · Rast studimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Kontrata}
+% ------------------------------------------------------------
+
+\begin{frame}{``Kursimi Plus Jetë''}
+  \begin{Shembull}[(kontratë fiktive)]
+    Një burrë 50 vjeç investon $P=10\,000\,000$ lekë në një fond, për $T=10$ vjet. Tarifa: $m=1\%$ në vit.
+    \begin{itemize}
+      \item \textbf{Maturimi} (nëse gjallë): $\max(F_T,P)$.
+      \item \textbf{Vdekja} në muajin $t$: $\max(F_t,P)$, paguhet në fund të muajit.
+      \item \textbf{Anulimi} në fund të çdo viti: $\max(F_t,G)$, me $G=(1-c)P$, $c=2\%$.
+    \end{itemize}
+  \end{Shembull}
+  \pause
+  \small Pyetja: sa është vlera sot e të gjitha pagesave ndaj klientit, $V_0$? Kompania merr $P$; nëse $V_0>P$, kontrata humbet.
+  \vfill\LO{C3}\;\LO{S1}
+\end{frame}
+
+\begin{frame}{Pse pemë, dhe jo Black--Scholes?}
+  \begin{itemize}
+    \item<1-> Garancia në maturim dhe në vdekje: put-e europiane (Java 10).
+    \item<2-> Anulimi në fund të çdo viti: opsion \textbf{bermudian}, nuk ka formulë.
+    \item<3-> Vdekshmëria ndryshon çdo vit; anulimi ``jo-racional'' ndodh çdo muaj.
+    \item<4-> Pema mban të gjitha këto në një cikël të vetëm induksioni prapa.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Një hap i pemës (një muaj)}
+  Në nyjen me fond $F$, në kohën $t_i$, me $p_i$ = probabiliteti mujor i mbijetesës:
+  \begin{align*}
+    \onslide<2->{c_i&=e^{-r\Delta t}\sum_{\text{lart, poshtë}}\mathbb Q(\cdot)\Big[\,p_i\,V_{i+1}+(1-p_i)\max(F_{i+1},P)\Big]\\}
+    \onslide<3->{V_i&=\begin{cases}\max\big(c_i,\;\max(F,G)\big) & \text{në fund të vitit (anulim)}\\ c_i & \text{përndryshe}\end{cases}}
+  \end{align*}
+  \onslide<4->{\small Fondi: $u=e^{\sigma\sqrt{\Delta t}}$, $d=1/u$, $q=\dfrac{e^{(r-m)\Delta t}-d}{u-d}$: tarifa si dividend (Ora 4). $\Delta t=1/12$, $n=120$.}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Të dhënat}
+% ------------------------------------------------------------
+
+<<w11h6-setup, include=FALSE>>=
+mt6  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
+hld6 <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"), check.names = FALSE)
+lp6  <- read.csv(file.path(DATA, "lapse_policies_synthetic.csv"))
+@
+
+\begin{frame}[fragile]{Vdekshmëria: HLD 2011 dhe tabela sintetike}
+<<w11h6-mort>>=
+h6 <- subset(hld6, Year1 == 2011 & Sex == 1)                 # males, abridged (5-year ages)
+lx_hld <- exp(approx(h6$Age, log(h6[["l(x)"]]), xout = 0:95)$y)   # log-linear interpolation
+lx_syn <- mt6$lx_male[match(0:95, mt6$age)]                  # element a + 1 = age a
+round(c(p10_50_HLD = lx_hld[61] / lx_hld[51], p10_50_synthetic = lx_syn[61] / lx_syn[51]), 4)
+@
+  \small HLD 2011 (\textbf{reale}) ka vetëm moshat 0, 1, 5, 10, \ldots: plotësojmë moshat e ndërmjetme me interpolim log-linear të $l_x$
+  (forcë konstante e vdekshmërisë brenda çdo intervali 5-vjeçar).
+\end{frame}
+
+\begin{frame}[fragile]{Anulimet: një vlerësim i thjeshtë}
+<<w11h6-lapse>>=
+lam6 <- sum(lp6$lapse) / sum(lp6$time_years)                # exponential MLE: events / exposure
+round(c(n_policies = nrow(lp6), lapses = sum(lp6$lapse), lambda = lam6,
+        annual_lapse_prob = 1 - exp(-lam6)), 4)
+@
+  \small \textbf{Sintetike}: e vërteta është Weibull me kovariata (README), jo konstante. Këtu na duhet vetëm një normë mesatare
+  për skenarin ``anulime jo-racionale'' (Zgjerim).
+\end{frame}
+
+\begin{frame}[fragile]{$\hat\sigma$ dhe parametrat}
+<<w11h6-par>>=
+sig6 <- sig_hat                                               # Hour 1, from stock_prices
+c(sigma = round(sig6, 4), r = 0.03, fee = 0.01, penalty = 0.02, steps_per_year = 12)
+@
+  \small $r=3\%$: supozim ilustrues, si në Javët 8--10.
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Modeli në R}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Funksioni \texttt{kp\_value()} (1/2)}
+<<w11h6-fun, eval=FALSE>>=
+kp_value <- function(P = 1e7, x = 50, T = 10, sig = sig6, r = 0.03, m = 0.01, c = 0.02,
+                     lx = lx_hld, guar = TRUE, surrender = TRUE, mort = TRUE, lapse = 0) {
+  spy <- 12; n <- T * spy; dt <- 1 / spy
+  u <- exp(sig * sqrt(dt)); d <- 1 / u; q <- (exp((r - m) * dt) - d) / (u - d)
+  disc <- exp(-r * dt); G <- (1 - c) * P
+  Fv  <- function(i) P * u^(0:i) * d^(i:0)                    # fund values at step i
+  pay <- function(F, K) if (guar) pmax(F, K) else F           # guaranteed or plain
+  V <- pay(Fv(n), P)                                          # maturity, alive
+  for (i in (n - 1):0) {
+    k <- floor(i * dt)                                        # policy year
+    p <- if (mort) (lx[x + k + 2] / lx[x + k + 1])^dt else 1  # monthly survival
+    D <- pay(Fv(i + 1), P)                                    # death benefit at t_{i+1}
+@
+\end{frame}
+
+\begin{frame}[fragile]{Funksioni \texttt{kp\_value()} (2/2)}
+<<w11h6-fun2, eval=FALSE>>=
+    V <- disc * (q * (p * V[-1] + (1 - p) * D[-1]) +
+                 (1 - q) * (p * V[-(i + 2)] + (1 - p) * D[-(i + 2)]))
+    SV <- pay(Fv(i), G)                                       # surrender value
+    w <- 1 - (1 - lapse)^dt                                   # non-rational monthly lapses
+    V <- (1 - w) * V + w * SV
+    if (surrender && i > 0 && i %% spy == 0) V <- pmax(V, SV) # rational, at year ends
+  }
+  V
+}
+@
+  \small Cikli i Orës 3, me tre shtesa: vdekshmëria (\texttt{p}), anulimi racional (\texttt{pmax}), anulimi jo-racional (\texttt{w}).
+\end{frame}
+
+<<w11h6-fundef, include=FALSE>>=
+kp_value <- function(P = 1e7, x = 50, T = 10, sig = sig6, r = 0.03, m = 0.01, c = 0.02,
+                     lx = lx_hld, guar = TRUE, surrender = TRUE, mort = TRUE, lapse = 0) {
+  spy <- 12; n <- T * spy; dt <- 1 / spy
+  u <- exp(sig * sqrt(dt)); d <- 1 / u; q <- (exp((r - m) * dt) - d) / (u - d)
+  disc <- exp(-r * dt); G <- (1 - c) * P
+  Fv  <- function(i) P * u^(0:i) * d^(i:0)                    # fund values at step i
+  pay <- function(F, K) if (guar) pmax(F, K) else F           # guaranteed or plain
+  V <- pay(Fv(n), P)                                          # maturity, alive
+  for (i in (n - 1):0) {
+    k <- floor(i * dt)                                        # policy year
+    p <- if (mort) (lx[x + k + 2] / lx[x + k + 1])^dt else 1  # monthly survival
+    D <- pay(Fv(i + 1), P)                                    # death benefit at t_{i+1}
+    V <- disc * (q * (p * V[-1] + (1 - p) * D[-1]) +
+                 (1 - q) * (p * V[-(i + 2)] + (1 - p) * D[-(i + 2)]))
+    SV <- pay(Fv(i), G)                                       # surrender value
+    w <- 1 - (1 - lapse)^dt                                   # non-rational monthly lapses
+    V <- (1 - w) * V + w * SV
+    if (surrender && i > 0 && i %% spy == 0) V <- pmax(V, SV) # rational, at year ends
+  }
+  V
+}
+@
+
+\begin{frame}[label=w11par6]{Parashiko}
+  \begin{Parashiko}
+    Renditi nga më e vogla te më e madhja vlerën $V_0$ për:
+    \begin{enumerate}
+      \item[(a)] vetëm fondi (pa garanci, pa anulim);
+      \item[(b)] fondi + garancia në maturim dhe në vdekje;
+      \item[(c)] (b) + anulimi racional në fund të çdo viti.
+    \end{enumerate}
+    A do të jetë ndonjëra më e madhe se $P=10$ milionë?
+  \end{Parashiko}
+  \vfill\shkoTe{w11zgjPar6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rezultatet}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Ndërtimi shtresë pas shtrese}
+<<w11h6-res>>=
+res6 <- c(fund_only     = kp_value(guar = FALSE, surrender = FALSE),
+          plus_guar     = kp_value(surrender = FALSE),
+          plus_surrender = kp_value(),
+          no_mortality  = kp_value(mort = FALSE))
+round(rbind(value_mln = res6 / 1e6, vs_premium_pct = 100 * (res6 / 1e7 - 1)), 3)
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Vetëm fondi: $V_0=\Sexpr{fmt(res6["fund_only"] / 1e6, 3)}$ milionë: tarifa 1\% i jep kompanisë rreth $P(1-e^{-mT})\approx0.95$ milionë.
+    \item<2-> Garancitë kushtojnë \Sexpr{fmt((res6["plus_guar"] - res6["fund_only"]) / 1e6, 3)} milionë: \textbf{më shumë} se tarifa. Tashmë $V_0>P$.
+    \item<3-> Anulimi racional shton edhe \Sexpr{fmt((res6["plus_surrender"] - res6["plus_guar"]) / 1e6, 3)} milionë. Me $r=3\%$ dhe $\sigma\approx25\%$, kjo kontratë \textbf{humbet}.
+    \item<4-> Pse kaq shumë? Kur fondi rritet, klienti racional anulon për t'i shpëtuar tarifës; kur bie, mban garancinë.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,label=w11gab6]{Gjej gabimin}
+<<w11h6-bug>>=
+p_bad  <- lx_hld[52] / lx_hld[51]                  # annual survival, used every month
+p_good <- (lx_hld[52] / lx_hld[51])^(1 / 12)
+round(c(p_bad = p_bad, p_good = p_good, ten_year_bad = p_bad^120, ten_year_good = p_good^120), 4)
+@
+  \small Studenti përdor $p_{50}$ vjetor në çdo hap mujor. Çfarë ndodh me mbijetesën 10-vjeçare? Si ndikon në $V_0$?
+  \hfill\shkoTe{w11zgjGab6}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile,label=w11ndr6]{Ndrysho parametrin: tarifa dhe ndëshkimi}
+<<w11h6-grid>>=
+grid6 <- outer(c(0, 0.01, 0.02), c(0, 0.02, 0.05),
+               Vectorize(function(m, c) kp_value(m = m, c = c) / 1e6))
+dimnames(grid6) <- list(fee = c("0%", "1%", "2%"), penalty = c("0%", "2%", "5%"))
+round(grid6, 3)
+@
+  \small $V_0$ në milionë lekë, me anulim racional. Kompania fiton vetëm aty ku $V_0<10$. A ka të tilla?
+  \hfill\shkoTe{w11zgjNdr6}{Interpretimi}
+\end{frame}
+
+\begin{frame}[fragile]{HLD 2011 kundrejt tabelës sintetike}
+<<w11h6-tab>>=
+round(c(HLD_2011 = kp_value(lx = lx_hld), synthetic = kp_value(lx = lx_syn),
+        difference = kp_value(lx = lx_hld) - kp_value(lx = lx_syn)))
+@
+  \small Për një burrë 50 vjeç, dy tabelat japin pothuajse të njëjtin $V_0$: rreziku kryesor është tregu dhe sjellja e klientit.
+\end{frame}
+
+\begin{frame}[label=w11ush6]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta)]
+    \begin{enumerate}
+      \item Llogarit $V_0$ për një burrë 65 vjeç ($x=65$), me HLD 2011 dhe me tabelën sintetike.
+      \item Llogarit koston e garancive pa anulim: \texttt{kp\_value(x = 65, surrender = FALSE)} minus
+        \texttt{kp\_value(x = 65, guar = FALSE, surrender = FALSE)}. Krahasoje me $x=50$.
+      \item Pse vdekshmëria ka më shumë peshë në moshën 65?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Anulimet jo-racionale\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}[fragile]{Klientët realë\Zgj}
+<<w11h6-irr>>=
+lp_rate <- 1 - exp(-lam6)                                      # annual lapse probability
+round(c(rational_only = kp_value(), plus_5pct = kp_value(lapse = 0.05),
+        plus_data_rate = kp_value(lapse = lp_rate),
+        only_irrational = kp_value(surrender = FALSE, lapse = lp_rate)) / 1e6, 3)
+@
+  \begin{itemize}
+    \item Anulimet jo-racionale ndodhin edhe kur nuk ``duhet'': ulin vlerën e opsionit të anulimit racional.
+    \item Vetëm me anulime jo-racionale, $V_0$ është pothuajse sa pa anulim fare: kush del merr $\max(F,G)$, afër vlerës së vazhdimit.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11tps6]{Mendo -- diskuto me shokun -- ndaj}
+  \begin{Ushtrim}[(4 minuta)]
+    \begin{enumerate}
+      \item Cili skenar është më afër realitetit shqiptar: anulim racional, jo-racional, apo një përzierje?
+      \item Si do ta ndryshonit dizajnin e produktit që $V_0<P$ edhe me anulim racional?
+      \item Pse rregullatori (Solvency II) kërkon një skenar ``anulim masiv''?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjTps6}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Rregullimi dhe projekti}
+% ------------------------------------------------------------
+
+\begin{frame}{Lidhja me rregullimin dhe projektin}
+  \begin{itemize}
+    \item \textbf{Solvency II}: Best Estimate përfshin opsionet e klientit; kapitali për rrezikun e anulimit (lart, poshtë, masiv).
+    \item \textbf{IFRS 17}: flukset e ardhshme me supozime për anulimet; opsionet vlerësohen në mënyrë konsistente me tregun.
+    \item \textbf{Projekti i kursit} (detyra e jetës): mjetet janë të gjitha këtu: tabela jete, $\hat\sigma$, pema, ndjeshmëria.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Si futet vdekshmëria në një hap të pemës?
+    \item Pse anulimi racional e rrit kaq shumë vlerën e kontratës, kur ka tarifë?
+    \item Pse probabiliteti vjetor i mbijetesës duhet ngritur në fuqinë $\Delta t$?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $p_iV_{i+1}+(1-p_i)\times$ përfitimi i vdekjes; (2) klienti del kur fondi është i lartë dhe i shpëton tarifës;
+  (3) që mbijetesa për 12 hapa mujorë të jetë sa mbijetesa vjetore.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 6}
+  \begin{itemize}
+    \item ``Kursimi Plus Jetë'' në pemë mujore: maturim, vdekje, anulim vjetor.
+    \item Fondi vetëm: \Sexpr{fmt(res6["fund_only"] / 1e6, 2)} mln; me garanci: \Sexpr{fmt(res6["plus_guar"] / 1e6, 2)} mln; me anulim racional: \Sexpr{fmt(res6["plus_surrender"] / 1e6, 2)} mln.
+    \item Në asnjë kombinim tarife (0--2\%) dhe ndëshkimi (0--5\%) kontrata nuk fiton; vdekshmëria ka pak peshë në moshën 50.
+    \item Anulimet jo-racionale (nga të dhënat) e ulin vlerën e opsionit të anulimit.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 7}
+    Konsolidim: kuiz 15/85, klinika e gabimeve, fletë-kujtesa, pamje paraprake e Javës 12.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 6)}
+  \small
+  \begin{itemize}
+    \item Human Life-Table Database: \texttt{albania\_lifetables\_HLD\_1950\_2011.csv} (\textbf{reale}).
+    \item README i të dhënave: \texttt{mortality\_table\_synthetic.csv}, \texttt{lapse\_policies\_synthetic.csv},
+      \texttt{stock\_prices\_gbm\_synthetic.csv} (\textbf{sintetike}).
+    \item M.~R.~Hardy, \emph{Investment Guarantees}, Wiley: garancitë dhe anulimet.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: opsionet bermudiane në pemë.
+  \end{itemize}
+\end{frame}
