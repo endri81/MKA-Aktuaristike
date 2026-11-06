@@ -1,0 +1,51 @@
+% ============================================================
+%  Java 10 · Ora 6 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w10zgjPar6]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item \textbf{Ulet}: nëse klienti vdes para $T$, garancia në maturim nuk paguhet.
+    \item Me rreth $1-{}_{10}p_{45}=\Sexpr{fmt(100 * (1 - tp_hld(45, 10)), 1)}\%$: nga \Sexpr{fmt(put6)} në \Sexpr{fmt(V6["HLD_2011"])} lekë.
+    \item Pothuajse jo: $_{10}p_{45}$ = \Sexpr{fmt(tp_hld(45, 10), 4)} (HLD) kundrejt \Sexpr{fmt(tp_syn(45, 10), 4)} (sintetike).
+  \end{enumerate}
+  \vfill\kthehu{w10par6}
+\end{frame}
+
+\begin{frame}[label=w10zgjGab6]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item $_{10}E_{45}={}_{10}p_{45}\,e^{-rT}$ përmban skontimin.
+    \item Por \texttt{bsput()} është \textbf{tashmë} vlera sot: $e^{-rT}E^{\mathbb{Q}}[(K-F_T)^+]$.
+    \item Kodi skonton dy herë: $V_{\text{bad}}=V\cdot e^{-0.3}=\Sexpr{fmt(exp(-0.3), 3)}\,V$, pra \Sexpr{fmt(100 * (1 - exp(-0.3)))}\% më pak.
+  \end{itemize}
+  \small Rregulli: shumëzo vlerën e skontuar të opsionit me probabilitetin e mbijetesës, jo me faktorin e skontimit aktuarial.
+  \vfill\kthehu{w10gab6}
+\end{frame}
+
+\begin{frame}[label=w10zgjUsh6]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item Grua 45: $_{10}p_{45}=\Sexpr{fmt(tp_hld(45, 10, 2), 4)}$, \; $V=\Sexpr{fmt(tp_hld(45, 10, 2) * put6)}$ lekë.
+    \item Burrë 55: $_{10}p_{55}=\Sexpr{fmt(tp_hld(55, 10), 4)}$, \; $V=\Sexpr{fmt(tp_hld(55, 10) * put6)}$ lekë.
+    \item Mosha: diferenca \Sexpr{fmt(abs(tp_hld(55, 10) - tp_hld(45, 10)) * put6)} lekë, kundrejt \Sexpr{fmt(abs(tp_hld(45, 10, 2) - tp_hld(45, 10)) * put6)} lekë për gjininë.
+  \end{enumerate}
+  \small Kodi: \texttt{tp\_hld(45, 10, 2) * put6}; \; \texttt{tp\_hld(55, 10) * put6}.
+  \vfill\kthehu{w10ush6}
+\end{frame}
+
+\begin{frame}[label=w10zgjNdr6]{Interpretimi: Ndrysho parametrin}
+  \begin{itemize}
+    \item Tarifa 0\% $\to$ 2\%: vlera rritet nga \Sexpr{fmt(gr6$pct[1], 1)}\% në \Sexpr{fmt(gr6$pct[3], 1)}\% të primit (pa rritje të garantuar).
+    \item Garancia me rritje 2\% në vit ($K=\Sexpr{fmt(100 * 1.02^10, 1)}$): vlera bëhet \Sexpr{fmt(gr6$pct[5], 1)}\% e primit, me tarifë 1\%.
+    \item Mësimi: dizajni i produktit (tarifa, niveli i garancisë) ka efekt më të madh se pasiguria e $\hat\sigma$.
+  \end{itemize}
+  \vfill\kthehu{w10ndr6}
+\end{frame}
+
+\begin{frame}[label=w10zgjTps6]{Zgjidhja: Mendo -- diskuto -- ndaj}
+  \begin{enumerate}
+    \item Vdekshmëria: \textbf{po}, sipas ligjit të numrave të mëdhenj (vdekjet janë afërsisht të pavarura).
+      Tregu: \textbf{jo}, të 500 kontratat varen nga i njëjti fond.
+    \item Në një pandemi, vdekjet rriten dhe tregu bie njëkohësisht: GMDB paguan më shumë pikërisht kur fondi është i ulët.
+    \item Zakonisht kompania, e financuar me tarifën; pjesërisht me mbrojtje dinamike (Ora 5) ose risigurim.
+  \end{enumerate}
+  \vfill\kthehu{w10tps6}
+\end{frame}

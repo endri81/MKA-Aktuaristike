@@ -30,7 +30,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 | 07 | Sigurime rritëse/zbritëse, anuitete | ✅ gati (361 slide) |
 | 08 | R në financë, put–call parity | ✅ gati (332 slide) |
 | 09 | Opsionet europiane dhe amerikane | ✅ gati (326 slide) |
-| 10 | Black–Scholes · kolegium | 🔄 Ora 5 |
+| 10 | Black–Scholes · kolegium | 🔄 Ora 6 |
 | 11 | Cox–Ross–Rubinstein (binomial) | ⏳ |
 | 12 | Përsëritje, detyra e kursit | ⏳ |
 
