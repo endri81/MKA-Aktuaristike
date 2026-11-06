@@ -1,0 +1,61 @@
+% ============================================================
+%  Java 12 · Ora 1 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12zgjMC1]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{C)} Mediana është një kuantil, jo një pritje, dhe nuk ka skontim.
+  \begin{itemize}
+    \item A) $A^1_{x:\overline n|}=E[v^{K+1}\mathbf 1_{K<n}]$. \; B) $e^{-rT}E^{\mathbb Q}[(K-S_T)^+]$.
+    \item D) $a_{\overline n|}=\sum_t v^t$: pritje e një fluksi të sigurt.
+  \end{itemize}
+  \vfill\kthehu{w12mc1}
+\end{frame}
+
+\begin{frame}[label=w12zgjGab1]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item \textbf{Studenti B} ka zgjidhje të plotë: norma mujore $i=0.06/12$, $n=120$, rezultati me njësi, kontroll.
+    \item Studenti A llogarit një këst \textbf{vjetor} me normë vjetore: periudha e normës nuk përputhet me periudhën e pagesës.
+      Nuk ka as kontroll, as njësi.
+  \end{itemize}
+  \small R: \texttt{pmt(amt = 5e6, maturity = 120, rate = 0.005)} $=\Sexpr{fmt(pmt(amt = 5e6, maturity = 120, rate = 0.005), 2)}$.
+  \vfill\kthehu{w12gab1}
+\end{frame}
+
+\begin{frame}[label=w12zgjPar1]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item \texttt{10 200 30 400}: riciklim, \texttt{c(10, 100)} përsëritet.
+    \item \texttt{NA}: një \texttt{NA} e ``helmon'' mesataren; me \texttt{na.rm = TRUE}: 6.
+    \item \texttt{5}: \texttt{1:10 > 5} është logjik; \texttt{sum()} numëron \texttt{TRUE}.
+    \item \texttt{1 3 6 10}: funksioni është i vektorizuar.
+  \end{enumerate}
+  \vfill\kthehu{w12par1}
+\end{frame}
+
+\begin{frame}[label=w12zgjUsh1a]{Zgjidhja: Ushtrim 1}
+  \begin{enumerate}
+    \item $\text{NPV}=-1000+400\,(0.92593+0.85734+0.79383)=-1000+400\cdot2.5771=\mathbf{30.84}$.
+    \item NPV $>0$ me 8\% $\Rightarrow$ IRR $>8\%$: NPV bie kur norma rritet, dhe është 0 te IRR.
+    \item \texttt{npv(0.08, c(-1000, 400, 400, 400))} $=\Sexpr{fmt(npv(0.08, c(-1000, 400, 400, 400)), 2)}$; \;
+      \texttt{irr(c(-1000, 400, 400, 400))} $=\Sexpr{fmt(100 * irr(c(-1000, 400, 400, 400)), 2)}\%$.
+  \end{enumerate}
+  \vfill\kthehu{w12ush1a}
+\end{frame}
+
+\begin{frame}[label=w12zgjUsh1b]{Zgjidhja: Ushtrim 2}
+  \begin{enumerate}
+    \item $i=0.048/12=0.004$, $n=60$: \; $P=\dfrac{2\,000\,000\cdot0.004}{1-0.78676}=\dfrac{8000}{0.21324}=\mathbf{37\,516}$ lekë/muaj.
+    \item Interesi gjithsej: $60\cdot37\,516-2\,000\,000\approx\mathbf{250\,986}$ lekë.
+    \item Interesi në këstin e parë: $2\,000\,000\cdot0.004=8000$ lekë; principali: $37\,516-8000=29\,516$.
+  \end{enumerate}
+  \small R: \texttt{pmt(amt = 2e6, maturity = 60, rate = 0.004)} $=\Sexpr{fmt(pmt(amt = 2e6, maturity = 60, rate = 0.004), 2)}$.
+  \vfill\kthehu{w12ush1b}
+\end{frame}
+
+\begin{frame}[label=w12zgjUsh1c]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item 5\% e dëmeve janë Pareto, shumë larg trupit. Në shkallë log ato janë ``të largëta'': rritin shumë shpërndarjen ($\hat\sigma$), pak mesataren ($\hat\mu$).
+    \item Grafik: QQ-plot në shkallë log (slide-i pasardhës). Test: KS ose Anderson--Darling me \texttt{gofstat(fit1)}.
+    \item Lognormalja e vetme nënvlerëson kuantilet e larta: VaR 99.5\% dhe primet e risigurimit dalin shumë të ulëta.
+  \end{enumerate}
+  \vfill\kthehu{w12ush1c}
+\end{frame}

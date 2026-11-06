@@ -32,7 +32,7 @@ Titullari: Prof. Asoc. Dr. Endri Raço (e.raco@fimif.edu.al)
 | 09 | Opsionet europiane dhe amerikane | ✅ gati (326 slide) |
 | 10 | Black–Scholes · kolegium | ✅ gati (353 slide) |
 | 11 | Cox–Ross–Rubinstein (binomial) | ✅ gati (291 slide) |
-| 12 | Përsëritje, detyra e kursit | ⏳ |
+| 12 | Përsëritje, detyra e kursit | 🔄 Ora 1 |
 
 ## Kompilimi i një jave
 

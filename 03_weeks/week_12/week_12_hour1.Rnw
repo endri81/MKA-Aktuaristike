@@ -1,0 +1,278 @@
+% ============================================================
+%  Java 12 · Ora 1 — Harta e semestrit, provimi, Javët 1–2
+% ============================================================
+\section{Harta dhe provimi}
+
+\begin{frame}{Ora 1 · Harta dhe provimi}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+<<w12h1-setup, include=FALSE>>=
+suppressMessages({library(tvm); library(fitdistrplus); library(actuar); library(ChainLadder)
+                  library(lifecontingencies); library(derivmkts)})
+library(ggplot2)
+th  <- theme_minimal(base_size = 13)
+fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+claims <- read.csv(file.path(DATA, "individual_claims_synthetic.csv"))
+@
+
+% ------------------------------------------------------------
+\subsection{Harta e semestrit}
+% ------------------------------------------------------------
+
+\begin{frame}{Java e fundit}
+  \begin{itemize}
+    \item<1-> 11 javë, rreth 3500 slide, një gjuhë: \textbf{R}.
+    \item<2-> Sot nuk ka material të ri: lidhim gjithçka dhe stërvitemi si në provim.
+    \item<3-> Çdo orë: rifreskim i shkurtër, pastaj \textbf{ushtrime të tipit të provimit}, me zgjidhje të lidhura.
+  \end{itemize}
+  \onslide<4->{
+  \begin{Keshille}Mos i lexo zgjidhjet para se të provosh. Gabimi që bën sot është gabimi që nuk e bën në provim.\end{Keshille}}
+\end{frame}
+
+\begin{frame}{Harta e kursit}
+  \centering
+  \begin{tikzpicture}[>=Stealth,
+      b/.style={draw=uptblue,fill=uptlight,rounded corners=3pt,minimum width=2.5cm,
+                minimum height=0.9cm,align=center,font=\scriptsize}]
+    \node[b] (r) at (0,0) {\textbf{J1--2}\\R, \texttt{stats}, \texttt{tvm}};
+    \node[b] (nl) at (3.6,1.5) {\textbf{J3--4}\\jo-jetë: dëmet,\\rezervat, kredibiliteti};
+    \node[b] (l) at (3.6,0) {\textbf{J5--7}\\jetë: tabelat,\\primet, rezervat};
+    \node[b] (f) at (3.6,-1.5) {\textbf{J8--11}\\financa: opsionet,\\BS, CRR};
+    \node[b,fill=accent!15,draw=accent] (p) at (7.6,0) {\textbf{J12}\\provimi dhe\\projekti};
+    \foreach \x in {nl,l,f} {\draw[->,thick,uptmid] (r) -- (\x); \draw[->,thick,uptmid] (\x) -- (p);}
+    \draw[->,thick,accent,dashed] (l) -- (f) node[midway,right,font=\tiny] {garancitë};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Një ide për të gjithë kursin}
+  \[ \boxed{\;\text{Vlera sot}=E\Big[\sum_t v^t\cdot\text{fluksi}_t\Big]\;} \]
+  \begin{itemize}
+    \item<2-> \textbf{Jo-jetë}: rezerva IBNR $=$ pritja e pagesave të ardhshme (Chain-Ladder).
+    \item<3-> \textbf{Jetë}: $A_x=E[v^{K+1}]$, primi neto, rezerva prospektive.
+    \item<4-> \textbf{Financa}: $V_0=e^{-rT}E^{\mathbb Q}[\text{payoff}]$.
+    \item<5-> \textbf{Garancitë}: e njëjta pritje, me vdekshmëri \textbf{dhe} $\mathbb Q$ (Javët 10--11).
+  \end{itemize}
+  \onslide<6->{\small Ndryshon vetëm: cila masë probabiliteti dhe cili skontim.}
+\end{frame}
+
+\begin{frame}[label=w12mc1]{Zgjedhje e shumëfishtë}
+  Cila nga këto llogaritje \textbf{nuk} është ``vlerë e pritur e skontuar''?
+  \begin{enumerate}[A)]
+    \item Primi neto i një sigurimi jete të përkohshëm.
+    \item Çmimi Black--Scholes i një put-i.
+    \item Mediana e dëmeve individuale.
+    \item Vlera sot e një anuiteti të sigurt (\emph{annuity-certain}).
+  \end{enumerate}
+  \vfill\shkoTe{w12zgjMC1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Provimi}
+% ------------------------------------------------------------
+
+\begin{frame}{Formati i provimit përfundimtar}
+  \begin{itemize}
+    \item Provim me shkrim, \textbf{2.5 orë}.
+    \item \textbf{15\%} pyetje teorike: temat e leksioneve.
+    \item \textbf{85\%} ushtrime: temat e seminareve dhe shembujt e leksioneve.
+  \end{itemize}
+  \begin{Keshille}Ushtrimet pa ndihmën e PC të këtij kursi (``Radha jote!'', kuizet e Orës 7) janë modeli më i mirë i provimit.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Si ta ndash kohën?}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      Pjesa & Pesha & Koha e sugjeruar \\
+      \midrule
+      Pyetje teorike & 15\% & $\approx20$ min \\
+      Ushtrime & 85\% & $\approx115$ min \\
+      Rishikim & --- & $\approx15$ min \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item Fillo me ushtrimin që e njeh më mirë.
+    \item Një ushtrim që ``nuk del'' pas 15 minutash: kalo, kthehu në fund.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Si duket një zgjidhje e plotë?}
+  \begin{enumerate}
+    \item<1-> \textbf{Formula}, me çdo simbol të përcaktuar.
+    \item<2-> \textbf{Numrat}, hap pas hapi, me 4 shifra domethënëse.
+    \item<3-> \textbf{Rezultati}, me njësi (lekë, vite, \%).
+    \item<4-> \textbf{Kontrolli}: a ka kuptim? (kufij, shenja, parity, $0\le q\le1$).
+    \item<5-> \textbf{Interpretimi}: një fjali për menaxherin.
+  \end{enumerate}
+  \onslide<6->{\small Një numër i saktë pa formulë merr pak pikë. Një formulë e saktë me gabim aritmetik merr shumicën e pikëve.}
+\end{frame}
+
+\begin{frame}[label=w12gab1]{Gjej gabimin: dy zgjidhje}
+  \small Ushtrimi: ``Kredi 5\,000\,000 lekë, 10 vjet, 6\% në vit, me këste mujore. Sa është kësti?''
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \begin{block}{Studenti A}
+        $P=\dfrac{5\cdot10^6\cdot0.06}{1-1.06^{-10}}=679\,340$ lekë.
+      \end{block}
+    \column{0.48\textwidth}
+      \begin{block}{Studenti B}
+        $i=0.005$, $n=120$:\\
+        $P=\dfrac{5\cdot10^6\cdot0.005}{1-1.005^{-120}}=55\,510$ lekë/muaj.
+        Kontroll: $120P=6.66$ mln $>5$ mln. \checkmark
+      \end{block}
+  \end{columns}
+  \vspace{4pt}
+  Cila zgjidhje është e plotë? Çfarë i mungon tjetrës?
+  \vfill\shkoTe{w12zgjGab1}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 1: R}
+% ------------------------------------------------------------
+
+\begin{frame}{Rifreskim: Java 1}
+  \begin{itemize}
+    \item Vektorët dhe vektorizimi: \texttt{x * 2} vepron mbi çdo element, pa cikël.
+    \item Riciklimi: vektori më i shkurtër përsëritet (kujdes!).
+    \item Funksionet: \texttt{f <- function(x, a = 1) \{ ... \}}; vlera e fundit kthehet.
+    \item \texttt{set.seed()}: rezultate të riprodhueshme.
+    \item \texttt{data.frame}, \texttt{subset()}, \texttt{aggregate()}, \Rkey{ggplot2}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w12par1]{Parashiko para se ta ekzekutosh}
+  \begin{Parashiko}
+    Çfarë printon secili rresht?
+    \begin{enumerate}
+      \item \texttt{c(1, 2, 3, 4) * c(10, 100)}
+      \item \texttt{x <- c(5, NA, 7); mean(x)}
+      \item \texttt{sum(1:10 > 5)}
+      \item \texttt{f <- function(n) n * (n + 1) / 2; f(1:4)}
+    \end{enumerate}
+  \end{Parashiko}
+  \vfill\shkoTe{w12zgjPar1}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli në R}
+<<w12h1-r>>=
+c(1, 2, 3, 4) * c(10, 100)
+x <- c(5, NA, 7); c(mean(x), mean(x, na.rm = TRUE))
+sum(1:10 > 5)
+f <- function(n) n * (n + 1) / 2; f(1:4)
+@
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Java 2: \texttt{stats} dhe \texttt{tvm}}
+% ------------------------------------------------------------
+
+\begin{frame}{Rifreskim: Java 2}
+  \begin{itemize}
+    \item Statistikat përshkruese: \texttt{mean}, \texttt{median}, \texttt{sd}, \texttt{quantile}.
+    \item Përshtatja: MLE me \Rkey{fitdistrplus} (\texttt{fitdist}); testet KS, $\chi^2$.
+    \item Lognormalja: $\hat\mu=\overline{\ln x}$, \; $\hat\sigma^2=\frac1n\sum(\ln x_i-\hat\mu)^2$ (MLE).
+    \item \Rkey{tvm}: \texttt{pmt()}, \texttt{loan()}, \texttt{npv()}, \texttt{irr()}.
+    \item Kësti i kredisë: $P=\dfrac{A\,i}{1-v^n}$, \; $v=1/(1+i)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w12ush1a]{Ushtrim 1 · NPV dhe IRR}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Projekti: $-1000$ sot, pastaj $+400$ në fund të çdo viti për 3 vjet.
+    \begin{enumerate}
+      \item Llogarit NPV me 8\%. ($1.08^{-1}=0.92593$, $1.08^{-2}=0.85734$, $1.08^{-3}=0.79383$.)
+      \item A është IRR më i madh apo më i vogël se 8\%? Pse?
+      \item Me \texttt{tvm}: cili kod jep NPV dhe IRR?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgjUsh1a}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w12ush1b]{Ushtrim 2 · Kredia}
+  \begin{Ushtrim}[(pa ndihmën e PC)]
+    Kredi 2\,000\,000 lekë, 5 vjet, normë 4.8\% në vit, këste mujore. \; $1.004^{-60}=0.78676$.
+    \begin{enumerate}
+      \item Llogarit këstin mujor.
+      \item Sa interes paguhet gjithsej?
+      \item Sa është interesi në këstin e parë?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgjUsh1b}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{Ushtrim 3 · Përshtatja (vlerësimi kundrejt së vërtetës)}
+<<w12h1-fit>>=
+x1 <- claims$amount_eur
+fit1 <- fitdist(x1, "lnorm")
+round(rbind(estimate = fit1$estimate, truth_body = c(meanlog = 7, sdlog = 0.9)), 3)
+@
+  \small \textbf{Sintetike}: 95\% lognormale($\mu=7$, $\sigma=0.9$), 5\% Pareto ($\alpha=1.8$) mbi 20\,000 € (README).
+\end{frame}
+
+\begin{frame}[label=w12ush1c]{Radha jote!}
+  \begin{Ushtrim}[(6 minuta)]
+    \begin{enumerate}
+      \item Pse $\hat\sigma=\Sexpr{fmt(fit1$estimate["sdlog"], 3)}$ është shumë më i madh se $0.9$, ndërsa $\hat\mu$ është afër 7?
+      \item Si do ta kontrollonit me një grafik? Me një test?
+      \item Çfarë rreziku krijon kjo për rezervat ose për VaR-in?
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w12zgjUsh1c}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[fragile]{QQ-plot: trupi dhe bishti}
+<<w12h1-qq, echo=FALSE, fig.height=2.9>>=
+qq1 <- data.frame(theo = qlnorm(ppoints(length(x1)), fit1$estimate[1], fit1$estimate[2]), emp = sort(x1))
+ggplot(qq1, aes(log10(theo), log10(emp))) + geom_point(colour = "#2C5AA0", size = 0.6) +
+  geom_abline(colour = "#E67E22", linetype = 2) +
+  labs(x = "kuantilet teorike lognormale (log10)", y = "kuantilet empirike (log10)") + th
+@
+\end{frame}
+
+\begin{frame}{Çfarë na tregon?}
+  \begin{itemize}
+    \item<1-> Në trup, pikat ndjekin vijën: lognormalja përshkruan mirë dëmet e zakonshme.
+    \item<2-> Në bishtin e djathtë, pikat dalin \textbf{mbi} vijën: dëmet e mëdha janë më të mëdha se ç'pret lognormalja.
+    \item<3-> Kjo është përzierja me Pareto: një model i vetëm nuk mjafton (Java 3: shpërndarjet e përziera).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Cilat janë pesë pjesët e një zgjidhjeje të plotë?
+    \item Pse norma vjetore duhet kthyer në mujore për këste mujore?
+    \item Pse një lognormale e vetme nënvlerëson bishtin e dëmeve tona?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) formula, numrat, rezultati me njësi, kontrolli, interpretimi; (2) periudha e normës duhet të përputhet me periudhën e pagesës;
+  (3) 5\% e dëmeve vijnë nga Pareto, me bisht shumë më të rëndë.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 1}
+  \begin{itemize}
+    \item Një ide: vlera sot $=$ pritja e flukseve të skontuara.
+    \item Provimi: 2.5 orë, 15/85; zgjidhje e plotë me kontroll dhe interpretim.
+    \item R: vektorizimi, \texttt{NA}, riciklimi.
+    \item \texttt{tvm}: kësti, NPV, IRR; \texttt{fitdistrplus}: vlerësimi kundrejt së vërtetës.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 2}
+    Jo-jetë I: shpërndarjet e dëmeve, dëmet agregate, stop-loss.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 1)}
+  \small
+  \begin{itemize}
+    \item Programi i lëndës MFM2SII09: rezultatet e të nxënit dhe vlerësimi.
+    \item A.~Charpentier (ed.), \emph{Computational Actuarial Science with R}, CRC Press, 2015: R për aktuarët.
+    \item E.~Raço et al., \emph{Teoria e Probabiliteteve dhe Statistika Matematike me ilustrime në gjuhën R}, Kotti, 2021.
+    \item Dokumentacioni i paketave \Rkey{tvm} dhe \Rkey{fitdistrplus}.
+  \end{itemize}
+\end{frame}
