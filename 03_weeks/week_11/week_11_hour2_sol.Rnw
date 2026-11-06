@@ -1,0 +1,43 @@
+% ============================================================
+%  Java 11 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w11zgjMC2]{Zgjidhja: zgjedhja e shumëfishtë}
+  \textbf{B)} $q=\dfrac{R-d}{u-d}=\dfrac{1.02-0.9}{1.1-0.9}=\dfrac{0.12}{0.2}=0.60$.
+  \begin{itemize}
+    \item A) do të ishte e saktë vetëm me $R=1$. \; C) është $1-q$.
+    \item D) probabiliteti real nuk hyn kurrë në $q$.
+  \end{itemize}
+  \vfill\kthehu{w11mc2}
+\end{frame}
+
+\begin{frame}[label=w11zgjGab2]{Zgjidhja: Gjej gabimin}
+  \begin{itemize}
+    \item $q$ del nga riprodhimi me \textbf{bankën}: $q=(R-d)/(u-d)$ me $R=e^{r\Delta t}$. Kthimi $\mu$ nuk hyn.
+    \item Me $\mu$: $q=\Sexpr{fmt(q_bad, 4)}$ në vend të $\Sexpr{fmt((exp(0.03 / 12) - d) / (u - d), 4)}$:
+      rritjet marrin peshë më të madhe dhe çmimi i call-it del \textbf{më i lartë} se kostoja e riprodhimit.
+    \item I njëjti gabim si simulimi me $\mu$ në Javën 10 (Ora 3).
+  \end{itemize}
+  \vfill\kthehu{w11gab2}
+\end{frame}
+
+\begin{frame}[label=w11zgjUsh2]{Zgjidhja: Radha jote!}
+  \begin{enumerate}
+    \item Payoff-et e put-it: $S=156.25\to0$; \; $S=100\to0$; \; $S=64\to36$.
+    \item $P_u=\frac{1}{1.05}\big(\tfrac59\cdot0+\tfrac49\cdot0\big)=0$; \;
+      $P_d=\frac{1}{1.05}\cdot\tfrac49\cdot36=\frac{16}{1.05}=15.24$; \;
+      $P_0=\frac{1}{1.05}\cdot\tfrac49\cdot15.24=\mathbf{6.45}$.
+    \item $C_0-P_0=15.75-6.45=9.30$; \; $S_0-K/R^2=100-100/1.1025=9.30$. \textcolor{okgreen}{$\checkmark$}
+  \end{enumerate}
+  \vfill\kthehu{w11ush2}
+\end{frame}
+
+\begin{frame}[label=w11zgjPar2]{Zgjidhja: Parashiko}
+  \begin{enumerate}
+    \item Në nyjen $S=80$: vlera e vazhdimit $15.24<K-S=20$. \textbf{Ushtro}: $P_{A,d}=20$.
+      Në $S=125$: $0$ kundrejt $0$; në rrënjë: shih më poshtë.
+    \item $P_A=\frac{1}{1.05}\cdot\tfrac49\cdot20=\mathbf{8.47}>6.45$; \; në rrënjë $8.47>K-S_0=0$, pra nuk ushtrohet.
+  \end{enumerate}
+  \small Prima e ushtrimit të hershëm në këtë pemë: $8.47-6.45=2.02$. Me shumë hapa: Ora 4--5.
+  \vfill\kthehu{w11par2}
+\end{frame}

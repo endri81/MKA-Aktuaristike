@@ -1,0 +1,292 @@
+% ============================================================
+%  Java 11 · Ora 2 — Teoria I: pema binomiale
+% ============================================================
+\section{Teoria I: pema}
+
+\begin{frame}{Ora 2 · Teoria I}
+  \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Një hap, rasti i përgjithshëm}
+% ------------------------------------------------------------
+
+\begin{frame}{Shënimet}
+  \begin{itemize}
+    \item $\Delta t=T/n$: gjatësia e një hapi; \; $n$: numri i hapave.
+    \item Në çdo hap: $S\to uS$ (rritje) ose $S\to dS$ (rënie), me $0<d<u$.
+    \item $V_u$, $V_d$: vlera e opsionit pas rritjes / rënies.
+    \item $R=e^{r\Delta t}$: faktori i rritjes së parave në bankë për një hap.
+  \end{itemize}
+  \begin{Keshille}Qëllimi: të gjejmë $V_0$ duke ditur vetëm $V_u$, $V_d$, $u$, $d$, $R$.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Riprodhimi: dy ekuacione}
+  Portofoli: $\Delta$ aksione $+$ $B$ lekë në bankë. Kërkojmë:
+  \begin{align*}
+    \onslide<2->{\Delta\,uS_0+B\,R&=V_u\\}
+    \onslide<3->{\Delta\,dS_0+B\,R&=V_d}
+  \end{align*}
+  \onslide<4->{Zbrit: \quad $\boxed{\Delta=\dfrac{V_u-V_d}{S_0(u-d)}}$}
+  \onslide<5->{\quad Zëvendëso: \quad $\boxed{B=\dfrac{uV_d-dV_u}{R\,(u-d)}}$}
+  \onslide<6->{\par\vspace{6pt}\small $\Delta$: pjerrësia e opsionit ndaj aksionit, njësoj si $\Delta$ e Black--Scholes (Java 10).}
+\end{frame}
+
+\begin{frame}{Nga riprodhimi te $q$}
+  \begin{align*}
+    V_0=\Delta S_0+B
+    \onslide<2->{&=\frac{V_u-V_d}{u-d}+\frac{uV_d-dV_u}{R(u-d)}\\}
+    \onslide<3->{&=\frac1R\left[\frac{R-d}{u-d}\,V_u+\frac{u-R}{u-d}\,V_d\right]\\}
+    \onslide<4->{&=\frac1R\Big[q\,V_u+(1-q)\,V_d\Big],\qquad q=\frac{R-d}{u-d}.}
+  \end{align*}
+  \onslide<5->{\small Kontroll: $\dfrac{R-d}{u-d}+\dfrac{u-R}{u-d}=1$. \; Dhe $q\in(0,1)\iff d<R<u$ (Ora 1).}
+\end{frame}
+
+\begin{frame}{Pse $q$ quhet ``neutral ndaj rrezikut''?}
+  \begin{itemize}
+    \item Pritja e çmimit të aksionit nën $q$:
+      \[ E^{\mathbb Q}[S_{\Delta t}]=q\,uS_0+(1-q)\,dS_0=S_0\big(d+q(u-d)\big)=S_0R. \]
+    \item Nën $q$, aksioni rritet mesatarisht \textbf{sa banka}: asnjë shpërblim për rrezikun.
+    \item Çdo opsion vlerësohet si pritje e skontuar nën $q$: e njëjta logjikë si $E^{\mathbb Q}$ e Black--Scholes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[label=w11mc2]{Zgjedhje e shumëfishtë}
+  Në një hap me $u=1.1$, $d=0.9$, $R=1.02$, sa është $q$?
+  \begin{enumerate}[A)]
+    \item 0.50
+    \item 0.60
+    \item 0.40
+    \item varet nga probabiliteti real i rritjes
+  \end{enumerate}
+  \vfill\shkoTe{w11zgjMC2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Parametrat CRR}
+% ------------------------------------------------------------
+
+\begin{frame}{Si zgjidhen $u$ dhe $d$?}
+  \begin{itemize}
+    \item Pema duhet të ``imitojë'' GBM-në: në çdo hap, $\ln(S_{t+\Delta t}/S_t)$ ka variancë $\sigma^2\Delta t$.
+    \item Cox, Ross dhe Rubinstein (1979) zgjodhën:
+      \[ u=e^{\sigma\sqrt{\Delta t}},\qquad d=\frac1u=e^{-\sigma\sqrt{\Delta t}}. \]
+    \item Kthimi logaritmik në një hap: $\pm\sigma\sqrt{\Delta t}$, simetrik.
+    \item $ud=1$: pema rikombinohet dhe qendra mbetet në $S_0$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Varianca përputhet}
+  Le të jetë $X=\ln(S_{\Delta t}/S_0)\in\{+\sigma\sqrt{\Delta t},\,-\sigma\sqrt{\Delta t}\}$ me probabilitete $q$, $1-q$.
+  \begin{align*}
+    \onslide<2->{E[X]&=(2q-1)\,\sigma\sqrt{\Delta t}\\}
+    \onslide<3->{\operatorname{Var}(X)&=4q(1-q)\,\sigma^2\Delta t}
+  \end{align*}
+  \onslide<4->{
+  \begin{itemize}
+    \item Për $\Delta t\to0$: $q=\dfrac{e^{r\Delta t}-e^{-\sigma\sqrt{\Delta t}}}{e^{\sigma\sqrt{\Delta t}}-e^{-\sigma\sqrt{\Delta t}}}\to\dfrac12$.
+    \item Pra $4q(1-q)\to1$ dhe $\operatorname{Var}(X)\approx\sigma^2\Delta t$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}}
+\end{frame}
+
+<<w11h2-tab, include=FALSE>>=
+tab2 <- paste(sapply(c(1, 3, 12, 52, 252), function(n) {
+  dt <- 1 / n; u <- exp(0.25 * sqrt(dt)); d <- 1 / u; q <- (exp(0.03 * dt) - d) / (u - d)
+  sprintf("%d & %.4f & %.4f & %.4f & %.4f \\\\", n, dt, u, d, q) }), collapse = " ")
+@
+
+\begin{frame}{Shembull numerik}
+  $\sigma=25\%$, $r=3\%$, $T=1$:
+  \begin{center}
+    \small
+    \begin{tabular}{rcccc}
+      \toprule
+      $n$ & $\Delta t$ & $u$ & $d$ & $q$ \\
+      \midrule
+      \Sexpr{tab2}
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \small Me më shumë hapa: $u,d\to1$ (hapa më të vegjël), $q\to0.5$.
+\end{frame}
+
+\begin{frame}[fragile,label=w11gab2]{Gjej gabimin}
+<<w11h2-bug>>=
+mu <- 0.07; sig <- 0.25; dt <- 1 / 12
+u <- exp(sig * sqrt(dt)); d <- 1 / u
+q_bad <- (exp(mu * dt) - d) / (u - d)
+c(q_bad = q_bad, q_correct = (exp(0.03 * dt) - d) / (u - d))
+@
+  \small Studenti thotë: ``aksioni rritet me 7\%, pra $q$ duhet ta përdorë $\mu$''. Ku gabon? Çfarë ndodh me çmimin?
+  \hfill\shkoTe{w11zgjGab2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pema me shumë hapa}
+% ------------------------------------------------------------
+
+\begin{frame}{Nyjet e pemës}
+  \begin{itemize}
+    \item Pas $i$ hapash, me $j$ rritje dhe $i-j$ rënie: \quad $S_{i,j}=S_0\,u^j d^{\,i-j}$, \; $j=0,\dots,i$.
+    \item Rendi nuk ka rëndësi: ``rritje pastaj rënie'' $=$ ``rënie pastaj rritje''.
+    \item Në maturim: vetëm $n+1$ nyje, edhe pse ka $2^n$ rrugë.
+  \end{itemize}
+  
+  \begin{Keshille}Me $n=252$: 253 nyje në fund, në vend të $2^{252}\approx7\cdot10^{75}$ rrugëve. Prandaj pema rikombinuese është e shpejtë.\end{Keshille}
+\end{frame}
+
+\begin{frame}{Induksioni prapa}
+  \begin{enumerate}
+    \item Në maturim: $V_{n,j}=\text{payoff}(S_{n,j})$, \; p.sh.\ $(S_{n,j}-K)^+$.
+    \item Për $i=n-1,\dots,0$:
+      \[ V_{i,j}=e^{-r\Delta t}\Big[q\,V_{i+1,j+1}+(1-q)\,V_{i+1,j}\Big]. \]
+    \item Çmimi: $V_{0,0}$.
+  \end{enumerate}
+  \small Çdo nyje është një ``pemë me një hap'': i njëjti argument riprodhimi, i përsëritur.
+\end{frame}
+
+\begin{frame}{Formula binomiale (europiane)}
+  Duke zbërthyer induksionin për opsionin europian:
+  \[
+    V_0=e^{-rT}\sum_{j=0}^{n}\binom{n}{j}q^j(1-q)^{n-j}\,\text{payoff}\big(S_0u^jd^{\,n-j}\big).
+  \]
+  \begin{itemize}
+    \item $\binom nj q^j(1-q)^{n-j}$: probabiliteti binomial (nën $\mathbb Q$) për $j$ rritje: \texttt{dbinom(j, n, q)}.
+    \item Pra $V_0=e^{-rT}E^{\mathbb Q}[\text{payoff}]$, me $j\sim\text{Bin}(n,q)$.
+    \item Opsioni amerikan \textbf{nuk} ka formulë të tillë: duhet induksioni prapa (Ora 4).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Shembull pa ndihmën e PC}
+% ------------------------------------------------------------
+
+\begin{frame}{Pema me dy hapa}
+  $S_0=100$, $u=1.25$, $d=0.8$, $R=1.05$ për hap, $K=100$. \quad $q=\dfrac{1.05-0.8}{1.25-0.8}=\dfrac{0.25}{0.45}=\dfrac59$.
+  \par\vspace{4pt}
+  \centering
+  \begin{tikzpicture}[>=Stealth,x=3.3cm,y=0.8cm,
+      n/.style={draw=uptblue,fill=uptlight,rounded corners=2pt,font=\scriptsize,inner sep=2pt}]
+    \node[n] (r0) at (0,0) {$S=100$};
+    \node[n] (ru) at (1,1.3) {$S=125$};
+    \node[n] (rd) at (1,-1.3) {$S=80$};
+    \node[n] (ruu) at (2,2.4) {$S=156.25$};
+    \node[n] (rud) at (2,0) {$S=100$};
+    \node[n] (rdd) at (2,-2.4) {$S=64$};
+    \foreach \x/\y in {r0/ru,r0/rd,ru/ruu,ru/rud,rd/rud,rd/rdd} \draw[->,uptmid] (\x) -- (\y);
+    \onslide<4->{\node[font=\scriptsize,text=accent!80!black,below=1pt of r0] {$C=\mathbf{15.75}$};}
+    \onslide<3->{\node[font=\scriptsize,text=accent!80!black,below=1pt of ru] {$C=29.76$};}
+    \onslide<3->{\node[font=\scriptsize,text=accent!80!black,below=1pt of rd] {$C=0$};}
+    \onslide<2->{\node[font=\scriptsize,text=accent!80!black,below=1pt of ruu] {$C=56.25$};}
+    \onslide<2->{\node[font=\scriptsize,text=accent!80!black,below=1pt of rud] {$C=0$};}
+    \onslide<2->{\node[font=\scriptsize,text=accent!80!black,below=1pt of rdd] {$C=0$};}
+  \end{tikzpicture}\par
+  \onslide<3->{\small $C_u=\tfrac{1}{1.05}\big(\tfrac59\cdot56.25+\tfrac49\cdot0\big)=29.76$; \;}
+  \onslide<4->{\small $C_0=\tfrac{1}{1.05}\cdot\tfrac59\cdot29.76=15.75$.}
+\end{frame}
+
+\begin{frame}{Kontrolli me formulën binomiale}
+  \begin{itemize}
+    \item Vetëm nyja e sipërme paguan ($j=2$): probabiliteti $q^2=25/81=0.3086$.
+    \item $C_0=\dfrac{1}{1.05^2}\cdot0.3086\cdot56.25=\dfrac{17.361}{1.1025}=15.747$. \textcolor{okgreen}{$\checkmark$}
+    \item Delta në rrënjë: $\Delta_0=\dfrac{C_u-C_d}{S_u-S_d}=\dfrac{29.76-0}{125-80}=0.661$.
+    \item Pas një rritjeje: $\Delta_u=\dfrac{56.25-0}{156.25-100}=1$. Delta \textbf{ndryshon} nga nyja në nyje: mbrojtje dinamike.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Kontrolli në R}
+<<w11h2-check>>=
+S0 <- 100; u2 <- 1.25; d2 <- 0.8; R2 <- 1.05; K2 <- 100; n2 <- 2
+q2 <- (R2 - d2) / (u2 - d2); j2 <- 0:n2
+ST2 <- S0 * u2^j2 * d2^(n2 - j2)                            # terminal nodes
+c(q = q2,
+  call = sum(dbinom(j2, n2, q2) * pmax(ST2 - K2, 0)) / R2^n2,
+  put  = sum(dbinom(j2, n2, q2) * pmax(K2 - ST2, 0)) / R2^n2)
+@
+  \small \texttt{dbinom(j, n, q)}: $\binom nj q^j(1-q)^{n-j}$.
+\end{frame}
+
+\begin{frame}[label=w11ush2]{Radha jote!}
+  \begin{Ushtrim}[(8 minuta, pa ndihmën e PC)]
+    E njëjta pemë ($S_0=100$, $u=1.25$, $d=0.8$, $R=1.05$, $q=5/9$), put me $K=100$.
+    \begin{enumerate}
+      \item Llogarit payoff-et në maturim.
+      \item Llogarit $P_u$, $P_d$ dhe $P_0$ me induksion prapa.
+      \item Kontrollo parity: $C_0-P_0=S_0-K/R^2$.
+    \end{enumerate}
+  \end{Ushtrim}
+  \vfill\shkoTe{w11zgjUsh2}{Zgjidhja}
+\end{frame}
+
+\begin{frame}[label=w11par2]{Parashiko}
+  \begin{Parashiko}
+    Në të njëjtën pemë, put-i është \textbf{amerikan}.
+    \begin{enumerate}
+      \item Në cilën nyje mund të jetë optimale ushtrimi i hershëm?
+      \item A do të jetë $P_A$ më i madh se $P_0$ europian?
+    \end{enumerate}
+    Ndihmë: krahaso vlerën e vazhdimit me $K-S$ në çdo nyje.
+  \end{Parashiko}
+  \vfill\shkoTe{w11zgjPar2}{Zgjidhja}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Pemë të tjera\Zgj}
+% ------------------------------------------------------------
+
+\begin{frame}{Tri zgjedhje të $u$, $d$\Zgj}
+  \begin{center}
+    \small
+    \begin{tabular}{llll}
+      \toprule
+      Pema & $u$ & $d$ & $q$ \\
+      \midrule
+      CRR (1979) & $e^{\sigma\sqrt{\Delta t}}$ & $e^{-\sigma\sqrt{\Delta t}}$ & $\frac{e^{r\Delta t}-d}{u-d}$ \\
+      Jarrow--Rudd & $e^{(r-\frac12\sigma^2)\Delta t+\sigma\sqrt{\Delta t}}$ & $e^{(r-\frac12\sigma^2)\Delta t-\sigma\sqrt{\Delta t}}$ & $\approx\frac12$ \\
+      Forward (McDonald) & $e^{r\Delta t+\sigma\sqrt{\Delta t}}$ & $e^{r\Delta t-\sigma\sqrt{\Delta t}}$ & $\frac{e^{r\Delta t}-d}{u-d}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item Të gjitha konvergjojnë te Black--Scholes kur $n\to\infty$; ndryshojnë vetëm në shpejtësi dhe luhatje.
+    \item Në \Rkey{derivmkts}: \texttt{crr = TRUE}, \texttt{jarrowrudd = TRUE}, ose parazgjedhja (forward).
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\subsection{Përmbyllje}
+% ------------------------------------------------------------
+
+\begin{frame}{\textcolor{accent}{$\checkmark$} Checkpoint}
+  \begin{enumerate}
+    \item Shkruaj $\Delta$ dhe $q$ për një pemë me një hap.
+    \item Pse varianca e pemës CRR përputhet me $\sigma^2\Delta t$ vetëm kur $\Delta t\to0$?
+    \item Pse pema rikombinuese ka vetëm $n+1$ nyje në maturim?
+  \end{enumerate}
+  \pause\vfill
+  \small\textcolor{gray}{Përgjigjet: (1) $\Delta=\frac{V_u-V_d}{S_0(u-d)}$, $q=\frac{R-d}{u-d}$; (2) $\operatorname{Var}=4q(1-q)\sigma^2\Delta t$ dhe $q\to\frac12$;
+  (3) $ud=du$: vlera varet vetëm nga numri i rritjeve $j$.}
+\end{frame}
+
+\begin{frame}{Përmbledhje e Orës 2}
+  \begin{itemize}
+    \item Një hap: $V_0=\frac1R[qV_u+(1-q)V_d]$, \; $q=\frac{R-d}{u-d}$, \; $E^{\mathbb Q}[S_{\Delta t}]=S_0R$.
+    \item CRR: $u=e^{\sigma\sqrt{\Delta t}}$, $d=1/u$; $q\to\frac12$.
+    \item Shumë hapa: $S_{i,j}=S_0u^jd^{i-j}$; induksion prapa; formula binomiale me \texttt{dbinom()}.
+    \item Shembull: $C_0=15.75$, $P_0=6.45$; parity e kënaqur.
+  \end{itemize}
+  \vfill
+  \begin{block}{Ora 3}
+    Laborator R I: pema CRR nga zero, krahasimi me \Rkey{derivmkts}, vizualizimi.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Burime (Ora 2)}
+  \small
+  \begin{itemize}
+    \item J.~C.~Cox, S.~A.~Ross, M.~Rubinstein (1979), \emph{Journal of Financial Economics}.
+    \item R.~A.~Jarrow, A.~Rudd, \emph{Option Pricing}, Irwin, 1983.
+    \item J.~C.~Hull, \emph{Options, Futures, and Other Derivatives}, Pearson: pemët binomiale.
+    \item R.~L.~McDonald, \emph{Derivatives Markets}, Pearson; paketa \Rkey{derivmkts}.
+  \end{itemize}
+\end{frame}
