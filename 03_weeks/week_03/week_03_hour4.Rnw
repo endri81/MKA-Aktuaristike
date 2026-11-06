@@ -9,7 +9,8 @@
 
 <<w3h4-setup, include=FALSE>>=
 suppressMessages(library(actuar))
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d))
 panjer_pois <- function(lambda, f, smax) {
   g <- numeric(smax + 1); g[1] <- exp(-lambda * (1 - f[1]))
   for (s in 1:smax) { j <- 1:min(s, length(f) - 1)

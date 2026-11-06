@@ -11,7 +11,8 @@
 suppressMessages(library(lifecontingencies))
 library(ggplot2)
 th <- theme_minimal(base_size = 13)
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d))
 mt  <- read.csv(file.path(DATA, "mortality_table_synthetic.csv"))
 hld <- read.csv(file.path(DATA, "albania_lifetables_HLD_1950_2011.csv"))
 data(soa08Act)

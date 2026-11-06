@@ -10,7 +10,8 @@
 <<w4h1-setup, include=FALSE>>=
 library(ggplot2)
 th <- theme_minimal(base_size = 13)
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d))
 mln <- function(x, d = 2) fmt(x / 1e6, d)
 @
 

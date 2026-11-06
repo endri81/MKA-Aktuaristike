@@ -8,7 +8,8 @@
 \end{frame}
 
 <<w5h4-setup, include=FALSE>>=
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d))
 @
 
 % ------------------------------------------------------------

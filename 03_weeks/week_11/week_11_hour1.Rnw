@@ -11,7 +11,8 @@
 suppressMessages(library(derivmkts))
 library(ggplot2)
 th  <- theme_minimal(base_size = 13)
-fmt <- function(x, d = 0) format(round(x, d), big.mark = " ", nsmall = d)
+fmt <- function(x, d = 0)                               # thin space: safe in math mode
+  gsub(" ", "\\\\,", format(round(x, d), big.mark = " ", nsmall = d))
 st  <- read.csv(file.path(DATA, "stock_prices_gbm_synthetic.csv"))
 sig_hat <- sd(diff(log(st$close))) * sqrt(252)                 # Week 8
 C0 <- bscall(100, 100, 0.25, 0.03, 1, 0); P0 <- bsput(100, 100, 0.25, 0.03, 1, 0)
