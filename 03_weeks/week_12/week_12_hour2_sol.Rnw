@@ -1,0 +1,87 @@
+% ============================================================
+%  Java 12 · Ora 2 — Zgjidhjet (shtojca)
+% ============================================================
+
+\begin{frame}[label=w12zgj2a]{Zgjidhja: Ushtrim 1}
+  \begin{enumerate}
+    \item $E[X]=1.4$, $E[X^2]=0.6+1.6=2.2$: \; $E[S]=2.8$, \; $\operatorname{Var}(S)=2\cdot2.2=4.4$.
+    \item $g_0=e^{-2}=0.1353$; \; $g_1=2\cdot0.6\cdot g_0=0.1624$; \;
+      $g_2=\frac22(1\cdot0.6\cdot g_1+2\cdot0.4\cdot g_0)=0.0974+0.1083=0.2057$; \; $P(S\le2)=0.5034$.
+    \item $E[\min(S,2)]=0\cdot g_0+1\cdot g_1+2\,(1-g_0-g_1)=0.1624+1.4046=1.5670$; \;
+      $E[(S-2)^+]=2.8-1.567=\mathbf{1.233}$.
+  \end{enumerate}
+  \small R: \texttt{aggregateDist("recursive", model.freq = "poisson", model.sev = c(0, 0.6, 0.4), lambda = 2, x.scale = 1)}.
+  \vfill\kthehu{w12q2a}
+\end{frame}
+
+\begin{frame}[label=w12zgj2b]{Zgjidhja: Ushtrim 2}
+  \begin{enumerate}
+    \item $E[(X-200)^+]=\int_{200}^\infty e^{-x/1000}dx=1000\,e^{-0.2}=\mathbf{818.73}$ €.\\
+      Për pagesë: $818.73/e^{-0.2}=\mathbf{1000}$ € (eksponencialja nuk ka kujtesë).
+    \item $E[\min(X,3000)]=\int_0^{3000}e^{-x/1000}dx=1000\,(1-e^{-3})=\mathbf{950.21}$ €.
+  \end{enumerate}
+  \small R: \texttt{1000 * exp(-0.2)}; \; \texttt{levexp(3000, rate = 1 / 1000)} $=\Sexpr{fmt(levexp(3000, rate = 1 / 1000), 2)}$.
+  \vfill\kthehu{w12q2b}
+\end{frame}
+
+\begin{frame}[label=w12zgj2c]{Zgjidhja: Ushtrim 3}
+  \begin{itemize}
+    \item \textbf{Studenti B} ka të drejtë: frekuenca \textbf{për dëm} (10) $\times$ ashpërsia \textbf{për dëm} (818.73) $=8187$.
+    \item Studenti A përzien bazat: ashpërsi për pagesë (1000) me frekuencë për dëm (10).
+    \item Rruga e tretë: frekuenca e pagesave $10\cdot e^{-0.2}=8.187$ $\times$ ashpërsia për pagesë 1000 $=8187$. \textcolor{okgreen}{$\checkmark$}
+  \end{itemize}
+  \vfill\kthehu{w12q2c}
+\end{frame}
+
+\begin{frame}[label=w12zgj2d]{Zgjidhja: Ushtrim 4}
+  \textbf{C)} $S$ ka asimetri pozitive: bishti i djathtë është më i rëndë se ai i normales. Normalja nënvlerëson kuantilet e larta.
+  \begin{itemize}
+    \item A) $\lambda=50$ nuk mjafton për bishta të rëndë. \; D) Përafrimi mund të përdoret, por është i dobët në bisht.
+    \item Shembulli ynë: \Sexpr{fmt(ES2 + qnorm(0.995) * SD2)} (normale) kundrejt \Sexpr{fmt(unname(VaR(F2, 0.995)))} (Panjer).
+  \end{itemize}
+  \vfill\kthehu{w12q2d}
+\end{frame}
+
+\begin{frame}[fragile,label=w12zgj2e]{Zgjidhja: Radha jote! (franshiza 500 €)}
+<<w12h2-sol-ded>>=
+pd2 <- 1 - pgamma(500, shape = sh2, scale = sc2)                 # P(X > 500)
+fy2 <- discretize((pgamma(x + 500, shape = sh2, scale = sc2) - (1 - pd2)) / pd2,
+                  from = 0, to = 20000, step = 100, method = "rounding")
+Fd2 <- aggregateDist("recursive", model.freq = "poisson", model.sev = fy2,
+                     lambda = L2 * pd2, x.scale = 100, maxit = 5000)
+round(c(p_exceed = pd2, lambda_pay = L2 * pd2, mean_S = mean(Fd2), VaR995 = unname(VaR(Fd2, 0.995)),
+        VaR_reduction_pct = 100 * (1 - unname(VaR(Fd2, 0.995)) / unname(VaR(F2, 0.995)))), 3)
+@
+  \vfill\kthehu{w12q2e}
+\end{frame}
+
+\begin{frame}[label=w12zgj2f]{Interpretimi: stop-loss}
+  \begin{itemize}
+    \item Primi bie shpejt me $d$: nga \Sexpr{fmt(sl2(10000))} € në \Sexpr{fmt(sl2(25000))} €.
+    \item Me $d\approx E[S]=\Sexpr{fmt(ES2)}$ €, risiguruesi merr pjesën e madhe të luhatjes.
+    \item Me $d$ afër VaR$_{99.5\%}$, mbulimi është ``katastrofik'': i lirë, por mbron vetëm skenarët ekstremë.
+  \end{itemize}
+  \vfill\kthehu{w12q2f}
+\end{frame}
+
+\begin{frame}[label=w12zgj2g]{Zgjidhja: Ushtrim 8}
+  \begin{enumerate}
+    \item $E[S]=0.3\cdot1000+0.15\cdot5000+0.05\cdot20\,000=300+750+1000=\mathbf{2050}$ €.\\
+      $P(S\le1000)=0.80<0.90\le P(S\le5000)=0.95$: \; VaR$_{90\%}=\mathbf{5000}$ €.
+    \item 10\% më të këqija: 5\% me 20\,000 dhe 5\% me 5000: \;
+      TVaR$_{90\%}=\dfrac{0.05\cdot20\,000+0.05\cdot5000}{0.10}=\mathbf{12\,500}$ €.
+  \end{enumerate}
+  \small TVaR $>$ VaR: TVaR ``sheh'' edhe çfarë ndodh përtej kuantilit.
+  \vfill\kthehu{w12q2g}
+\end{frame}
+
+\begin{frame}[label=w12zgj2h]{Zgjidhja: Ushtrim 9}
+  \begin{enumerate}
+    \item Lognormale: $e^{\mu+\sigma^2/2}=e^{7.405}=1645.6$; \; Pareto: $1.8\cdot20\,000/0.8=45\,000$.\\
+      $E[X]=0.95\cdot1645.6+0.05\cdot45\,000=1563.3+2250=\mathbf{3813.3}$ €.
+    \item Mostra: \Sexpr{fmt(mean(claims$amount_eur), 1)} €: afër. \textcolor{okgreen}{$\checkmark$}
+    \item $2250/3813.3=\mathbf{59\%}$ e mesatares vjen nga 5\% e dëmeve.
+  \end{enumerate}
+  \small Me $\alpha=1.8<2$, varianca e Pareto-s është e pafundme: mesatarja e mostrës luhatet shumë nga një mostër te tjetra.
+  \vfill\kthehu{w12q2h}
+\end{frame}
